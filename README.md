@@ -65,18 +65,39 @@ The data dictionary covers the following major research areas and sub-studies:
 
 ### Viewing the Data Dictionary
 
-1. **Online Viewing**: Open [docs/index.html](docs/index.html) in a web browser
-2. **Local Browsing**: Clone the repository and open the HTML files locally
+#### Quick Start - View in Browser
+
+From the repository root directory, run:
+
+```bash
+# macOS
+open docs/index.html
+
+# Linux
+xdg-open docs/index.html
+
+# Windows
+start docs/index.html
+
+# Or use the full path
+open /path/to/BornInBradford-datadict/docs/index.html
+```
+
+#### Clone and Browse
+
+If you haven't cloned the repository yet:
 
 ```bash
 git clone https://github.com/dizza01/BornInBradford-datadict.git
-cd BornInBradford-datadict/docs
-open index.html  # macOS
+cd BornInBradford-datadict
+open docs/index.html  # macOS
 # or
-xdg-open index.html  # Linux
+xdg-open docs/index.html  # Linux
 # or
-start index.html  # Windows
+start docs/index.html  # Windows
 ```
+
+The data dictionary will open in your default web browser with full navigation and search functionality.
 
 ### Navigation
 
@@ -116,15 +137,48 @@ Data tables follow a hierarchical naming structure:
 - `bib_1000_bib1000_12m_main` - BiB 1000 study 12-month main questionnaire
 - `bibbs_cohortinfo_pregnancy` - BiBBS cohort pregnancy information
 
-### Key Identifiers
+### Data Relationships & Linkage
 
-The cohort uses various linking identifiers:
-- Person-level IDs
-- Pregnancy IDs
-- Family relationship IDs
-- Study-specific IDs
+> **📊 [VIEW COMPLETE DATA MODEL](DATA_MODEL.md)** - Comprehensive Entity-Relationship diagrams showing all table relationships, identifiers, and linkage patterns.
 
-Refer to the **ID Linkage** section (`bib_cohortinfo_id_linkage.html`) for details on linking across datasets.
+#### Key Identifiers
+
+The cohort uses various linking identifiers to connect tables:
+- **Person-level IDs** - Unique identifiers for individuals (mothers, fathers, children)
+- **Pregnancy IDs** - Link pregnancy-related data
+- **Family relationship IDs** - Connect family members
+- **Study-specific IDs** - Link to sub-study data (BiB 1000, MeDALL, etc.)
+- **Property & LSOA codes** - Geographic linkage
+
+#### Relationship Documentation
+
+The data dictionary documents table relationships through:
+
+1. **ID Linkage Section** ([bib_cohortinfo_id_linkage.html](docs/bib_cohortinfo_id_linkage.html))
+   - Comprehensive guide to identifier types and how they link tables
+   - Shows which IDs to use for joining datasets
+
+2. **Related Pairs** ([bib_cohortinfo_related_pairs.html](docs/bib_cohortinfo_related_pairs.html))
+   - Parent-child relationships
+   - Sibling relationships  
+   - Family linkage information
+
+3. **Data Linkage Pages** - Specific sections for:
+   - Genotyping data linkage
+   - Exome sequencing data linkage
+   - DNA methylation data linkage
+   - GP record linkage to other datasets
+
+4. **Hierarchical Structure** - Data is organized by:
+   - **Person-level** → Individual participant data
+   - **Pregnancy-level** → Linked to mothers via pregnancy ID
+   - **Property-level** → Geographic data linked to residential addresses
+   - **LSOA-level** → Area-level geographic and demographic data
+
+5. **Temporal Relationships** - Longitudinal data linkage:
+   - Same participants across timepoints (6m, 12m, 18m, 24m, 36m)
+   - Baseline → Follow-up study linkage
+   - Cross-sectional sub-studies linked to main cohort
 
 ## 🔍 Use Cases
 
