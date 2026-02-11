@@ -9,6 +9,7 @@ The BiB data model is organized around **people** (mothers, fathers, children), 
 ## Core Entity-Relationship Model
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 erDiagram
     PERSON ||--o{ PREGNANCY : "mother_of"
     PERSON ||--o{ PREGNANCY : "father_of"
@@ -61,6 +62,7 @@ erDiagram
 ### 1. Baseline & Survey Data
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 erDiagram
     PERSON ||--o{ BASELINE_SURVEY : "completes"
     PERSON ||--o{ BIB1000_6M : "participates_in"
@@ -95,6 +97,7 @@ erDiagram
 ### 2. Health & Clinical Data
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 erDiagram
     PREGNANCY ||--o{ MATERNITY_RECORDS : "has"
     PREGNANCY ||--o{ ULTRASOUND_SCAN : "has"
@@ -129,6 +132,7 @@ erDiagram
 ### 3. Geographic & Environmental Data
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 erDiagram
     PROPERTY ||--|| AIR_QUALITY : "has"
     PROPERTY ||--|| BUILT_ENVIRONMENT : "has"
@@ -162,6 +166,7 @@ erDiagram
 ### 4. Omics & Biomarker Data
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 erDiagram
     PERSON ||--o{ GENOTYPING : "has"
     PERSON ||--o{ EXOME_SEQUENCING : "has"
@@ -194,6 +199,7 @@ erDiagram
 ### 5. Education & Development Data
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 erDiagram
     PERSON ||--o{ EDUCATION_RECORDS : "has"
     PERSON ||--o{ SDQ_ASSESSMENTS : "completes"
@@ -223,6 +229,7 @@ erDiagram
 ### 6. Sub-Study Participation
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 erDiagram
     PERSON ||--o{ STUDY_PARTICIPATION : "enrolled_in"
     STUDY_PARTICIPATION }o--|| STUDY : "participates"
