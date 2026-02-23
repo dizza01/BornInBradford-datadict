@@ -45,3 +45,12 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 /.vs
+
+# Research planning documents (internal use only)
+RESEARCH_IDEAS.md
+
+# Key findings and analysis documents
+KEY_FINDINGS.md
+ML_KEY_FINDINGS.md
+AGE_OF_WONDER_SCALES_SUMMARY.md
+DATA_DICTIONARY_IMPROVEMENTS.md
