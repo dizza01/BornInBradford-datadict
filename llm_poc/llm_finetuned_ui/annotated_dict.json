@@ -1,0 +1,338 @@
+[
+  {
+    "table": "bibbs_cohortinfo_recruitment",
+    "table_label": "BiBBS Pregnancy Recruitment",
+    "variable": "recruitment_date",
+    "type": "DATE",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'recruitment_date' from BiBBS Pregnancy Recruitment.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: DATE",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_recruitment",
+    "table_label": "BiBBS Pregnancy Recruitment",
+    "variable": "gestation_at_recruitment_weeks",
+    "type": "INTEGER",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'gestation_at_recruitment_weeks' from BiBBS Pregnancy Recruitment.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: INTEGER",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_recruitment",
+    "table_label": "BiBBS Pregnancy Recruitment",
+    "variable": "recruitment_site",
+    "type": "VARCHAR",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'recruitment_site' from BiBBS Pregnancy Recruitment.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_mother",
+    "table_label": "BiBBS Recruited Mother Information",
+    "variable": "age_at_recruitment",
+    "type": "INTEGER",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'age_at_recruitment' from BiBBS Recruited Mother Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: INTEGER",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_mother",
+    "table_label": "BiBBS Recruited Mother Information",
+    "variable": "ethnicity",
+    "type": "VARCHAR",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'ethnicity' from BiBBS Recruited Mother Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_mother",
+    "table_label": "BiBBS Recruited Mother Information",
+    "variable": "country_of_birth",
+    "type": "VARCHAR",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'country_of_birth' from BiBBS Recruited Mother Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_mother",
+    "table_label": "BiBBS Recruited Mother Information",
+    "variable": "parity",
+    "type": "INTEGER",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'parity' from BiBBS Recruited Mother Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: INTEGER",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_baseline_pregnancy_survey",
+    "table_label": "BiBBS Mother Baseline Pregnancy Survey",
+    "variable": "epds_score",
+    "type": "INTEGER",
+    "domain": "Mental Health",
+    "annotation": {
+      "definition": "Total score on the Edinburgh Postnatal Depression Scale (EPDS), a validated 10-item self-report screening tool for perinatal depression.",
+      "collection_method": "Self-completed by mother at baseline pregnancy survey during antenatal booking appointment (8-20 weeks gestation).",
+      "units_or_coding": "Integer 0\u201330; scores \u226513 indicate probable major depression.",
+      "study_context": "Collected as a key mental health outcome baseline to assess maternal wellbeing and link to Better Start Bradford social-emotional interventions.",
+      "missing_data_notes": "May be missing if mother declined mental health screening or questionnaire incomplete.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273) \u2014 Methods: Data collection, Maternal mental health"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_baseline_pregnancy_survey",
+    "table_label": "BiBBS Mother Baseline Pregnancy Survey",
+    "variable": "smoking_status",
+    "type": "VARCHAR",
+    "domain": "Lifestyle",
+    "annotation": {
+      "definition": "[DEMO] Variable 'smoking_status' from BiBBS Mother Baseline Pregnancy Survey.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_baseline_pregnancy_survey",
+    "table_label": "BiBBS Mother Baseline Pregnancy Survey",
+    "variable": "highest_educational_qualification",
+    "type": "VARCHAR",
+    "domain": "Socioeconomic",
+    "annotation": {
+      "definition": "[DEMO] Variable 'highest_educational_qualification' from BiBBS Mother Baseline Pregnancy Survey.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_baseline_pregnancy_survey",
+    "table_label": "BiBBS Mother Baseline Pregnancy Survey",
+    "variable": "employment_status",
+    "type": "VARCHAR",
+    "domain": "Socioeconomic",
+    "annotation": {
+      "definition": "[DEMO] Variable 'employment_status' from BiBBS Mother Baseline Pregnancy Survey.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_baseline_pregnancy_survey",
+    "table_label": "BiBBS Mother Baseline Pregnancy Survey",
+    "variable": "pre_pregnancy_bmi",
+    "type": "FLOAT",
+    "domain": "Physical Health",
+    "annotation": {
+      "definition": "Body Mass Index calculated from self-reported pre-pregnancy weight and measured height, expressed as kg/m\u00b2.",
+      "collection_method": "Derived from self-reported pre-pregnancy weight (kg) and height measured at recruitment; collected at antenatal booking.",
+      "units_or_coding": "Continuous float, kg/m\u00b2; WHO categories: <18.5 underweight, 18.5\u201324.9 normal, 25\u201329.9 overweight, \u226530 obese.",
+      "study_context": "Core variable for the nutrition and obesity domain; used to assess baseline maternal adiposity and stratify intervention impact.",
+      "missing_data_notes": "Missing if height not measurable or weight self-report refused; pre-pregnancy weight is self-reported and subject to recall bias.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273) \u2014 Methods: Baseline data collection, Physical health measures"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_baseline_pregnancy_survey",
+    "table_label": "BiBBS Mother Baseline Pregnancy Survey",
+    "variable": "breastfeeding_intention",
+    "type": "VARCHAR",
+    "domain": "Nutrition",
+    "annotation": {
+      "definition": "[DEMO] Variable 'breastfeeding_intention' from BiBBS Mother Baseline Pregnancy Survey.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_baseline_pregnancy_survey",
+    "table_label": "BiBBS Mother Baseline Pregnancy Survey",
+    "variable": "alcohol_consumption_during_pregnancy",
+    "type": "VARCHAR",
+    "domain": "Lifestyle",
+    "annotation": {
+      "definition": "[DEMO] Variable 'alcohol_consumption_during_pregnancy' from BiBBS Mother Baseline Pregnancy Survey.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_geographic_bibbs_geog_person",
+    "table_label": "BiBBS Person Level Geographic Information",
+    "variable": "postcode_area",
+    "type": "VARCHAR",
+    "domain": "Geographic",
+    "annotation": {
+      "definition": "[DEMO] Variable 'postcode_area' from BiBBS Person Level Geographic Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_geographic_bibbs_geog_lsoa",
+    "table_label": "BiBBS LSOA Level Geographic Information",
+    "variable": "imd_decile",
+    "type": "INTEGER",
+    "domain": "Geographic",
+    "annotation": {
+      "definition": "[DEMO] Variable 'imd_decile' from BiBBS LSOA Level Geographic Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: INTEGER",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_geographic_bibbs_geog_lsoa",
+    "table_label": "BiBBS LSOA Level Geographic Information",
+    "variable": "bsb_intervention_area",
+    "type": "BOOLEAN",
+    "domain": "Geographic",
+    "annotation": {
+      "definition": "[DEMO] Variable 'bsb_intervention_area' from BiBBS LSOA Level Geographic Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: BOOLEAN",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_partner",
+    "table_label": "BiBBS Partner Information",
+    "variable": "partner_age",
+    "type": "INTEGER",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'partner_age' from BiBBS Partner Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: INTEGER",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_partner",
+    "table_label": "BiBBS Partner Information",
+    "variable": "partner_ethnicity",
+    "type": "VARCHAR",
+    "domain": "Cohort Info",
+    "annotation": {
+      "definition": "[DEMO] Variable 'partner_ethnicity' from BiBBS Partner Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: VARCHAR",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_child",
+    "table_label": "BiBBS Child Information",
+    "variable": "gestational_age_at_birth_weeks",
+    "type": "FLOAT",
+    "domain": "Child Health",
+    "annotation": {
+      "definition": "[DEMO] Variable 'gestational_age_at_birth_weeks' from BiBBS Child Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: FLOAT",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  },
+  {
+    "table": "bibbs_cohortinfo_child",
+    "table_label": "BiBBS Child Information",
+    "variable": "birthweight_grams",
+    "type": "FLOAT",
+    "domain": "Child Health",
+    "annotation": {
+      "definition": "[DEMO] Variable 'birthweight_grams' from BiBBS Child Information.",
+      "collection_method": "Collected at baseline recruitment appointment (8-20 weeks gestation).",
+      "units_or_coding": "Type: FLOAT",
+      "study_context": "Part of the BiBBS experimental birth cohort study evaluating early life interventions.",
+      "missing_data_notes": "May be missing due to participant non-response or data linkage failure.",
+      "source_citation": "Dickerson et al. 2016 (PMC4996273)"
+    },
+    "paper_source": "Dickerson et al. 2016, BMC Public Health, PMC4996273"
+  }
+]
