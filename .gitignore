@@ -58,3 +58,7 @@ DATA_DICTIONARY_IMPROVEMENTS.md
 #Dcoumentation files
 /Documentation/llm_poc/.chroma_db/
 llm_poc/.chroma_db/
+
+# Environment variables (never commit secrets)
+.env
+llm_poc/.env
