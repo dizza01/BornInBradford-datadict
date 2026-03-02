@@ -57,3 +57,4 @@ DATA_DICTIONARY_IMPROVEMENTS.md
 
 #Dcoumentation files
 /Documentation/llm_poc/.chroma_db/
+llm_poc/.chroma_db/

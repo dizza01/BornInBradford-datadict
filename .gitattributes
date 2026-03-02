@@ -1,3 +1,2 @@
-*.sqlite3 filter=lfs diff=lfs merge=lfs -text
 *.sqlite3 !text !filter !merge !diff
 *.bin !text !filter !merge !diff
