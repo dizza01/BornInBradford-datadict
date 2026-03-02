@@ -54,3 +54,6 @@ KEY_FINDINGS.md
 ML_KEY_FINDINGS.md
 AGE_OF_WONDER_SCALES_SUMMARY.md
 DATA_DICTIONARY_IMPROVEMENTS.md
+
+#Dcoumentation files
+/Documentation/llm_poc/.chroma_db/
