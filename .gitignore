@@ -56,9 +56,11 @@ AGE_OF_WONDER_SCALES_SUMMARY.md
 DATA_DICTIONARY_IMPROVEMENTS.md
 
 #Dcoumentation files
-/Documentation/llm_poc/.chroma_db/
-llm_poc/.chroma_db/
+/Documentation/
 
-# Environment variables (never commit secrets)
-.env
+# Environment variables (contains secrets)
 llm_poc/.env
+.env
+/.env
+/papers
+/.chroma_db
