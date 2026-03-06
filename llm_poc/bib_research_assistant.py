@@ -76,6 +76,7 @@ CHROMA_DIR   = SCRIPT_DIR / ".chroma_db"
 
 TABLES_CSV    = CSV_DIR / "all_tables.csv"
 VARIABLES_CSV = CSV_DIR / "all_variables_meta.csv"
+PDFS_DIR      = DATADICT_DIR / "papers"
 
 # ── LLM model default ─────────────────────────────────────────────────────────
 DEFAULT_MODEL = "Qwen/Qwen2.5-72B-Instruct"
@@ -92,44 +93,57 @@ def get_chroma_client():
 
 def parse_html_sections() -> dict:
     """
-    Extract variable → section_title mapping from embedded Reactable JSON blobs
-    in the data dictionary HTML files.
+    Extract per-variable metadata from the embedded Reactable JSON blobs in
+    every data dictionary HTML file.  The main table blob contains parallel
+    arrays for each variable:
 
-    Returns: { table_id: { variable_name: section_title } }
+      variable[]       - variable name  (e.g. 'rcad_ga')
+      label[]          - full human-readable description
+                         (e.g. 'RCADS-25 General anxiety. Raw score')
+      closer_title[]   - topic/section heading  (e.g. 'Mental health')
+
+    Capturing all three means every variable gets a rich description in its
+    embedding text, eliminating ambiguities like 'rcad_ga' vs 'dental_ga'.
+
+    Returns:
+        { stem: { variable_name: {"section": closer_title,
+                                   "description": label} } }
     """
-    print("📄 Parsing HTML files for section context...")
+    print("📄 Parsing HTML files for variable descriptions and section context...")
     sections: dict = {}
     html_files = list(HTML_DIR.glob("*.html"))
 
     for html_path in html_files:
-        # Derive table_id from filename: bib_ageofwonder_survey_mod02_dr23.html
-        # → BiB_AgeOfWonder.survey_mod02_dr23 (best-effort, used for join)
-        stem = html_path.stem  # e.g. bib_ageofwonder_survey_mod02_dr23
+        stem = html_path.stem
 
         try:
             raw = html_path.read_text(encoding="utf-8", errors="ignore")
         except Exception:
             continue
 
-        # Find all <script> blocks and look for the Reactable data blob with variable data
         script_blocks = re.findall(r"<script[^>]*>(.*?)</script>", raw, re.DOTALL)
         for block in script_blocks:
             if '"variable":' not in block or '"closer_title":' not in block:
                 continue
             try:
-                data = json.loads(block)
+                data  = json.loads(block)
                 inner = data.get("x", {}).get("tag", {}).get("attribs", {}).get("data", {})
-                variables = inner.get("variable", [])
-                titles    = inner.get("closer_title", [])
-                if variables and titles and len(variables) == len(titles):
-                    sections[stem] = {
-                        var: (title or "").strip()
-                        for var, title in zip(variables, titles)
+                variables = inner.get("variable", [])       # variable name
+                titles    = inner.get("closer_title", [])   # topic / section
+                labels    = inner.get("label", [])           # full description
+                if not variables or not titles or len(variables) != len(titles):
+                    continue
+                var_map: dict = {}
+                for j, var in enumerate(variables):
+                    var_map[var] = {
+                        "section":     (titles[j] or "").strip(),
+                        "description": (labels[j] if j < len(labels) else "") or "",
                     }
+                sections[stem] = var_map
             except (json.JSONDecodeError, AttributeError, TypeError):
                 continue
 
-    print(f"   ✅ Parsed section context from {len(sections)} HTML files")
+    print(f"   ✅ Parsed variable metadata from {len(sections)} HTML files")
     return sections
 
 
@@ -191,6 +205,139 @@ def build_papers_collection(client: chromadb.ClientAPI, papers_path: Path):
 
     print(f"   ✅ Indexed {total} papers")
     return collection
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  PDF Full-Text Extraction Helpers
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _extract_pdf_text(pdf_path: Path) -> str:
+    """
+    Extract all text from a PDF using PyMuPDF.
+    Falls back to an empty string on any error.
+    """
+    try:
+        import fitz  # pymupdf
+        doc = fitz.open(str(pdf_path))
+        pages = [page.get_text("text") for page in doc]
+        doc.close()
+        return "\n".join(pages)
+    except Exception as e:
+        print(f"   ⚠️  Could not read {pdf_path.name}: {e}")
+        return ""
+
+
+def _chunk_text(text: str, chunk_size: int = 1500, overlap: int = 200) -> list[str]:
+    """
+    Split text into overlapping chunks of ~chunk_size characters.
+    Returns a list of non-empty chunk strings.
+    """
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunks.append(text[start:end].strip())
+        start += chunk_size - overlap
+    return [c for c in chunks if len(c) > 50]  # drop tiny tail fragments
+
+
+def _title_from_filename(stem: str) -> str:
+    """
+    Convert a PDF filename stem to a human-readable title.
+    e.g. 'Born_in_Bradford_s_Age_of_Wonder_cohort__2024' → 'Born in Bradford s Age of Wonder cohort'
+    """
+    # Strip trailing year like _2024 or __2024
+    cleaned = re.sub(r'[_\s]*\d{4}$', '', stem)
+    # Replace underscores with spaces, collapse multiples
+    cleaned = re.sub(r'_+', ' ', cleaned).strip()
+    return cleaned
+
+
+def _year_from_filename(stem: str) -> str:
+    """Extract a 4-digit year from the end of a filename stem."""
+    m = re.search(r'(\d{4})$', stem)
+    return m.group(1) if m else ""
+
+
+def index_pdf_fulltext_into_papers(
+    client: chromadb.ClientAPI,
+    pdfs_dir: Path,
+    papers_metadata: list[dict],
+) -> int:
+    """
+    Extract full text from all PDFs in pdfs_dir, chunk it, and upsert the
+    chunks into the existing 'bib_papers' collection.
+
+    Tries to cross-reference each PDF with the metadata JSON by title
+    similarity so chunks inherit year / authors / doi where possible.
+
+    Returns the total number of chunks added.
+    """
+    pdf_files = sorted(pdfs_dir.glob("*.pdf"))
+    if not pdf_files:
+        print("   ℹ️  No PDF files found — skipping full-text indexing")
+        return 0
+
+    print(f"\n📑 Indexing full text from {len(pdf_files)} PDFs...")
+
+    # Build a quick lowercase title → metadata lookup for cross-referencing
+    meta_lookup: dict[str, dict] = {
+        p.get("title", "").lower()[:80]: p
+        for p in papers_metadata
+        if p.get("title")
+    }
+
+    try:
+        collection = client.get_collection("bib_papers")
+    except Exception:
+        collection = client.create_collection("bib_papers")
+
+    total_chunks = 0
+    for pdf_path in pdf_files:
+        stem  = pdf_path.stem
+        title = _title_from_filename(stem)
+        year  = _year_from_filename(stem)
+
+        # Cross-reference with metadata JSON (first 80 chars of title, case-insensitive)
+        meta = meta_lookup.get(title.lower()[:80], {})
+        authors = _safe_str(meta.get("authors", ""))
+        doi     = _safe_str(meta.get("doi", ""))
+        journal = _safe_str(meta.get("journal", ""))
+        if not year:
+            year = _safe_str(meta.get("year", ""))
+
+        full_text = _extract_pdf_text(pdf_path)
+        if not full_text.strip():
+            continue
+
+        chunks = _chunk_text(full_text)
+        docs, ids, metas = [], [], []
+        for i, chunk in enumerate(chunks):
+            chunk_id = f"pdf_{re.sub(r'[^a-z0-9]', '_', stem.lower()[:60])}_chunk_{i}"
+            header   = f"Title: {title}\nYear: {year}\nSource: full-text PDF\n\n"
+            docs.append(header + chunk)
+            ids.append(chunk_id)
+            metas.append({
+                "title":   title[:500],
+                "year":    year,
+                "authors": authors[:300],
+                "doi":     doi,
+                "journal": journal[:200],
+                "source":  "pdf_fulltext",
+                "pdf_file": pdf_path.name[:200],
+                "chunk":   str(i),
+            })
+
+        # Upsert in batches (handles re-runs without duplicate IDs)
+        for doc_batch, id_batch, meta_batch in zip(
+            _batch(docs, 500), _batch(ids, 500), _batch(metas, 500)
+        ):
+            collection.upsert(documents=doc_batch, ids=id_batch, metadatas=meta_batch)
+        total_chunks += len(docs)
+        print(f"   ✅ {pdf_path.name[:60]}  → {len(docs)} chunks")
+
+    print(f"\n   📑 Total PDF chunks added: {total_chunks}")
+    return total_chunks
 
 
 def build_tables_collection(client: chromadb.ClientAPI, tables_path: Path):
@@ -285,11 +432,13 @@ def build_variables_collection(
         topic     = _safe_str(row.get("topic", ""))
         n_complete = _safe_str(row.get("n_complete", ""))
 
-        # Look up section from HTML (best-effort)
-        # html stem would be like bib_{project_lower}_{table_name}
-        project_lower = project.lower().replace("_", "")
+        # Look up section and full description from HTML (best-effort)
+        # html stem pattern: bib_{project_lower}_{table_name}
+        project_lower   = project.lower().replace("_", "")
         html_stem_guess = f"bib_{project_lower}_{table_nm}"
-        section = table_name_to_sections.get(html_stem_guess, {}).get(variable, "")
+        html_info       = table_name_to_sections.get(html_stem_guess, {}).get(variable, {})
+        section         = html_info.get("section", "")     if isinstance(html_info, dict) else ""
+        html_desc       = html_info.get("description", "") if isinstance(html_info, dict) else ""
 
         # Build rich text for embedding
         parts = [
@@ -297,6 +446,10 @@ def build_variables_collection(
             f"Variable: {variable}",
             f"Label: {label}",
         ]
+        # Add the HTML description when it carries extra detail not in the CSV label
+        # e.g. 'RCADS-25 General anxiety. Raw score' vs 'RCADS-25 GA Raw score'
+        if html_desc and html_desc.lower() != label.lower():
+            parts.append(f"Description: {html_desc}")
         if topic:
             parts.append(f"Topic: {topic}")
         if section:
@@ -366,6 +519,13 @@ def build_index():
     build_tables_collection(client, TABLES_CSV)
     build_variables_collection(client, VARIABLES_CSV, html_sections)
 
+    # Load paper metadata for cross-referencing
+    with open(PAPERS_JSON, encoding="utf-8") as f:
+        papers_meta = json.load(f)
+
+    # Index full text from local PDFs (adds chunks into bib_papers collection)
+    index_pdf_fulltext_into_papers(client, PDFS_DIR, papers_meta)
+
     print(f"\n✅ Index built and saved to: {CHROMA_DIR}")
     print("   Run --chat or --query to start querying.\n")
 
@@ -397,7 +557,18 @@ When answering:
 5. Flag privacy rules: never SELECT individual identifiers
 6. Be honest about limitations — if data may not exist, say so
 
-Context retrieved from the BiB knowledge base is provided below. Use it to ground your answer."""
+Context retrieved from the BiB knowledge base is provided below. Use it to ground your answer.
+
+Important style rules:
+- Never open with filler phrases such as "Certainly!", "Of course!", "Sure!", "Absolutely!", "Great question!", "Happy to help!", or similar. Begin your response directly with the substantive answer.
+- Do NOT append generic boilerplate sections at the end of your response, such as "### Privacy Rules", "### Limitations", "### Note", "### Important", "### Disclaimer", or closing lines like "If you need further assistance…", "Feel free to ask!", "Let me know if…", or similar. End your answer when the content is complete.
+- When listing multiple variables, use a compact markdown table instead of nested bullet points. Preferred format:
+
+  | Variable | Table | Label | Type | N (non-missing) |
+  |---|---|---|---|---|
+  | rcad_ga | BiB_AgeOfWonder.survey_mod232_derived_dr24 | RCADS-25 General anxiety. Raw score | integer | 8421 |
+
+  Omit columns that are not available. For a single variable, inline prose is fine."""
 
 
 def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5) -> str:
@@ -450,8 +621,130 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
     return "\n".join(context_parts)
 
 
+_FILLER_RE = re.compile(
+    r"^(?:"
+    r"Certainly[!,.]?\s*|"
+    r"Of\s+course[!,.]?\s*|"
+    r"Sure[!,.]?\s*|"
+    r"Absolutely[!,.]?\s*|"
+    r"Great\s+question[!,.]?\s*|"
+    r"Happy\s+to\s+help[!,.]?\s*|"
+    r"I['\u2019]d\s+be\s+happy\s+to[^.!]*[.!]?\s*|"
+    r"I['\u2019]m\s+happy\s+to\s+help[^.!]*[.!]?\s*|"
+    r"I['\u2019]ll\s+help\s+you\s+with\s+that[^.!]*[.!]?\s*|"
+    r"Glad\s+(?:you\s+asked|to\s+help)[!,.]?\s*|"
+    r"Thank\s+you\s+for\s+(?:your\s+)?question[^.!]*[.!]?\s*"
+    r")+",
+    re.IGNORECASE,
+)
+
+# Boilerplate footer sections the model sometimes appends unprompted.
+# Matched from the section heading to end-of-string.
+_FOOTER_RE = re.compile(
+    r"\n+"
+    r"(?:"
+    # markdown headings for common boilerplate sections
+    r"#{1,4}\s*(?:Privacy\s+Rules?|Limitations?|Important\s+(?:Notes?|Considerations?)|Notes?|Disclaimer|Caveats?)[^\n]*\n"
+    r"|"
+    # closing filler sentences
+    r"(?:If\s+you\s+(?:need|have|want)|Feel\s+free\s+to|Let\s+me\s+know\s+if|Don['\u2019]t\s+hesitate|Please\s+(?:let\s+me\s+know|feel\s+free)|Hope\s+this\s+helps)[^\n]*"
+    r").*$",
+    re.IGNORECASE | re.DOTALL,
+)
+
+def _strip_filler(text: str) -> str:
+    """Remove hollow opener phrases and boilerplate footer sections."""
+    text = _FILLER_RE.sub("", text).lstrip()
+    text = _FOOTER_RE.sub("", text).rstrip()
+    return text
+
+
+def _strip_opener(text: str) -> str:
+    """Strip only opener filler — used on the streaming prefix buffer."""
+    return _FILLER_RE.sub("", text).lstrip()
+
+
+def query_stream(
+    question: str,
+    client: chromadb.ClientAPI,
+    llm_client: Any,
+    model: str = DEFAULT_MODEL,
+    history: list | None = None,
+):
+    """
+    Streaming version of query(). Yields raw token strings as they are generated
+    by the HuggingFace model, enabling the server to forward them as SSE events
+    so the UI can display the response token-by-token instead of waiting for the
+    full response.
+
+    The first batch of output is buffered (~80 chars) so opener filler phrases
+    can be stripped before anything reaches the client.
+
+    Falls back to a single yield of the full non-streamed answer when the client
+    object doesn't expose the raw HF interface.
+    """
+    context = retrieve_context(question, client)
+    prior = history or []
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        *prior,
+        {
+            "role": "user",
+            "content": (
+                f"Retrieved knowledge base context:\n\n{context}\n\n"
+                f"---\n\nResearcher question: {question}"
+            ),
+        },
+    ]
+
+    hf = getattr(llm_client, "_hf_raw", None)
+    if hf is None:
+        # Fallback: yield the complete answer in one chunk
+        yield query(question, client, llm_client, model=model, history=history)
+        return
+
+    try:
+        stream = hf.chat_completion(
+            model=model,
+            messages=messages,
+            temperature=0.2,
+            max_tokens=900,
+            stream=True,
+        )
+        # Buffer opening tokens to strip any filler opener before first display
+        prefix_buf = ""
+        prefix_sent = False
+        OPENER_THRESHOLD = 80
+
+        for chunk in stream:
+            if not chunk.choices:
+                continue
+            token = (chunk.choices[0].delta.content or "")
+            if not token:
+                continue
+            if not prefix_sent:
+                prefix_buf += token
+                if len(prefix_buf) >= OPENER_THRESHOLD:
+                    cleaned = _strip_opener(prefix_buf)
+                    prefix_sent = True
+                    if cleaned:
+                        yield cleaned
+            else:
+                yield token
+
+        # Flush buffer if stream ended before the threshold was reached
+        if not prefix_sent and prefix_buf:
+            cleaned = _strip_opener(prefix_buf)
+            if cleaned:
+                yield cleaned
+
+    except Exception as e:
+        yield f"\n[Stream error: {e}]"
+
+
 def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
-          model: str = DEFAULT_MODEL, show_context: bool = False) -> str:
+          model: str = DEFAULT_MODEL, show_context: bool = False,
+          history: list | None = None) -> str:
     """Run a RAG query: retrieve context → call HuggingFace LLM → return answer."""
 
     context = retrieve_context(question, client)
@@ -461,8 +754,10 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
         print(context[:3000])
         print("──────────────────────────────────────────────────────────────\n")
 
+    prior = history or []
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
+        *prior,
         {
             "role": "user",
             "content": (
@@ -476,9 +771,12 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
         model=model,
         messages=messages,
         temperature=0.2,
-        max_tokens=1500,
+        max_tokens=900,
     )
-    return response.choices[0].message.content
+    answer = response.choices[0].message.content
+    # Strip common filler openers that some models insist on producing
+    answer = _strip_filler(answer)
+    return answer
 
 
 def _check_index(client: chromadb.ClientAPI) -> bool:
@@ -491,7 +789,15 @@ def _check_index(client: chromadb.ClientAPI) -> bool:
             print(f"⚠️  Missing/empty collections: {missing}")
             print("    Run: python bib_research_assistant.py --build")
             return False
-        print(f"✅ Index ready — {cols['bib_papers']} papers | "
+        # Count how many entries are PDF full-text chunks vs abstract entries
+        try:
+            paper_col = client.get_collection("bib_papers")
+            pdf_chunks = paper_col.get(where={"source": "pdf_fulltext"}, include=[])
+            n_pdf = len(pdf_chunks.get("ids", []))
+        except Exception:
+            n_pdf = 0
+        n_abstracts = cols['bib_papers'] - n_pdf
+        print(f"✅ Index ready — {n_abstracts} abstracts + {n_pdf} PDF chunks | "
               f"{cols['bib_variables']} variables | {cols['bib_tables']} tables")
         return True
     except Exception as e:
@@ -526,7 +832,9 @@ def _get_hf_client(model: str) -> Optional[Any]:
     class _Chat:
         def __init__(self, hf): self.completions = _ChatCompletions(hf)
     class _Wrapper:
-        def __init__(self, hf): self.chat = _Chat(hf)
+        def __init__(self, hf):
+            self.chat = _Chat(hf)
+            self._hf_raw = hf  # exposed for streaming via query_stream()
     return _Wrapper(client)
 
 

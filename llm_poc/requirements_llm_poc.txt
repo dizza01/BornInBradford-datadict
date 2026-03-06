@@ -7,6 +7,7 @@ python-dotenv>=1.0.0
 # RAG Research Assistant (bib_research_assistant.py)
 chromadb>=0.5.0          # Local vector store + default embeddings
 huggingface_hub>=0.23.0  # HuggingFace Inference API backend (alternative to OpenAI)
+pymupdf>=1.24.0          # PDF full-text extraction (fitz)
 
 # Optional: for advanced features
 # vanna>=0.3.0  # Alternative framework

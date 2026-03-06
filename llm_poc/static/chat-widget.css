@@ -237,3 +237,31 @@
 @media (max-width: 480px) {
   #bib-chat-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
 }
+
+/* Markdown tables inside bot messages */
+.bib-md-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .79rem;
+  margin: 6px 0;
+  overflow-x: auto;
+  display: block;
+}
+.bib-md-table th, .bib-md-table td {
+  border: 1px solid #c8d4ef;
+  padding: 4px 9px;
+  text-align: left;
+  white-space: nowrap;
+}
+.bib-md-table th {
+  background: #dde8ff;
+  font-weight: 600;
+  color: #1a4e8c;
+}
+.bib-md-table tr:nth-child(even) td { background: #f2f6ff; }
+
+/* Markdown headings inside bot messages */
+.bib-md-h { margin: 8px 0 3px; line-height: 1.3; color: #14397a; }
+h3.bib-md-h { font-size: .93rem; }
+h4.bib-md-h { font-size: .87rem; }
+h5.bib-md-h { font-size: .83rem; }

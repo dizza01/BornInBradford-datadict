@@ -43,15 +43,17 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from bib_research_assistant import (
     retrieve_context,
     query as rag_query,
+    query_stream as rag_query_stream,
     get_chroma_client,
     _get_hf_client,
     DEFAULT_MODEL,
     _check_index,
+    _strip_filler,
 )
 
 # ── Flask setup ────────────────────────────────────────────────────────────────
 try:
-    from flask import Flask, request, jsonify, send_from_directory, Response
+    from flask import Flask, request, jsonify, send_from_directory, Response, stream_with_context
 except ImportError:
     print("❌ Flask not installed. Run: pip install flask")
     sys.exit(1)
@@ -76,8 +78,50 @@ def _ensure_clients():
 
 # ── Chat widget snippet injected before </body> ────────────────────────────────
 WIDGET_SNIPPET = """
-<!-- BiB Research Assistant Widget -->
+<!-- BiB Research Assistant Widget + Nav link -->
 <link rel="stylesheet" href="/widget-static/chat-widget.css">
+
+<!-- Top-right nav pill: links to the full-screen assistant page -->
+<style>
+  #bib-assistant-nav {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    z-index: 9997;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #1a4e8c;
+    color: #fff;
+    text-decoration: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 7px 14px 7px 11px;
+    border-radius: 24px;
+    box-shadow: 0 3px 14px rgba(26,78,140,.38);
+    transition: background .18s, box-shadow .18s, transform .12s;
+    letter-spacing: .01em;
+    white-space: nowrap;
+  }
+  #bib-assistant-nav:hover {
+    background: #1560b0;
+    box-shadow: 0 5px 20px rgba(26,78,140,.52);
+    transform: translateY(-1px);
+  }
+  #bib-assistant-nav:active { transform: translateY(0); }
+  #bib-assistant-nav .bib-nav-icon { font-size: .95rem; }
+  @media (max-width: 600px) {
+    #bib-assistant-nav span.bib-nav-label { display: none; }
+    #bib-assistant-nav { padding: 8px 12px; }
+  }
+</style>
+<a id="bib-assistant-nav" href="/assistant" title="Open BiB Research Assistant">
+  <span class="bib-nav-icon">🔬</span>
+  <span class="bib-nav-label">Research Assistant</span>
+  <span>↗</span>
+</a>
+
 <script src="/widget-static/chat-widget.js"></script>
 """
 
@@ -106,6 +150,8 @@ def chat_endpoint():
     data = request.get_json(silent=True) or {}
     question = (data.get("question") or "").strip()
     show_ctx  = bool(data.get("show_context", False))
+    # history: [{"role": "user"|"assistant", "content": "..."}] — prior turns
+    history   = data.get("history") or []
 
     if not question:
         return jsonify({"error": "question is required"}), 400
@@ -120,7 +166,8 @@ def chat_endpoint():
         context = retrieve_context(question, chroma_client)
         answer  = rag_query(
             question, chroma_client, llm_client,
-            model=current_model, show_context=False
+            model=current_model, show_context=False,
+            history=history,
         )
         result: dict = {"answer": answer}
         if show_ctx:
@@ -128,6 +175,61 @@ def chat_endpoint():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  Streaming API — /api/chat/stream  (Server-Sent Events)
+# ══════════════════════════════════════════════════════════════════════════════
+
+@app.route("/api/chat/stream", methods=["POST"])
+def chat_stream_endpoint():
+    """
+    POST /api/chat/stream
+    Body: {"question": "...", "history": [...]}
+    Returns: text/event-stream with events:
+      data: {"token": "..."}    — each generated token
+      data: {"replace": "..."}  — footer was stripped; replace full message
+      data: {"error": "..."}    — error occurred
+      data: {"done": true}      — generation complete
+    """
+    _ensure_clients()
+
+    data     = request.get_json(silent=True) or {}
+    question = (data.get("question") or "").strip()
+    history  = data.get("history") or []
+
+    if not question:
+        return jsonify({"error": "question is required"}), 400
+    if not llm_client:
+        return jsonify({"error": "LLM client not available — check HF_TOKEN in .env"}), 503
+    if not chroma_client:
+        return jsonify({"error": "Vector database not initialised — run --build first"}), 503
+
+    def generate():
+        full_text = ""
+        try:
+            for token in rag_query_stream(
+                question, chroma_client, llm_client,
+                model=current_model, history=history,
+            ):
+                full_text += token
+                yield f"data: {json.dumps({'token': token})}\n\n"
+
+            # Strip any footer boilerplate accumulated in the full response
+            cleaned = _strip_filler(full_text)
+            if cleaned != full_text:
+                yield f"data: {json.dumps({'replace': cleaned})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+        yield 'data: {"done": true}\n\n'
+
+    return Response(
+        stream_with_context(generate()),
+        content_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -325,6 +427,30 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     margin-top: 6px;
     text-align: right;
   }
+  .md-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: .88rem;
+    margin: 8px 0;
+    overflow-x: auto;
+    display: block;
+  }
+  .md-table th, .md-table td {
+    border: 1px solid #d0d8e8;
+    padding: 6px 11px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .md-table th {
+    background: #e8f0fb;
+    font-weight: 600;
+    color: #1a4e8c;
+  }
+  .md-table tr:nth-child(even) td { background: #f7f9fe; }
+  .md-h { margin: 10px 0 4px; line-height: 1.3; color: #14397a; }
+  h3.md-h { font-size: 1rem; }
+  h4.md-h { font-size: .93rem; }
+  h5.md-h { font-size: .88rem; }
 </style>
 </head>
 <body>
@@ -360,24 +486,20 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
 </div>
 
 <script>
-const history = document.getElementById('chat-history');
-const input   = document.getElementById('q-input');
-const sendBtn = document.getElementById('send-btn');
-let thinking  = null;
+const chatLog  = document.getElementById('chat-history');
+const input    = document.getElementById('q-input');
+const sendBtn  = document.getElementById('send-btn');
+let thinking   = null;
+const convHistory = [];  // tracks turns for multi-turn context
 
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
-
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
-
-function sendSuggestion(text) {
-  input.value = text;
-  sendMessage();
-}
+function sendSuggestion(text) { input.value = text; sendMessage(); }
 
 function appendMsg(cls, html) {
   const welcome = document.getElementById('welcome-msg');
@@ -385,30 +507,68 @@ function appendMsg(cls, html) {
   const div = document.createElement('div');
   div.className = 'msg ' + cls;
   div.innerHTML = html;
-  history.appendChild(div);
-  history.scrollTop = history.scrollHeight;
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
   return div;
 }
-
 function showThinking() {
   thinking = appendMsg('thinking',
     'Searching knowledge base… <span class="dot-bounce"><span></span><span></span><span></span></span>');
 }
-
-function removeThinking() {
-  if (thinking) { thinking.remove(); thinking = null; }
-}
+function removeThinking() { if (thinking) { thinking.remove(); thinking = null; } }
 
 function escHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
+function renderMdTable(lines) {
+  const rows = lines.filter(l => !l.trim().match(/^\|[-: |]+\|$/));
+  if (!rows.length) return '';
+  let html = '<table class="md-table">';
+  const headers = rows[0].trim().replace(/^\||\|$/g,'').split('|').map(c => c.trim());
+  html += '<thead><tr>' + headers.map(h => `<th>${escHtml(h)}</th>`).join('') + '</tr></thead>';
+  if (rows.length > 1) {
+    html += '<tbody>';
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].trim().replace(/^\||\|$/g,'').split('|').map(c => c.trim());
+      html += '<tr>' + cells.map(c => `<td>${escHtml(c)}</td>`).join('') + '</tr>';
+    }
+    html += '</tbody>';
+  }
+  return html + '</table>';
+}
+function formatInline(l) {
+  return escHtml(l)
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+function formatLine(l) { return formatInline(l); }
 function formatAnswer(text) {
-  // Simple markdown-ish: **bold**, `code`, preserve line breaks
-  return escHtml(text)
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n/g, '<br>');
+  const lines = text.split('\n');
+  const segments = [];
+  let textBuf = [];
+  let i = 0;
+  const flush = () => { if (textBuf.length) { segments.push({t:'text',l:textBuf.slice()}); textBuf=[]; } };
+  while (i < lines.length) {
+    const ln = lines[i];
+    const hm = ln.match(/^(#{1,3}) (.+)/);
+    if (hm) {
+      flush();
+      const tag = ['h3','h4','h5'][hm[1].length - 1];
+      segments.push({t:'heading', tag, text: formatInline(hm[2])});
+      i++;
+    } else if (ln.trim().startsWith('|') && i+1 < lines.length && lines[i+1].trim().match(/^\|[-: |]+\|$/)) {
+      flush();
+      const tbl = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) { tbl.push(lines[i++]); }
+      segments.push({t:'table',l:tbl});
+    } else { textBuf.push(ln); i++; }
+  }
+  flush();
+  return segments.map(s => {
+    if (s.t === 'table') return renderMdTable(s.l);
+    if (s.t === 'heading') return `<${s.tag} class="md-h">${s.text}</${s.tag}>`;
+    return s.l.map(formatLine).join('<br>');
+  }).join('');
 }
 
 async function sendMessage() {
@@ -416,24 +576,64 @@ async function sendMessage() {
   if (!q) return;
 
   appendMsg('user', escHtml(q));
+  convHistory.push({ role: 'user', content: q });
   input.value = '';
   autoResize(input);
   sendBtn.disabled = true;
   showThinking();
 
+  let msgEl    = null;
+  let fullText = '';
+
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch('/api/chat/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q }),
+      body: JSON.stringify({ question: q, history: convHistory.slice(0, -1) }),
     });
-    const data = await res.json();
-    removeThinking();
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Server error ' + res.status }));
+      removeThinking();
+      appendMsg('assistant error-msg', '⚠ ' + escHtml(err.error || 'Unknown error'));
+      return;
+    }
 
-    if (data.error) {
-      appendMsg('assistant error-msg', '⚠ ' + escHtml(data.error));
-    } else {
-      appendMsg('assistant', formatAnswer(data.answer));
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();  // keep the incomplete trailing line
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let evt;
+        try { evt = JSON.parse(line.slice(6)); } catch { continue; }
+
+        if (evt.token) {
+          if (!msgEl) { removeThinking(); msgEl = appendMsg('assistant', ''); }
+          fullText += evt.token;
+          msgEl.textContent = fullText;  // plain text while streaming
+          chatLog.scrollTop = chatLog.scrollHeight;
+        }
+        if (evt.replace) {
+          fullText = evt.replace;
+          if (msgEl) msgEl.innerHTML = formatAnswer(fullText);
+          chatLog.scrollTop = chatLog.scrollHeight;
+        }
+        if (evt.error) {
+          removeThinking();
+          appendMsg('assistant error-msg', '⚠ ' + escHtml(evt.error));
+        }
+        if (evt.done) {
+          if (msgEl) msgEl.innerHTML = formatAnswer(fullText);
+          convHistory.push({ role: 'assistant', content: fullText });
+          chatLog.scrollTop = chatLog.scrollHeight;
+        }
+      }
     }
   } catch (err) {
     removeThinking();

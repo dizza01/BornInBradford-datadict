@@ -252,3 +252,9 @@ The higher-impact improvement available right now
 Currently the system only indexes paper abstracts (500 papers × ~200 words). The 25 local PDFs contain full methods, results, and discussion sections — extracting those would give the LLM far richer factual context with no model changes needed.
 
 This would be the highest ROI improvement: extract full text from the local PDFs and add them to the bib_papers ChromaDB collection.
+
+## Restart port
+
+cd /Users/dawud.izza/Desktop/BiB/BornInBradford-datadict/llm_poc
+lsof -ti :5050 | xargs kill -9 2>/dev/null; sleep 1
+/Users/dawud.izza/Desktop/BiB/.venv/bin/python server.py
