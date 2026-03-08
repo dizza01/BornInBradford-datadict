@@ -63,4 +63,5 @@ llm_poc/.env
 .env
 /.env
 /papers
-/.chroma_db
+llm_poc/.chroma_db/
+/*.chroma_db
