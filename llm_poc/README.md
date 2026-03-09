@@ -253,7 +253,149 @@ Currently the system only indexes paper abstracts (500 papers × ~200 words). Th
 
 This would be the highest ROI improvement: extract full text from the local PDFs and add them to the bib_papers ChromaDB collection.
 
-## Restart port
+## Next Steps
+
+The `annotated_dict.json` approach is not reliable enough to use as a trusted knowledge source. The hallucination check showed that 21 candidate variables were generated from one paper context, but only 2 matched real variables in the BiB metadata. The next phase should therefore treat the actual BiB metadata as the only source of truth for variables.
+
+### 1. Make the metadata the canonical layer
+
+Use the real data dictionary assets as the base:
+
+- `docs/*.html` → real variable names, labels, and section context
+- `docs/csv/all_variables_meta.csv` → types, table IDs, topics, completeness
+- `docs/csv/all_tables.csv` → table-level metadata
+
+This gives a grounded, finite inventory of real variables.
+
+### 2. Group variables by theme from metadata, not papers
+
+Themes should be derived from real metadata rather than generated from paper text. Candidate grouping signals:
+
+- `topic` / `domain` fields in CSV metadata
+- HTML section headings such as `closer_title`
+- label and description keywords
+- table prefixes and project names
+
+In other words:
+
+- not `paper -> hallucinated variables`
+- but `real variables -> grouped themes`
+
+### 3. Change the role of the LLM
+
+The LLM should not invent candidate variable names. Its job should be limited to:
+
+- ranking retrieved real variables
+- explaining real variables in plain language
+- mapping paper concepts to existing variables
+- suggesting related covariates from retrieved metadata
+
+It should not be asked to generate variables from scratch.
+
+### 4. Build a real variable registry
+
+Create a single cleaned registry generated from `docs/` and CSV metadata only. For each variable store:
+
+- `table`
+- `variable`
+- `label`
+- `description`
+- `section`
+- `topic` / `domain`
+- `type`
+- `non-missing`
+- `source_html`
+
+This registry becomes the only allowed variable universe for the assistant.
+
+### 5. Build theme collections on top of the registry
+
+Add a derived thematic layer for areas such as:
+
+- mental health
+- pregnancy / recruitment
+- anthropometry
+- education
+- geography
+- lifestyle
+- clinical measures
+
+This can be rule-based first using metadata fields and keyword matching. No LLM is needed for the first version.
+
+### 6. Use papers only to annotate or link
+
+Papers should be used to link evidence to real variables, not to create new ones. A safer pipeline is:
+
+1. extract concepts, outcomes, and exposures from paper title / abstract / full text
+2. retrieve matching real variables from the registry
+3. store links such as:
+  - `paper -> candidate real variables`
+  - `variable -> supporting paper snippets`
+
+### 7. Add constrained annotation generation
+
+If richer annotations are still useful, they should only be generated for variables that already exist in the real registry. The model input should include:
+
+- real variable name
+- real label / metadata context
+- table context
+- retrieved paper snippets
+
+And the output should be limited to explanatory fields such as:
+
+- plain-language definition
+- study context
+- possible derivation notes
+
+No new variable names should ever be allowed in this stage.
+
+### 8. Adjust the RAG architecture
+
+The RAG system should be treated as two connected layers:
+
+#### Collection 1: Variable truth
+
+Grounded metadata only:
+
+- HTML-derived variable records
+- CSV-derived variable and table metadata
+- one embedding per actual variable
+
+#### Collection 2: Paper evidence
+
+Evidence only:
+
+- paper abstracts
+- PDF full-text chunks
+- snippets linked back to candidate real variables
+
+#### Query flow
+
+For a user question:
+
+1. retrieve real variables first
+2. retrieve relevant paper evidence second
+3. generate an answer using only retrieved real variables
+4. if no real variable is found, say so explicitly
+
+### 9. Add a hard validation rule
+
+The assistant should enforce a simple rule:
+
+> If a variable is not present in parsed BiB metadata, it cannot appear in the assistant output as a BiB variable.
+
+This one rule would eliminate the specific failure mode seen in `annotated_dict.json`.
+
+### Recommended immediate implementation
+
+The best next implementation step is:
+
+1. parse all real variables from `docs/`
+2. assign themes from metadata
+3. rebuild the variable index using that real registry only
+4. use papers only to link and explain those variables, not create them
+
+## Restart 
 
 cd /Users/dawud.izza/Desktop/BiB/BornInBradford-datadict/llm_poc
 lsof -ti :5050 | xargs kill -9 2>/dev/null; sleep 1
