@@ -1,0 +1,11 @@
+Only 2 out of 21 are genuine. The rest are fabricated.
+
+Status	Variables
+✅ Real (found in HTML)	recruitment_date, ethnicity
+❌ Not in metadata	All other 19
+The 19 missing ones were invented — they are plausible-sounding variable names for a birth cohort study, but they don't exist in your actual BiB data dictionary HTML files. This is classic LLM hallucination: the model was given some context about BiBBS (Dickerson et al. 2016) and generated realistic-seeming variable names that don't correspond to real data.
+
+To check what the actual variables in the BiBBS tables look like, compare against the real HTML files that do exist:
+
+docs/bibbs_cohortinfo_pregnancy.html — has recruitment_date, BiBBSPersonID, medway_booking, m_recruitment_age etc.
+docs/bibbs_geographic_bibbs_geog_person.html — has postcode_area equivalent

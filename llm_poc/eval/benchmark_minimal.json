@@ -1,0 +1,49 @@
+[
+  {
+    "id": "eval_001",
+    "question": "What variables measure maternal smoking during pregnancy?",
+    "task_type": "variable_discovery",
+    "gold_variables": [
+      "<canonical_variable_id_1>",
+      "<canonical_variable_id_2>"
+    ],
+    "gold_tables": [
+      "<table_id_1>"
+    ],
+    "gold_study_context": [
+      "<study_context_label>"
+    ],
+    "gold_papers": [],
+    "should_abstain": false,
+    "notes": "Replace placeholder IDs with values copied from the canonical BiB registry."
+  },
+  {
+    "id": "eval_002",
+    "question": "Which study wave contains EPDS variables?",
+    "task_type": "study_identification",
+    "gold_variables": [
+      "<canonical_epds_variable_1>",
+      "<canonical_epds_variable_2>"
+    ],
+    "gold_tables": [
+      "<table_id_for_epds>"
+    ],
+    "gold_study_context": [
+      "<study_context_label>"
+    ],
+    "gold_papers": [],
+    "should_abstain": false,
+    "notes": "Good for measuring study-context accuracy as well as grounded variable identification."
+  },
+  {
+    "id": "eval_003",
+    "question": "Is gestation_at_recruitment_weeks a BiB variable?",
+    "task_type": "abstention",
+    "gold_variables": [],
+    "gold_tables": [],
+    "gold_study_context": [],
+    "gold_papers": [],
+    "should_abstain": true,
+    "notes": "Use negative cases to measure abstention and hallucination behaviour."
+  }
+]
