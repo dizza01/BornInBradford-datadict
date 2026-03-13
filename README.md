@@ -301,5 +301,4 @@ For more information about Born in Bradford or data access, please visit the off
 
 ---
 
-**Last Updated**: March 2026  
-**Repository maintained by**: BiB Data Team
+
