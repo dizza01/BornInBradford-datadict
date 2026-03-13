@@ -1,0 +1,432 @@
+{
+  "config": {
+    "top_k": [
+      1,
+      3,
+      5,
+      10
+    ],
+    "modes": [
+      "dense",
+      "hybrid",
+      "hybrid_rerank"
+    ],
+    "dense_pool": 60,
+    "sparse_pool": 60,
+    "rerank_pool": 50,
+    "rrf_k": 60
+  },
+  "modes": {
+    "dense": {
+      "summary": {
+        "n_queries": 5,
+        "top_k": [
+          1,
+          3,
+          5,
+          10
+        ],
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 0.2,
+          "5": 0.2,
+          "10": 0.6
+        },
+        "mrr": 0.1088888888888889,
+        "avg_hit_rank": 7.333333333333333,
+        "median_hit_rank": 9.0
+      },
+      "per_query": [
+        {
+          "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+          "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+          "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+          "question_type": "result",
+          "hit_rank": 3,
+          "retrieved_ids": [
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_22",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_30",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_41",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_2",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_25",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_27",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_28",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_34",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_20"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+          "question": "What are the primary outcome goals for personal, social, and emotional development in the Incredible Years Toddler parenting programme?",
+          "source_chunk_id": "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+          "question_type": "result",
+          "hit_rank": 10,
+          "retrieved_ids": [
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_18",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_4",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_37",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_39",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_5",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_20",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_7",
+            "pdf_comparison_of_experiences_in_two_birth_cohorts_comprising_yo_chunk_18",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_12",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "hit_at_5": false,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+          "question": "What is the recommended serving size for sugary drinks for 1- to 3-year-olds in the United Kingdom?",
+          "source_chunk_id": "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+          "question_type": "definition",
+          "hit_rank": null,
+          "retrieved_ids": [
+            "pdf_ethnic_differences_in_dietary_intake_at_age_12_and_18_months_chunk_31",
+            "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_49",
+            "pdf_dietary_intake_in_the_early_years_and_its_relationship_to_bm_chunk_7",
+            "pdf_dietary_intake_in_the_early_years_and_its_relationship_to_bm_chunk_48",
+            "pdf_ethnic_differences_in_infant_feeding_practices_and_their_rel_chunk_6",
+            "pdf_common_determinants_of_dental_caries_and_obesity_in_children_chunk_14",
+            "pdf_ethnic_differences_in_dietary_intake_at_age_12_and_18_months_chunk_24",
+            "pdf_dietary_intake_in_the_early_years_and_its_relationship_to_bm_chunk_42",
+            "pdf_ethnic_differences_in_infant_feeding_practices_and_their_rel_chunk_2",
+            "pdf_ethnic_differences_in_dietary_intake_at_age_12_and_18_months_chunk_4"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "hit_at_5": false,
+          "hit_at_10": false
+        },
+        {
+          "query_id": "pdf_pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+          "question": "What is the reaction of younger women in the Pakistani heritage community in Bradford towards the idea of marrying a cousin?",
+          "source_chunk_id": "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+          "question_type": "result",
+          "hit_rank": null,
+          "retrieved_ids": [
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_53",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_64",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_21",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_19",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_16",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_127",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_47",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_65",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_31",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_55"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "hit_at_5": false,
+          "hit_at_10": false
+        },
+        {
+          "query_id": "pdf_pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+          "question": "What factors should be considered when determining the final knot point locations in linear spline multilevel models?",
+          "source_chunk_id": "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+          "question_type": "method",
+          "hit_rank": 9,
+          "retrieved_ids": [
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_8",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_41",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_13",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_14",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_32",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_19",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_22",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_31",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_28"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "hit_at_5": false,
+          "hit_at_10": true
+        }
+      ]
+    },
+    "hybrid": {
+      "summary": {
+        "n_queries": 5,
+        "top_k": [
+          1,
+          3,
+          5,
+          10
+        ],
+        "recall_at_k": {
+          "1": 0.0,
+          "3": 0.4,
+          "5": 0.8,
+          "10": 0.8
+        },
+        "mrr": 0.22333333333333333,
+        "avg_hit_rank": 3.75,
+        "median_hit_rank": 3.5
+      },
+      "per_query": [
+        {
+          "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+          "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+          "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+          "question_type": "result",
+          "hit_rank": 3,
+          "retrieved_ids": [
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_30",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_22",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_34",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_41",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_25",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_17",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_19",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_27"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+          "question": "What are the primary outcome goals for personal, social, and emotional development in the Incredible Years Toddler parenting programme?",
+          "source_chunk_id": "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+          "question_type": "result",
+          "hit_rank": 5,
+          "retrieved_ids": [
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_18",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_4",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_20",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_19",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_12",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_5",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_25",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_0",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_39"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+          "question": "What is the recommended serving size for sugary drinks for 1- to 3-year-olds in the United Kingdom?",
+          "source_chunk_id": "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+          "question_type": "definition",
+          "hit_rank": 3,
+          "retrieved_ids": [
+            "pdf_common_determinants_of_dental_caries_and_obesity_in_children_chunk_14",
+            "pdf_ethnic_differences_in_infant_feeding_practices_and_their_rel_chunk_2",
+            "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+            "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_40",
+            "pdf_association_of_food_security_status_with_overweight_and_diet_chunk_40",
+            "pdf_an_exploration_and_comparison_of_food_and_drink_availability_chunk_15",
+            "pdf_ethnic_differences_in_dietary_intake_at_age_12_and_18_months_chunk_31",
+            "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_49",
+            "pdf_determinants_of_gestational_weight_gain_during_pregnancy_in__chunk_1",
+            "pdf_dietary_intake_in_the_early_years_and_its_relationship_to_bm_chunk_7"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+          "question": "What is the reaction of younger women in the Pakistani heritage community in Bradford towards the idea of marrying a cousin?",
+          "source_chunk_id": "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+          "question_type": "result",
+          "hit_rank": null,
+          "retrieved_ids": [
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_64",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_65",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_21",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_67",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_56",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_53",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_44",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_19",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_47",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_55"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "hit_at_5": false,
+          "hit_at_10": false
+        },
+        {
+          "query_id": "pdf_pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+          "question": "What factors should be considered when determining the final knot point locations in linear spline multilevel models?",
+          "source_chunk_id": "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+          "question_type": "method",
+          "hit_rank": 4,
+          "retrieved_ids": [
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_41",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_14",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_13",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_31",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_8",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_32",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_20",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_40",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_22"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": false,
+          "hit_at_5": true,
+          "hit_at_10": true
+        }
+      ]
+    },
+    "hybrid_rerank": {
+      "summary": {
+        "n_queries": 5,
+        "top_k": [
+          1,
+          3,
+          5,
+          10
+        ],
+        "recall_at_k": {
+          "1": 0.4,
+          "3": 1.0,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "mrr": 0.6666666666666666,
+        "avg_hit_rank": 1.8,
+        "median_hit_rank": 2.0
+      },
+      "per_query": [
+        {
+          "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+          "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+          "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+          "question_type": "result",
+          "hit_rank": 3,
+          "retrieved_ids": [
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_34",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_30",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_40",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_22",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_19",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_1",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_41",
+            "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_24"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+          "question": "What are the primary outcome goals for personal, social, and emotional development in the Incredible Years Toddler parenting programme?",
+          "source_chunk_id": "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+          "question_type": "result",
+          "hit_rank": 2,
+          "retrieved_ids": [
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_19",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_20",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_18",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_25",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_12",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_17",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_4",
+            "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_16",
+            "pdf_is_it_feasible_to_nest_a_trial_within_a_cohort_study_twics_t_chunk_14"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+          "question": "What is the recommended serving size for sugary drinks for 1- to 3-year-olds in the United Kingdom?",
+          "source_chunk_id": "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+          "question_type": "definition",
+          "hit_rank": 1,
+          "retrieved_ids": [
+            "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+            "pdf_circulating_25_hydroxyvitamin_d_levels_during_pregnancy_and__chunk_5",
+            "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_38",
+            "pdf_an_approach_to_identifying_young_children_with_developmental_chunk_5",
+            "pdf_relationships_between_exposure_to_gestational_diabetes_treat_chunk_2",
+            "pdf_associations_between_maternal_gestational_diabetes_metformin_chunk_2",
+            "pdf_determinants_of_gestational_weight_gain_during_pregnancy_in__chunk_1",
+            "pdf_common_determinants_of_dental_caries_and_obesity_in_children_chunk_35",
+            "pdf_ready_set_co_produce_a_co_operative_inquiry_into_co_producin_chunk_48",
+            "pdf_unique_metabolic_profiles_associate_with_gestational_diabete_chunk_13"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+          "question": "What is the reaction of younger women in the Pakistani heritage community in Bradford towards the idea of marrying a cousin?",
+          "source_chunk_id": "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+          "question_type": "result",
+          "hit_rank": 2,
+          "retrieved_ids": [
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_44",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_65",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_67",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_52",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_47",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_68",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_74",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_59",
+            "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_57"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        },
+        {
+          "query_id": "pdf_pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+          "question": "What factors should be considered when determining the final knot point locations in linear spline multilevel models?",
+          "source_chunk_id": "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+          "question_type": "method",
+          "hit_rank": 1,
+          "retrieved_ids": [
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_41",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_31",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_32",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_40",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_9",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_3",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_33",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_14",
+            "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_20"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "hit_at_5": true,
+          "hit_at_10": true
+        }
+      ]
+    }
+  }
+}
