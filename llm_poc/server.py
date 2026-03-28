@@ -420,7 +420,7 @@ WIDGET_SNIPPET = """
   <span class="bib-nav-label">Research Assistant</span>
   <span>↗</span>
 </a>
-<a id="bib-registry-nav" href="/registry" title="Open canonical variable registry">
+<a id="bib-registry-nav" href="/registry" title="Open variable registry">
   <span class="bib-nav-icon">🗂</span>
   <span class="bib-nav-label">Variable Registry</span>
   <span>↗</span>
@@ -974,7 +974,7 @@ REGISTRY_HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BiB Canonical Variable Registry</title>
+<title>BiB Variable Registry</title>
 <style>
   :root {
     --bib-blue: #1a4e8c;
@@ -1294,7 +1294,7 @@ REGISTRY_HTML = r"""<!DOCTYPE html>
 <header>
   <span class="logo">🗂</span>
   <div>
-    <h1>BiB Canonical Variable Registry</h1>
+    <h1>BiB Variable Registry</h1>
     <div class="sub">Grounded only in real HTML + CSV metadata</div>
   </div>
   <div class="nav-links">
@@ -1308,7 +1308,7 @@ REGISTRY_HTML = r"""<!DOCTYPE html>
     <div class="hero-card">
       <h2>Real variables first</h2>
       <p>
-        This page implements the new canonical metadata layer for the BiB assistant. It uses only
+        This page implements the new metadata layer for the BiB assistant. It uses only
         real data dictionary sources — the HTML files in <span class="mono">docs/</span> plus the CSV metadata tables — to build a finite, auditable registry of valid variables. Themes are assigned from metadata signals such as topic, section headings, labels, and table context.
       </p>
     </div>

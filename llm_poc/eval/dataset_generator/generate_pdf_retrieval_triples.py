@@ -8,11 +8,11 @@ JSONL records containing the generated pair plus the original source chunk.
 Usage examples
 --------------
 
-    ../../.venv/bin/python eval/generate_pdf_retrieval_triples.py
+    ../../.venv/bin/python eval/dataset_generator/generate_pdf_retrieval_triples.py
 
-    ../../.venv/bin/python eval/generate_pdf_retrieval_triples.py \
+    ../../.venv/bin/python eval/dataset_generator/generate_pdf_retrieval_triples.py \
         --sample-size 100 \
-        --output eval/pdf_retrieval_triples.jsonl
+        --output eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl
 """
 
 from __future__ import annotations
@@ -27,13 +27,28 @@ import time
 from pathlib import Path
 from typing import Any
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
+SCRIPT_DIR = Path(__file__).resolve().parent
+EVAL_DIR = SCRIPT_DIR.parent if SCRIPT_DIR.name == "dataset_generator" else SCRIPT_DIR
+DATASETS_DIR = EVAL_DIR / "evaluation_datasets"
+
+ROOT_DIR = next(
+    (
+        parent
+        for parent in Path(__file__).resolve().parents
+        if (parent / "docs" / "csv").exists() and (parent / "papers").exists()
+    ),
+    None,
+)
+if ROOT_DIR is None:
+    raise RuntimeError("Could not locate datadict root (expected docs/csv and papers folders).")
+
+LLM_POC_DIR = ROOT_DIR / "llm_poc"
+if str(LLM_POC_DIR) not in sys.path:
+    sys.path.insert(0, str(LLM_POC_DIR))
 
 from bib_research_assistant import DEFAULT_MODEL, _get_hf_client, get_chroma_client
 
-DEFAULT_OUTPUT = Path(__file__).resolve().parent / "pdf_retrieval_triples.jsonl"
+DEFAULT_OUTPUT = DATASETS_DIR / "triples" / "pdf_retrieval_triples.jsonl"
 JSON_BLOCK_RE = re.compile(r"\{.*\}", re.DOTALL)
 ALLOWED_QUESTION_TYPES = {"definition", "method", "result", "dataset", "theory"}
 

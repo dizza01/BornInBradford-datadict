@@ -1,0 +1,189 @@
+{
+  "config": {
+    "triples": "eval/pdf_retrieval_triples.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "Qwen/Qwen2.5-72B-Instruct",
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 1,
+    "evaluated_at": "2026-03-20T22:38:32"
+  },
+  "summary": {
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.25,
+      "contradicted_claim_rate": 0.25,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.75,
+      "contradiction_weighted_hallucination": 0.5
+    },
+    "external_judge": {
+      "n_queries": 1,
+      "total_claims": 4,
+      "supported_claims": 3,
+      "contradicted_claims": 1,
+      "not_found_claims": 0,
+      "unfaithful_claims": 1,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.75,
+      "contradicted_claim_rate": 0.25,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.25,
+      "contradiction_weighted_hallucination": 0.5,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 1.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 1.0,
+      "avg_claims_per_answer": 4.0,
+      "avg_unfaithful_claims_per_answer": 1.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 1,
+      "total_claims": 5,
+      "supported_claims": 5,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 1.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 1.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 5.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 1,
+      "faithful_label_agreement": 0.0,
+      "unfaithful_presence_agreement": 0.0
+    },
+    "generation_quality": {
+      "n_queries": 1,
+      "answer_relevance": 0.9523809523809523,
+      "completeness": 1.0,
+      "conciseness": 0.003952569169960474,
+      "answer_correctness_token_f1": 0.007874015748031496,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 68029.8830839456,
+      "latency_total_p95_ms": 68029.8830839456,
+      "latency_retrieval_avg_ms": 1748.1458749971353,
+      "latency_answer_avg_ms": 52547.5294169737,
+      "avg_retrieved_tokens": 931.0,
+      "avg_answer_tokens": 506.0,
+      "answer_tokens_per_retrieved_token": 0.5435016111707841
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+      "reference_answer": "-1.000",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "rag_answer": "The coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is **−1.000 (−1.798, −0.201)**. This coefficient is derived from a matched controls study using the Born in Bradford (BiB) cohort, where the data were matched on variables such as mother’s ethnicity and age of the child.\n\nFor a more detailed analysis, you can consider the following variables and tables:\n\n### Variables for Prenatal Alcohol Exposure (PAE)\n| Variable | Table | Label | Type | N (non-missing) |\n| --- | --- | --- | --- | --- |\n| `alc0spav3b` | BiB_Baseline.base_m_survey | Average units of spirits per week in 3 months before pregnancy | integer | 841 |\n| `alc0spmx3b` | BiB_Baseline.base_m_survey | Maximum units of spirits at one time in the 3 months before pregnancy | integer | 833 |\n| `alc0oamxf3` | BiB_Baseline.base_m_survey | Maximum units of other alcohol at one time in first 3 months of pregnancy | integer | 185 |\n| `alc0spavf3` | BiB_Baseline.base_m_survey | Average units of spirits per week in first 3 months of pregnancy | integer | 268 |\n| `alc0oamx3b` | BiB_Baseline.base_m_survey | Maximum units of other alcohol at one time in 3 months before pregnancy | integer | 608 |\n| `alc0oaavf3` | BiB_Baseline.base_m_survey | Average units of other alcohol per week in first 3 months of pregnancy | integer | 186 |\n| `alc0spmxf3` | BiB_Baseline.base_m_survey | Maximum units of spirits at one time in first 3 months of pregnancy | integer | 263 |\n| `ght_2alcinpreg` | BiBBS_Baseline.pregnancy_survey | Do you drink any alcohol during this pregnancy? | categorical | 2553 |\n| `alc0oaav3b` | BiB_Baseline.base_m_survey | Average units of other alcohol per week in 3 months before pregnancy | integer | 613 |\n\n### Variables for Good Level of Development (GLD)\n| Variable | Table | Label | Type | N (non-missing) |\n| --- | --- | --- | --- | --- |\n| `gld_outcome` | BiB_GrowingUp.child_survey_adult_comp | Good Level of Development outcome | categorical | 10598 |\n\n### Covariates to Consider\nBased on published BiB methodology, the following covariates should be considered to control for potential confounders:\n- Mother’s ethnicity (`ethn` in BiB_CohortInfo.preg_info)\n- Age of the child (`age_at_assessment` in BiB_GrowingUp.child_survey_adult_comp)\n- Preterm birth (`preterm_birth` in BiB_Pregnancy.eclipse_baby)\n- Birth weight (`birth_weight` in BiB_Pregnancy.eclipse_baby)\n- Maternal education level (`mat_edu` in BiB_CohortInfo.preg_info)\n- Socioeconomic status (SES) (`imd_score` in BiB_CohortInfo.preg_info)\n\n### Data Quality Issues\n- The number of non-missing records for some alcohol consumption variables is relatively low, which may affect the power of the analysis.\n- The GLD outcome has a significant amount of missing data (24.1% missing).\n\n### Suggested Analysis Plan\n1. **Data Preparation**: Clean and preprocess the data, handling missing values appropriately.\n2. **Matched Controls**: Ensure that the data are matched on key variables (mother’s ethnicity, age of the child) as described in the published study.\n3. **Model Specification**: Use a logistic regression model to estimate the impact of PAE on GLD outcomes, including the suggested covariates.\n4. **Model Fitting**: Fit the model and extract the coefficients, particularly focusing on the coefficient for drinking comparison E.\n5. **Sensitivity Analysis**: Conduct sensitivity analyses to assess the robustness of",
+      "answer_relevance": 0.9523809523809523,
+      "completeness": 1.0,
+      "conciseness": 0.003952569169960474,
+      "answer_correctness_token_f1": 0.007874015748031496,
+      "answer_exact_match": false,
+      "retrieved_tokens": 931,
+      "answer_tokens": 506,
+      "latency_retrieval_ms": 1748.1458749971353,
+      "latency_answer_ms": 52547.5294169737,
+      "latency_external_judge_ms": 3264.469083980657,
+      "latency_qwen_judge_ms": 10469.73870799411,
+      "latency_total_ms": 68029.8830839456,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is −1.000 (−1.798, −0.201)",
+              "verdict": "supported",
+              "evidence": "−1.000 (−1.798, −0.201)"
+            },
+            {
+              "claim": "The coefficient is derived from a matched controls study using the Born in Bradford (BiB) cohort",
+              "verdict": "supported",
+              "evidence": "Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B"
+            },
+            {
+              "claim": "The data were matched on variables such as mother’s ethnicity and age of the child",
+              "verdict": "supported",
+              "evidence": "Estimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi"
+            },
+            {
+              "claim": "The study controlled for other variables such as preterm birth, microcephaly and birthweight",
+              "verdict": "contradicted",
+              "evidence": "Variables previously shown to be associated with early education achievement such as preterm birth, microcephaly and birthweight were not controlled for in this analysis"
+            }
+          ],
+          "counts": {
+            "total": 4,
+            "supported": 3,
+            "contradicted": 1,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer contains a contradicted claim about controlled variables."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is −1.000 (−1.798, −0.201)\t supported\t−1.000 (−1.798, −0.201)\nCLAIM\tThe coefficient is derived from a matched controls study using the Born in Bradford (BiB) cohort\t supported\tAssociations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nCLAIM\tThe data were matched on variables such as mother’s ethnicity and age of the child\t supported\tEstimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi\nCLAIM\tThe study controlled for other variables such as preterm birth, microcephaly and birthweight\t contradicted\tVariables previously shown to be associated with early education achievement such as preterm birth, microcephaly and birthweight were not controlled for in this analysis\nOVERALL\t false\t The answer contains a contradicted claim about controlled variables.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is −1.000 (−1.798, −0.201).",
+              "verdict": "supported",
+              "evidence": "Coefficient for drinking comparison E −1.000 (−1.798, −0.201)"
+            },
+            {
+              "claim": "This coefficient is derived from a matched controls study using the Born in Bradford (BiB) cohort.",
+              "verdict": "supported",
+              "evidence": "Estimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi"
+            },
+            {
+              "claim": "The data were matched on variables such as mother’s ethnicity and age of the child.",
+              "verdict": "supported",
+              "evidence": "Estimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi"
+            },
+            {
+              "claim": "The GLD outcome has a significant amount of missing data (24.1% missing).",
+              "verdict": "supported",
+              "evidence": "YFSP assessment Missing: 24.1% (3361/13959)"
+            },
+            {
+              "claim": "Suggested covariates to consider include preterm birth, birth weight, maternal education level, and socioeconomic status.",
+              "verdict": "supported",
+              "evidence": "Variables previously shown to be associated with early education achievement such as preterm birth, microcephaly and birthweight were not controlled for in this analysis"
+            }
+          ],
+          "counts": {
+            "total": 5,
+            "supported": 5,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "The answer contains a claim about the number of non-missing records for alcohol consumption variables that is not found in the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is −1.000 (−1.798, −0.201).\tsupported\tCoefficient for drinking comparison E −1.000 (−1.798, −0.201)\nCLAIM\tThis coefficient is derived from a matched controls study using the Born in Bradford (BiB) cohort.\tsupported\tEstimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi\nCLAIM\tThe data were matched on variables such as mother’s ethnicity and age of the child.\tsupported\tEstimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi\nCLAIM\tThe number of non-missing records for some alcohol consumption variables is relatively low, which may affect the power of the analysis.\tnot_found\t\nCLAIM\tThe GLD outcome has a significant amount of missing data (24.1% missing).\tsupported\tYFSP assessment Missing: 24.1% (3361/13959)\nCLAIM\tSuggested covariates to consider include preterm birth, birth weight, maternal education level, and socioeconomic status.\tsupported\tVariables previously shown to be associated with early education achievement such as preterm birth, microcephaly and birthweight were not controlled for in this analysis\nOVERALL\tfalse\tThe answer contains a claim about the number of non-missing records for alcohol consumption variables that is not found in the context.\nEND_JUDGE"
+        }
+      }
+    }
+  ]
+}

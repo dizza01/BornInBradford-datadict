@@ -38,6 +38,8 @@ import sys
 import json
 import re
 import argparse
+import math
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Optional
 
@@ -571,6 +573,109 @@ Important style rules:
   Omit columns that are not available. For a single variable, inline prose is fine."""
 
 
+def _tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", (text or "").lower())
+
+
+def _rrf_fuse(rank_lists: list[list[str]], rrf_k: int) -> list[str]:
+    scores: dict[str, float] = defaultdict(float)
+    for ranked_ids in rank_lists:
+        for rank, doc_id in enumerate(ranked_ids, start=1):
+            scores[doc_id] += 1.0 / (rrf_k + rank)
+    return [doc_id for doc_id, _ in sorted(scores.items(), key=lambda kv: kv[1], reverse=True)]
+
+
+class _SparseBM25:
+    def __init__(self, ids: list[str], docs: list[str], k1: float = 1.2, b: float = 0.75):
+        self.ids = ids
+        self.k1 = k1
+        self.b = b
+        self.n_docs = len(ids)
+        self.doc_len: list[int] = []
+        self.avgdl = 0.0
+        self.postings: dict[str, list[tuple[int, int]]] = defaultdict(list)
+        self.idf: dict[str, float] = {}
+        self._build(docs)
+
+    def _build(self, docs: list[str]) -> None:
+        total_len = 0
+        for idx, text in enumerate(docs):
+            tokens = _tokenize(text)
+            total_len += len(tokens)
+            self.doc_len.append(len(tokens))
+            counts = Counter(tokens)
+            for term, tf in counts.items():
+                self.postings[term].append((idx, tf))
+
+        self.avgdl = (total_len / self.n_docs) if self.n_docs else 0.0
+        for term, plist in self.postings.items():
+            df = len(plist)
+            self.idf[term] = math.log(1.0 + ((self.n_docs - df + 0.5) / (df + 0.5)))
+
+    def search(self, query: str, top_n: int) -> list[str]:
+        if top_n <= 0 or not query or self.n_docs == 0:
+            return []
+
+        scores: dict[int, float] = defaultdict(float)
+        for term in _tokenize(query):
+            plist = self.postings.get(term)
+            if not plist:
+                continue
+            idf = self.idf.get(term, 0.0)
+            for doc_idx, tf in plist:
+                dl = self.doc_len[doc_idx] if doc_idx < len(self.doc_len) else 0
+                denom = tf + self.k1 * (1.0 - self.b + self.b * (dl / (self.avgdl or 1.0)))
+                scores[doc_idx] += idf * ((tf * (self.k1 + 1.0)) / (denom or 1.0))
+
+        ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)[:top_n]
+        return [self.ids[idx] for idx, _ in ranked]
+
+
+def _simple_rerank_score(query: str, doc: str) -> float:
+    q_tokens = _tokenize(query)
+    d_tokens = _tokenize(doc)
+    if not q_tokens or not d_tokens:
+        return 0.0
+
+    q_set = set(q_tokens)
+    d_set = set(d_tokens)
+    overlap = len(q_set & d_set) / max(1, len(q_set))
+
+    q_bigrams = set(zip(q_tokens, q_tokens[1:]))
+    d_bigrams = set(zip(d_tokens, d_tokens[1:]))
+    bigram_overlap = len(q_bigrams & d_bigrams) / max(1, len(q_bigrams)) if q_bigrams else 0.0
+
+    contains_query = 1.0 if query.lower().strip() in doc.lower() else 0.0
+    return (0.65 * overlap) + (0.25 * bigram_overlap) + (0.10 * contains_query)
+
+
+_PAPERS_CACHE: dict[str, Any] = {
+    "count": -1,
+    "doc_by_id": {},
+    "meta_by_id": {},
+    "sparse": None,
+}
+
+
+def _get_papers_cache(client: chromadb.ClientAPI) -> dict[str, Any]:
+    papers_col = client.get_collection("bib_papers")
+    count = papers_col.count()
+
+    if _PAPERS_CACHE["count"] == count and _PAPERS_CACHE["sparse"] is not None:
+        return _PAPERS_CACHE
+
+    all_rows = papers_col.get(include=["documents", "metadatas"])
+    ids = all_rows.get("ids", []) or []
+    docs = all_rows.get("documents", []) or []
+    metas = all_rows.get("metadatas", []) or []
+
+    _PAPERS_CACHE["count"] = count
+    _PAPERS_CACHE["doc_by_id"] = {doc_id: doc for doc_id, doc in zip(ids, docs)}
+    _PAPERS_CACHE["meta_by_id"] = {doc_id: (meta or {}) for doc_id, meta in zip(ids, metas)}
+    _PAPERS_CACHE["sparse"] = _SparseBM25(ids, docs)
+    return _PAPERS_CACHE
+
+
 def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5) -> str:
     """Retrieve relevant docs from all three collections and format as context."""
     context_parts = []
@@ -578,12 +683,41 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
     # ── Papers ───────────────────────────────────────────────────────────────
     try:
         papers_col = client.get_collection("bib_papers")
-        results = papers_col.query(query_texts=[query], n_results=n_results)
-        docs  = results["documents"][0]
-        metas = results["metadatas"][0]
-        if docs:
+        cache = _get_papers_cache(client)
+
+        dense_pool = int(os.getenv("RETRIEVAL_DENSE_POOL", "60"))
+        sparse_pool = int(os.getenv("RETRIEVAL_SPARSE_POOL", "60"))
+        rerank_pool = int(os.getenv("RETRIEVAL_RERANK_POOL", "50"))
+        rrf_k = int(os.getenv("RETRIEVAL_RRF_K", "60"))
+
+        dense_pool = max(dense_pool, n_results)
+        sparse_pool = max(sparse_pool, n_results)
+        rerank_pool = max(rerank_pool, n_results)
+
+        dense_results = papers_col.query(
+            query_texts=[query],
+            n_results=dense_pool,
+            include=[],
+        )
+        dense_ids = dense_results.get("ids", [[]])[0] or []
+        sparse_ids = cache["sparse"].search(query, sparse_pool)
+
+        fused_ids = _rrf_fuse([dense_ids[:dense_pool], sparse_ids[:sparse_pool]], rrf_k=rrf_k)
+        rerank_candidates = fused_ids[:rerank_pool]
+        reranked_ids = sorted(
+            rerank_candidates,
+            key=lambda doc_id: _simple_rerank_score(query, cache["doc_by_id"].get(doc_id, "")),
+            reverse=True,
+        )[:n_results]
+
+        docs = [cache["doc_by_id"].get(doc_id, "") for doc_id in reranked_ids]
+        metas = [cache["meta_by_id"].get(doc_id, {}) for doc_id in reranked_ids]
+
+        if any(docs):
             context_parts.append("## Relevant Published Papers\n")
             for doc, meta in zip(docs, metas):
+                if not doc:
+                    continue
                 context_parts.append(
                     f"**{meta.get('title','')[:120]}** "
                     f"({meta.get('year','')}) — {meta.get('authors','')[:80]}\n"

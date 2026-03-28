@@ -1,0 +1,43 @@
+{
+  "dataset_version": "combined_abstention_benchmark_v1__variables_tables",
+  "index_snapshot_filter_enabled": true,
+  "index_snapshot_id": "59325d46bc79bc7d",
+  "n_examples": 500,
+  "n_positive": 250,
+  "n_negative": 250,
+  "attempts": 580,
+  "unique_questions": 500,
+  "registry_filtering": {
+    "variables_before_filter": 26104,
+    "variables_after_filter": 26104,
+    "tables_before_filter": 289,
+    "tables_after_filter": 289
+  },
+  "split_distribution": {
+    "train": 419,
+    "dev": 43,
+    "test": 38
+  },
+  "generation_type_distribution": {
+    "out_of_scope_negative": 5,
+    "table_exists_negative": 52,
+    "table_exists_positive": 52,
+    "table_project_negative": 66,
+    "table_project_positive": 64,
+    "var_exists_negative": 65,
+    "var_exists_positive": 66,
+    "var_table_pair_negative": 62,
+    "var_table_pair_positive": 68
+  },
+  "qa_sample_size": 75,
+  "qa_sample_fraction": 0.15,
+  "sources": {
+    "variables_csv": "/Users/dawud.izza/Desktop/BiB/BornInBradford-datadict/docs/csv/all_variables_meta.csv",
+    "tables_csv": "/Users/dawud.izza/Desktop/BiB/BornInBradford-datadict/docs/csv/all_tables.csv",
+    "chroma_dir": "/Users/dawud.izza/Desktop/BiB/BornInBradford-datadict/llm_poc/.chroma_db",
+    "index_collection_counts": {
+      "bib_variables": 26104,
+      "bib_tables": 289
+    }
+  }
+}

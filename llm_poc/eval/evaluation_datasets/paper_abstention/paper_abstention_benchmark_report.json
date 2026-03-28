@@ -1,0 +1,36 @@
+{
+  "dataset_version": "combined_abstention_benchmark_v1__papers",
+  "index_snapshot_filter_enabled": true,
+  "index_snapshot_id": "18217fc361b3652e",
+  "n_examples": 400,
+  "n_positive": 200,
+  "n_negative": 200,
+  "attempts": 481,
+  "unique_questions": 400,
+  "split_distribution": {
+    "train": 299,
+    "dev": 50,
+    "test": 51
+  },
+  "generation_type_distribution": {
+    "paper_doi_exists_negative": 49,
+    "paper_doi_exists_positive": 45,
+    "paper_has_pdf_negative": 46,
+    "paper_has_pdf_positive": 47,
+    "paper_out_of_scope_negative": 5,
+    "paper_title_exists_negative": 51,
+    "paper_title_exists_positive": 50,
+    "paper_title_year_negative": 49,
+    "paper_title_year_positive": 58
+  },
+  "qa_sample_size": 60,
+  "qa_sample_fraction": 0.15,
+  "index_snapshot_stats": {
+    "n_unique_titles": 417,
+    "n_titles_with_pdf": 170,
+    "bib_papers_collection_count": 8112
+  },
+  "sources": {
+    "chroma_dir": "/Users/dawud.izza/Desktop/BiB/BornInBradford-datadict/llm_poc/.chroma_db"
+  }
+}
