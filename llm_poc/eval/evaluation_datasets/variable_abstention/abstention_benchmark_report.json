@@ -1,10 +1,10 @@
 {
-  "dataset_version": "combined_abstention_benchmark_v1__variables_tables",
+  "dataset_version": "combined_abstention_benchmark_v2__variables_tables",
   "index_snapshot_filter_enabled": true,
   "index_snapshot_id": "59325d46bc79bc7d",
   "n_examples": 500,
-  "n_positive": 250,
-  "n_negative": 250,
+  "n_positive": 378,
+  "n_negative": 122,
   "attempts": 580,
   "unique_questions": 500,
   "registry_filtering": {
@@ -15,8 +15,8 @@
   },
   "split_distribution": {
     "train": 419,
-    "dev": 43,
-    "test": 38
+    "dev": 42,
+    "test": 39
   },
   "generation_type_distribution": {
     "out_of_scope_negative": 5,

@@ -25,12 +25,29 @@ Usage
         --run-name abstention_strict_smoke
 
         
-    ../../.venv/bin/python eval/run_abstention_eval.py \
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
         --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
         --model dizza01/qwen2.5-7b-finetunerag-merged-4bit \
         --model-api-mode hf_endpoint \
         --model-endpoint-url https://skqrt4ar5z72zlb7.us-east-1.aws.endpoints.huggingface.cloud \
-        --run-name abstention_qwen_finetuned_endpoint 
+        --run-name abstention_qwen_finetuned_endpoint_quantised 
+
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
+        --model dizza01/qwen2.5-7b-finetunerag-merged \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://woo97muev69lrrvd.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_qwen_finetuned_endpoint_non_quantised
+
+     ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
+        --model dizza01/qwen2.5-7b-pdf-merged \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://eyicswzutfjqodxe.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_qwen_pdf_finetuned_endpoint_non_quantised   
     
 """
 

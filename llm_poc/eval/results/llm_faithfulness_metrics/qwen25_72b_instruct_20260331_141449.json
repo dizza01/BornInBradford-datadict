@@ -1,0 +1,229 @@
+{
+  "n_queries_attempted": 300,
+  "n_queries_succeeded": 0,
+  "n_queries_failed": 300,
+  "failed_queries_preview": [
+    {
+      "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc862-75794a431731a1b04be22891;795189cb-ead2-4438-afd9-7abf4d2fedf8)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+      "question": "What are the primary outcome goals for personal, social, and emotional development in the Incredible Years Toddler parenting programme?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc863-5a82a28131d1adf936cf0317;ff43ea1c-b28d-499b-b6ec-34252d041ca8)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+      "question": "What is the recommended serving size for sugary drinks for 1- to 3-year-olds in the United Kingdom?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc863-183af1cc220569d77a09730e;a4ce22f7-8bb6-4843-a84e-a4e993b1c080)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+      "question": "What is the reaction of younger women in the Pakistani heritage community in Bradford towards the idea of marrying a cousin?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc863-6746f4fe13cddf24426fe2e1;6bdb74a9-cd22-4f53-b8b4-db6afa90de11)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+      "question": "What factors should be considered when determining the final knot point locations in linear spline multilevel models?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc864-77103c313f31fd946a6d652f;022ad5a4-dcae-482b-8c96-aa84a59d0e6b)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_28",
+      "question": "What is the relationship between home food availability of snack foods and SSBs and dietary intake in toddlers at 18 and 36 months of age?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc864-710b2d5e0d14232145baf785;29becd6c-ce99-45ae-9457-63511562c92c)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_the_feasibility_of_an_objective_measure_of_the_parent_child__chunk_7",
+      "question": "What is the estimated prevalence rate of insecure attachment in a Danish community study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc864-1b56f1655624341a5be837d2;946efc42-55ca-4804-828d-583bbd583f45)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_exploring_the_causal_effect_of_maternal_pregnancy_adiposity__chunk_11",
+      "question": "What was the impact of removing cryptic relatedness on the sample size in the ALSPAC cohort?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc865-17a0be3972950089248d25cb;c0e90dff-1eea-4011-b8d7-d565ddb86e32)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_associations_between_insomnia_and_pregnancy_and_perinatal_ou_chunk_2",
+      "question": "What were the odds ratios and confidence intervals for the association between insomnia and perinatal depression in the study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc865-7fdfaf645d951a85556aec14;2c6a3e4f-30aa-4bd6-a415-86a9c3162de1)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_differences_in_socioeconomic_position_lifestyle_and_health_r_chunk_27",
+      "question": "What is the unadjusted odds ratio for hypertensive disorders of pregnancy in all Pakistani births compared to White British births?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc865-685ed90d4b2d32f15b53547f;111fd092-b0c3-472c-9e01-c1f01c9bf9fc)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_agreement_between_parent_reported_and_clinical_coding_of_ast_chunk_29",
+      "question": "What methodological approach was used due to the limitations in the number of post-questionnaire diagnoses?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc866-256d931a6433a68d3a77464d;2532f39f-f687-49b8-bbf8-1e6c182b1858)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_agreement_between_parent_reported_and_clinical_coding_of_ast_chunk_13",
+      "question": "What percentage of parents underreported and overreported asthma in the study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc866-1a9433455bc6db194dc08eb0;84635a92-db7d-4c24-b80a-d07bc7ad37f6)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_challenges_in_using_data_on_fathers_partners_to_study_prenat_chunk_3",
+      "question": "What is a key maternal exposure known to cause lower birthweight in offspring?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc866-4f5faddc2cc3741242498493;b4e0ebd0-2a11-4db1-9789-3ea58d4dcc04)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_evaluating_causal_associations_of_chronotype_with_pregnancy__chunk_19",
+      "question": "What was the observed difference in depressive symptoms between women with evening and morning preferences at 2 weeks postpartum?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc867-18868e211b904c920781473a;23ac3853-ec5b-41a9-a5c6-4d3c695a9882)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_impact_of_visual_acuity_on_developing_literacy_at_age_4_5_ye_chunk_8",
+      "question": "How was visual acuity categorized in the study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc867-12d69b0d35b1a21d1d650132;dea22423-e3a2-4e41-ac7f-c5af77b60107)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_born_in_bradford_s_better_start_an_experimental_birth_cohort_chunk_0",
+      "question": "What is the primary goal of the Born in Bradford’s Better Start (BiBBS) study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc867-3e4995ab666471147d19f53a;2f60815a-0298-4880-b930-7d7b1b8dbd75)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_metabolomics_datasets_in_the_born_in_bradford_cohort_2020_chunk_29",
+      "question": "What is the ethnic composition of the cohort used for MS metabolomics profiling in Dataset 2?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc868-0fce2a3e73dd8fef2686b9db;a0be91a5-4119-41cf-abdf-94d43cd40dd6)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_exploring_the_causal_effect_of_maternal_pregnancy_adiposity__chunk_8",
+      "question": "How was maternal pre-pregnancy weight and height collected in the ALSPAC study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc868-214d593b6787bdb961b38d6a;5f9873ba-aa35-4f47-a795-200eda022f90)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_challenges_in_using_data_on_fathers_partners_to_study_prenat_chunk_17",
+      "question": "What was the odds ratio for participation per unit increase in partner SEP as reported by mothers in Scenario 1?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc868-4bd5e626224907aa6d8ed4cf;b60bfad5-2008-4298-b0f8-13cad0ee36ce)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_does_involvement_in_a_cohort_study_improve_health_and_affect_chunk_28",
+      "question": "What was the adjusted p-value for the effect of exposure to BiB on birth weight?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc869-1b6e72e4367258e871173249;d57c5a9d-e6e0-4842-9694-5ac4bc0d0b08)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_identifying_local_priorities_for_research_with_linked_routin_chunk_6",
+      "question": "What is a limitation of the Delphi method in the context of setting research priorities with routine data?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc869-7d3de6255ed8f8336d3dddd2;95360636-910e-4117-9938-e7299089bce3)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_respiratory_syncytial_virus_in_young_children_community_coho_chunk_2",
+      "question": "What is one of the key reasons why a successful RSV vaccine needs to induce a stronger immune response than natural infection?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc869-6a0e4cdd1fb1c9576abbb091;c20decf6-1458-497a-953f-810126ba8206)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_the_association_between_prenatal_and_early_life_antibiotic_u_chunk_7",
+      "question": "What is the ethnic composition of the Bradford cohort in the study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc86a-28cdef564b41b46c6fdb1b07;fa3e33ff-4447-4f80-8bfe-43051e7dae4a)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_a_comparison_of_south_asian_specific_and_established_bmi_thr_chunk_18",
+      "question": "What is the difference in the prevalence of gestational diabetes between Pakistani and White British women according to the study?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc86a-26816ad1244d9a0842959e07;c7694d75-d559-4b4e-9b3c-4bee9e5eb359)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    },
+    {
+      "query_id": "pdf_pdf_people_powered_research_what_do_communities_identify_as_impo_chunk_34",
+      "question": "What percentage of respondents ranked 'Diet and Nutrition' as the top priority for helping children be healthy?",
+      "error": "Client error '402 Payment Required' for url 'https://router.huggingface.co/v1/chat/completions' (Request ID: Root=1-69cbc86b-64b8be50295a7ebc1a446c6d;6141e04e-79c6-4bcd-873a-908110e80a9d)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402\n\nYou have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+    }
+  ],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "Qwen/Qwen2.5-72B-Instruct",
+    "answer_api_mode": "hf_api",
+    "answer_endpoint_url": "",
+    "answer_endpoint_model": "Qwen/Qwen2.5-72B-Instruct",
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 0,
+    "evaluated_at": "2026-03-31T14:14:49"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 300,
+      "succeeded_queries": 0,
+      "failed_queries": 300,
+      "failure_rate": 1.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 0,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 0,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 0,
+      "faithful_label_agreement": 0.0,
+      "unfaithful_presence_agreement": 0.0
+    },
+    "generation_quality": {
+      "n_queries": 0,
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.0,
+      "answer_correctness_token_f1": 0.0,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 0.0,
+      "latency_total_p95_ms": 0.0,
+      "latency_retrieval_avg_ms": 0.0,
+      "latency_answer_avg_ms": 0.0,
+      "avg_retrieved_tokens": 0.0,
+      "avg_answer_tokens": 0.0,
+      "answer_tokens_per_retrieved_token": 0.0
+    }
+  },
+  "per_query": []
+}

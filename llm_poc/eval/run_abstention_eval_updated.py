@@ -1,5 +1,74 @@
 """Run abstention evaluation on variable and paper abstention benchmarks.
+Usage
+-----
 
+    ../../.venv/bin/python eval/run_abstention_eval.py \
+        --run-name abstention_baseline \
+        --model Qwen/Qwen2.5-72B-Instruct
+
+    ../../.venv/bin/python eval/run_abstention_eval.py \
+        --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
+        --run-name abstention_strict_smoke
+
+        
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
+        --model dizza01/qwen2.5-7b-finetunerag-merged-4bit \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://skqrt4ar5z72zlb7.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_qwen_finetuned_endpoint_quantised 
+
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
+        --model dizza01/qwen2.5-7b-finetunerag-merged \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://woo97muev69lrrvd.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_qwen_finetuned_endpoint_non_quantised
+
+     ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
+        --model dizza01/qwen2.5-7b-pdf-merged \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://eyicswzutfjqodxe.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_qwen_pdf_finetuned_endpoint_non_quantised   
+
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --max-queries-per-slice 100 \
+        --model dizza01/BioMistral-7B-DARE \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_BioMistral_endpoint_non_quantised   
+ 
+ ----- All ----
+
+        set -e
+
+        MODELS=(
+        "Qwen/Qwen2.5-7B-Instruct|qwen25_7b_instruct"
+        "meta-llama/Llama-3.1-8B-Instruct|llama31_8b_instruct"
+        )
+
+        for entry in "${MODELS[@]}"; do
+        model="${entry%%|*}"
+        run_name="${entry##*|}"
+
+        echo "Running $run_name ($model)"
+
+        ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+            --run-name "$run_name" \
+            --prediction-mode model_strict \
+            --model "$model" \
+            --model-api-mode hf_api \
+            --retrieval-depth 5 \
+            --classifier-temperature 0.0 \
+            --classifier-retries 2
+        done
+    
 This script evaluates answer-vs-abstain behavior on generated abstention
 benchmarks and reports aggregated and slice-level metrics.
 """
@@ -32,14 +101,53 @@ DEFAULT_COMPARISON_CSV = Path(__file__).resolve().parent / "results" / "abstenti
 
 JSON_BLOCK_RE = re.compile(r"\{.*\}", re.DOTALL)
 
-STRICT_CLASSIFIER_SYSTEM_PROMPT = """You are a strict abstention classifier for a RAG assistant.
+STRICT_CLASSIFIER_SYSTEM_PROMPT = """You are a strict abstention classifier for a BiB (Born in Bradford) RAG assistant.
 
-Decide whether the assistant SHOULD abstain for the given user question using ONLY the provided retrieved context.
+The assistant answers questions about the BiB data dictionary: an index of variable and \
+table metadata from BiB study documentation, and published Born in Bradford research \
+papers. The index is built from HTML/CSV documentation files and a papers metadata JSON — \
+it does NOT contain live clinical records, NHS systems, or any data source outside those \
+documentation files. All answerable questions are lookups against what has been indexed — \
+the fact IS or IS NOT documented in the indexed data.
 
-Rules:
-- Return should_abstain=true when the context is insufficient, missing the requested entity/fact, or clearly out-of-scope.
-- Return should_abstain=false when the context contains enough evidence to provide a factual answer.
-- Be conservative: if uncertain, abstain.
+You are given the user question and retrieved context. The context may contain an \
+"Exact Registry Matches" section with direct metadata lookups (highest authority), \
+followed by semantic search results.
+
+Decide whether the assistant SHOULD abstain, using ONLY the retrieved context.
+
+━━━ Variable and Table Registry Rules ━━━
+- ABSTAIN if the context shows "VARIABLE NOT IN REGISTRY" for the variable in the question.
+- ABSTAIN if a variable–table pairing is asked about and the context does NOT confirm \
+that exact variable appears in that exact table. If the variable is shown in a DIFFERENT \
+table, this is a registry mismatch — ABSTAIN.
+- ABSTAIN if a table–project assignment is asked about and the context does NOT confirm \
+that exact table belongs to that exact project.
+- ABSTAIN if a table name appears in the question but the context shows \
+"TABLE NOT IN REGISTRY" for it.
+- DO NOT ABSTAIN if the context confirms the variable, table, or mapping exists exactly \
+as asked.
+
+━━━ Paper Registry Rules ━━━
+- ABSTAIN if the context shows "PAPER TITLE NOT IN REGISTRY" for the title in the question.
+- ABSTAIN if a specific publication year is claimed for a paper and the context does NOT \
+confirm that year for that title.
+- ABSTAIN if the context shows "PAPER DOI NOT IN REGISTRY" for the DOI in the question.
+- ABSTAIN if asked whether a paper has full-text PDF chunks and the context shows \
+"Has full-text PDF chunks in index: no".
+- DO NOT ABSTAIN if the context explicitly confirms the paper title, year, DOI, or \
+PDF availability exactly as asked.
+
+━━━ Out-of-Scope Rules ━━━
+- ABSTAIN if the question references anything not documented in the BiB data dictionary \
+(NHS records, NHANES, UK Biobank, non-BiB external data sources, fabricated entities).
+- ABSTAIN if the retrieved context contains no relevant BiB documentation at all.
+
+━━━ General Rules ━━━
+- The "Exact Registry Matches" section is the most authoritative evidence — weight it \
+above semantic search results.
+- A "NOT IN REGISTRY" result is definitive evidence to abstain.
+- Be conservative: if the context is ambiguous or incomplete, abstain.
 
 Return valid JSON only in this exact schema:
 {
@@ -97,6 +205,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--classifier-temperature", type=float, default=0.0)
     parser.add_argument("--classifier-retries", type=int, default=2)
     parser.add_argument("--classifier-retry-delay", type=float, default=0.5)
+    parser.add_argument(
+        "--retrieval-depth",
+        type=int,
+        default=5,
+        help="Top-k depth passed to context retrieval (n_results).",
+    )
     return parser.parse_args()
 
 
@@ -150,6 +264,18 @@ def _coerce_bool(value: Any) -> bool:
         if lowered in {"false", "0", "no", "n"}:
             return False
     raise ValueError(f"Could not coerce to bool: {value!r}")
+
+
+def _sanitize_filename_component(value: str) -> str:
+    sanitized = re.sub(r"[^A-Za-z0-9._-]+", "_", value.strip())
+    sanitized = sanitized.strip("._-")
+    return sanitized or "run"
+
+
+def _build_unique_output_path(base_path: Path, run_name: str, timestamp: str) -> Path:
+    safe_run_name = _sanitize_filename_component(run_name)
+    safe_timestamp = _sanitize_filename_component(timestamp.replace(":", "-"))
+    return base_path.with_name(f"{base_path.stem}_{safe_run_name}_{safe_timestamp}{base_path.suffix}")
 
 
 def _extract_abstain_from_natural_language(text: str) -> bool | None:
@@ -222,7 +348,7 @@ def _predict_abstain_strict(
     temperature: float,
     retries: int,
     retry_delay: float,
-) -> tuple[bool, str, float | None]:
+) -> tuple[bool, str, float | None, dict[str, Any]]:
     user_prompt = (
         f"Question:\n{question}\n\n"
         f"Retrieved context:\n{context}\n\n"
@@ -235,7 +361,9 @@ def _predict_abstain_strict(
 
     last_error = ""
     raw_text = ""
+    attempts_used = 0
     for attempt in range(retries + 1):
+        attempts_used = attempt + 1
         try:
             # Supports OpenAI-style chat completions clients.
             if hasattr(llm_client, "chat"):
@@ -278,7 +406,13 @@ def _predict_abstain_strict(
                 if confidence > 1:
                     confidence = 1.0
 
-            return should_abstain, reason, confidence
+            debug_info = {
+                "decision_source": "json",
+                "attempts_used": attempts_used,
+                "raw_response_text": raw_text,
+                "parse_error": "",
+            }
+            return should_abstain, reason, confidence, debug_info
         except Exception as exc:
             last_error = str(exc)
             if attempt < retries:
@@ -294,11 +428,23 @@ def _predict_abstain_strict(
     # contribute a signal rather than always defaulting to abstain.
     nl_pred = _extract_abstain_from_natural_language(raw_text)
     if nl_pred is not None:
-        return nl_pred, f"nl_heuristic_fallback: {raw_text[:120]}", None
+        debug_info = {
+            "decision_source": "nl_heuristic_fallback",
+            "attempts_used": attempts_used,
+            "raw_response_text": raw_text,
+            "parse_error": last_error,
+        }
+        return nl_pred, f"nl_heuristic_fallback: {raw_text[:120]}", None, debug_info
 
     fallback_pred = True
     fallback_reason = f"strict_classifier_parse_error_default_abstain: {last_error[:180]}"
-    return fallback_pred, fallback_reason, None
+    debug_info = {
+        "decision_source": "default_abstain_parse_error",
+        "attempts_used": attempts_used,
+        "raw_response_text": raw_text,
+        "parse_error": last_error,
+    }
+    return fallback_pred, fallback_reason, None, debug_info
 
 
 def _get_hf_endpoint_client(base_url: str) -> Any:
@@ -443,6 +589,50 @@ def _compute_metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _compute_diagnostic_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    decision_source_counts = {
+        "json": 0,
+        "nl_heuristic_fallback": 0,
+        "default_abstain_parse_error": 0,
+        "unknown": 0,
+    }
+    parse_error_examples: list[dict[str, Any]] = []
+
+    for row in rows:
+        source = str(row.get("classifier_decision_source", "") or "unknown")
+        if source not in decision_source_counts:
+            source = "unknown"
+        decision_source_counts[source] += 1
+
+        if source != "json":
+            parse_error_examples.append(
+                {
+                    "query_id": row.get("query_id", ""),
+                    "slice_name": row.get("slice_name", ""),
+                    "question": row.get("question", ""),
+                    "should_abstain": bool(row.get("should_abstain", False)),
+                    "pred_should_abstain": bool(row.get("pred_should_abstain", False)),
+                    "classifier_decision_source": source,
+                    "classifier_reason": row.get("classifier_reason", ""),
+                    "classifier_confidence": row.get("classifier_confidence"),
+                    "classifier_attempts_used": row.get("classifier_attempts_used"),
+                    "classifier_parse_error": row.get("classifier_parse_error", ""),
+                    "classifier_raw_response_text": row.get("classifier_raw_response_text", ""),
+                }
+            )
+
+    total = len(rows)
+    parse_success_count = decision_source_counts["json"]
+
+    return {
+        "decision_source_counts": decision_source_counts,
+        "parse_success_count": parse_success_count,
+        "parse_failure_count": total - parse_success_count,
+        "parse_success_rate": (parse_success_count / total) if total else 0.0,
+        "parse_failure_examples_preview": parse_error_examples[:50],
+    }
+
+
 def _make_csv_row(
     *,
     timestamp: str,
@@ -536,6 +726,8 @@ def main() -> None:
 
     if args.max_queries_per_slice < 0:
         raise ValueError("--max-queries-per-slice must be >= 0")
+    if args.retrieval_depth <= 0:
+        raise ValueError("--retrieval-depth must be > 0")
 
     variable_rows = _load_jsonl(args.variable_dataset)
     paper_rows = _load_jsonl(args.paper_dataset)
@@ -570,6 +762,7 @@ def main() -> None:
             raise RuntimeError("Could not initialize HuggingFace client for abstention evaluation")
 
     start_ts = datetime.now().isoformat(timespec="seconds")
+    output_path = _build_unique_output_path(args.output, args.run_name, start_ts)
     print(f"Running abstention eval | mode={args.prediction_mode} | n={len(all_rows)}")
 
     for idx, row in enumerate(all_rows, start=1):
@@ -584,8 +777,8 @@ def main() -> None:
             answer_text = ""
         else:
             question = str(row.get("question", ""))
-            context = retrieve_context(question, client)
-            pred, classifier_reason, classifier_confidence = _predict_abstain_strict(
+            context = retrieve_context(question, client, n_results=args.retrieval_depth)
+            pred, classifier_reason, classifier_confidence, classifier_debug = _predict_abstain_strict(
                 question=question,
                 context=context,
                 llm_client=llm_client,
@@ -598,6 +791,10 @@ def main() -> None:
             answer_text = ""
             row["classifier_reason"] = classifier_reason
             row["classifier_confidence"] = classifier_confidence
+            row["classifier_decision_source"] = classifier_debug.get("decision_source", "")
+            row["classifier_attempts_used"] = classifier_debug.get("attempts_used")
+            row["classifier_parse_error"] = classifier_debug.get("parse_error", "")
+            row["classifier_raw_response_text"] = classifier_debug.get("raw_response_text", "")
             if args.sleep_seconds > 0:
                 time.sleep(args.sleep_seconds)
 
@@ -630,6 +827,13 @@ def main() -> None:
         if value
     }
 
+    generation_types = sorted({str(r.get("generation_type", "")) for r in all_rows})
+    per_generation_type_metrics = {
+        value: _compute_metrics([r for r in all_rows if str(r.get("generation_type", "")) == value])
+        for value in generation_types
+        if value
+    }
+
     adversarial_rows = [
         r
         for r in all_rows
@@ -640,6 +844,7 @@ def main() -> None:
         )
     ]
     adversarial_metrics = _compute_metrics(adversarial_rows)
+    diagnostic_summary = _compute_diagnostic_summary(all_rows)
 
     wrong_examples = [
         {
@@ -651,6 +856,12 @@ def main() -> None:
             "reason": r.get("reason", ""),
             "reason_type": r.get("reason_type", ""),
             "source_scope": r.get("source_scope", ""),
+            "classifier_reason": r.get("classifier_reason", ""),
+            "classifier_confidence": r.get("classifier_confidence"),
+            "classifier_decision_source": r.get("classifier_decision_source", ""),
+            "classifier_attempts_used": r.get("classifier_attempts_used"),
+            "classifier_parse_error": r.get("classifier_parse_error", ""),
+            "classifier_raw_response_text": r.get("classifier_raw_response_text", ""),
             "answer_text": r.get("answer_text", ""),
         }
         for r in all_rows
@@ -675,6 +886,7 @@ def main() -> None:
             "classifier_temperature": args.classifier_temperature,
             "classifier_retries": args.classifier_retries,
             "classifier_retry_delay": args.classifier_retry_delay,
+            "retrieval_depth": args.retrieval_depth,
         },
         "dataset_version": dataset_version,
         "n_examples_total": len(all_rows),
@@ -682,13 +894,34 @@ def main() -> None:
         "per_slice": per_slice_metrics,
         "per_source_scope": per_source_scope_metrics,
         "per_reason_type": per_reason_type_metrics,
+        "per_generation_type": per_generation_type_metrics,
         "adversarial_no_answer": adversarial_metrics,
+        "diagnostics": diagnostic_summary,
         "n_incorrect": len(wrong_examples),
         "incorrect_examples_preview": wrong_examples[:25],
+        "all_predictions": [
+            {
+                "query_id": r.get("query_id", ""),
+                "slice_name": r.get("slice_name", ""),
+                "question": r.get("question", ""),
+                "should_abstain": bool(r.get("should_abstain", False)),
+                "pred_should_abstain": bool(r.get("pred_should_abstain", False)),
+                "reason": r.get("reason", ""),
+                "reason_type": r.get("reason_type", ""),
+                "source_scope": r.get("source_scope", ""),
+                "classifier_reason": r.get("classifier_reason", ""),
+                "classifier_confidence": r.get("classifier_confidence"),
+                "classifier_decision_source": r.get("classifier_decision_source", ""),
+                "classifier_attempts_used": r.get("classifier_attempts_used"),
+                "classifier_parse_error": r.get("classifier_parse_error", ""),
+                "classifier_raw_response_text": r.get("classifier_raw_response_text", ""),
+            }
+            for r in all_rows
+        ],
     }
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     csv_rows: list[dict[str, Any]] = []
     csv_rows.append(
@@ -701,7 +934,7 @@ def main() -> None:
             segment_type="overall",
             segment_value="all",
             metrics=overall_metrics,
-            output_file=args.output,
+            output_file=output_path,
         )
     )
     for segment_name, metrics in per_slice_metrics.items():
@@ -715,7 +948,7 @@ def main() -> None:
                 segment_type="slice",
                 segment_value=segment_name,
                 metrics=metrics,
-                output_file=args.output,
+                output_file=output_path,
             )
         )
     for segment_name, metrics in per_source_scope_metrics.items():
@@ -729,7 +962,7 @@ def main() -> None:
                 segment_type="source_scope",
                 segment_value=segment_name,
                 metrics=metrics,
-                output_file=args.output,
+                output_file=output_path,
             )
         )
     for segment_name, metrics in per_reason_type_metrics.items():
@@ -743,7 +976,7 @@ def main() -> None:
                 segment_type="reason_type",
                 segment_value=segment_name,
                 metrics=metrics,
-                output_file=args.output,
+                output_file=output_path,
             )
         )
 
@@ -757,7 +990,7 @@ def main() -> None:
             segment_type="adversarial_no_answer",
             segment_value="out_of_scope_subset",
             metrics=adversarial_metrics,
-            output_file=args.output,
+            output_file=output_path,
         )
     )
 
@@ -768,6 +1001,7 @@ def main() -> None:
     print(f"Prediction mode:      {args.prediction_mode}")
     print(f"Model:                {args.model}")
     print(f"Model API mode:       {args.model_api_mode}")
+    print(f"Retrieval depth:      {args.retrieval_depth}")
     if args.model_api_mode == "hf_endpoint":
         print(f"Endpoint URL:         {args.model_endpoint_url}")
         print(f"Endpoint model arg:   {model_for_call}")
@@ -777,7 +1011,8 @@ def main() -> None:
     print(f"False answer rate:    {overall_metrics['false_answer_rate']:.4f}")
     print(f"False abstain rate:   {overall_metrics['false_abstain_rate']:.4f}")
     print(f"Abstain F1:           {overall_metrics['f1_abstain']:.4f}")
-    print(f"JSON output:          {args.output}")
+    print(f"Parse success rate:   {diagnostic_summary['parse_success_rate']:.4f}")
+    print(f"JSON output:          {output_path}")
     print(f"Comparison CSV:       {args.comparison_csv}")
 
 

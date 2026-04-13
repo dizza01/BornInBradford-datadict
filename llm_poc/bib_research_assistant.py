@@ -676,9 +676,146 @@ def _get_papers_cache(client: chromadb.ClientAPI) -> dict[str, Any]:
     return _PAPERS_CACHE
 
 
+def _exact_match_registry_lookup(query: str, client: chromadb.ClientAPI) -> str:
+    """Return a '## Exact Registry Matches' context block for identifiers named in the query.
+
+    Performs metadata-filtered exact Chroma lookups before semantic retrieval so the
+    classifier sees authoritative registry evidence — both positive (entity found with
+    its true properties) and negative (entity confirmed absent) — as the highest-priority
+    context section.
+
+    Covers: variable names, table IDs, paper DOIs, and quoted paper titles.
+    """
+    parts: list[str] = []
+
+    # ── Entity extraction ─────────────────────────────────────────────────────
+    # Table IDs:  e.g. "BiB_Metabolomics.metms_2k_r"
+    table_id_re = re.compile(r'\b([A-Za-z][A-Za-z0-9_]*\.[a-z][a-z0-9_]+)\b')
+    table_ids = list(dict.fromkeys(table_id_re.findall(query)))
+
+    # Variable names: extracted after the keyword "variable" or from
+    # "Is <identifier> a BiB variable" phrasing.
+    var_after_kw_re = re.compile(r'\bvariable\s+([A-Za-z][A-Za-z0-9_]+)\b')
+    var_is_re = re.compile(r'\bIs\s+([A-Za-z][A-Za-z0-9_]+)\s+a\s+BiB\s+variable\b', re.IGNORECASE)
+    var_names = list(dict.fromkeys(var_after_kw_re.findall(query) + var_is_re.findall(query)))
+
+    # DOIs: e.g. "10.1234/some.doi"
+    doi_re = re.compile(r"10\.\d{4,}/[^\s'\".,)]+")
+    dois = list(dict.fromkeys(doi_re.findall(query)))
+
+    # Quoted paper titles: single or double quotes, 10–200 chars
+    title_re = re.compile(r"['\"](.{10,200})['\"]")
+    quoted_titles = list(dict.fromkeys(title_re.findall(query)))
+
+    def _ensure_header() -> None:
+        if not parts:
+            parts.append("## Exact Registry Matches\n")
+
+    # ── Variable exact lookup ─────────────────────────────────────────────────
+    try:
+        vars_col = client.get_collection("bib_variables")
+        for var_name in var_names[:3]:
+            res = vars_col.get(where={"variable": {"$eq": var_name}}, include=["documents"])
+            _ensure_header()
+            if res.get("documents"):
+                # A variable can appear in multiple tables; show all matches so
+                # the classifier can verify the exact variable–table pairing.
+                for doc in res["documents"][:3]:
+                    parts.append(f"[VARIABLE FOUND: {var_name}]\n```\n{doc}\n```\n")
+            else:
+                parts.append(
+                    f"[VARIABLE NOT IN REGISTRY: '{var_name}' does not exist"
+                    f" in the BiB datasphere]\n"
+                )
+    except Exception:
+        pass
+
+    # ── Table exact lookup ────────────────────────────────────────────────────
+    try:
+        tables_col = client.get_collection("bib_tables")
+        for tid in table_ids[:4]:
+            res = tables_col.get(where={"table_id": {"$eq": tid}}, include=["documents"])
+            _ensure_header()
+            if res.get("documents"):
+                for doc in res["documents"][:1]:
+                    parts.append(f"[TABLE FOUND: {tid}]\n```\n{doc}\n```\n")
+            else:
+                parts.append(
+                    f"[TABLE NOT IN REGISTRY: '{tid}' does not exist"
+                    f" in the BiB datasphere]\n"
+                )
+    except Exception:
+        pass
+
+    # ── Paper DOI exact lookup ────────────────────────────────────────────────
+    try:
+        papers_col = client.get_collection("bib_papers")
+        for doi in dois[:2]:
+            res = papers_col.get(where={"doi": {"$eq": doi}}, include=["metadatas"])
+            _ensure_header()
+            if res.get("metadatas"):
+                meta = next(
+                    (m for m in res["metadatas"] if m and m.get("source") != "pdf_fulltext"),
+                    (res["metadatas"] or [{}])[0] or {},
+                )
+                parts.append(
+                    f"[PAPER DOI FOUND: {doi}]\n"
+                    f"Title: {meta.get('title', '')}\n"
+                    f"Year: {meta.get('year', '')}\n\n"
+                )
+            else:
+                parts.append(
+                    f"[PAPER DOI NOT IN REGISTRY: '{doi}' not found in BiB paper index]\n"
+                )
+    except Exception:
+        pass
+
+    # ── Paper title exact lookup (includes PDF-chunk presence check) ──────────
+    try:
+        papers_col = client.get_collection("bib_papers")
+        for title in quoted_titles[:2]:
+            # Try exact match first; also try truncated form (stored as title[:500])
+            res = papers_col.get(where={"title": {"$eq": title}}, include=["metadatas"])
+            if not res.get("metadatas"):
+                res = papers_col.get(
+                    where={"title": {"$eq": title[:500]}}, include=["metadatas"]
+                )
+            _ensure_header()
+            if res.get("metadatas"):
+                has_pdf = any(
+                    (m or {}).get("source") == "pdf_fulltext"
+                    for m in res["metadatas"]
+                )
+                # Prefer the abstract-level record for year/doi metadata
+                meta = next(
+                    (m for m in res["metadatas"] if m and m.get("source") != "pdf_fulltext"),
+                    (res["metadatas"] or [{}])[0] or {},
+                )
+                parts.append(
+                    f"[PAPER TITLE FOUND: '{title[:80]}']\n"
+                    f"Year: {meta.get('year', '')}\n"
+                    f"DOI: {meta.get('doi', '')}\n"
+                    f"Has full-text PDF chunks in index: {'yes' if has_pdf else 'no'}\n\n"
+                )
+            else:
+                parts.append(
+                    f"[PAPER TITLE NOT IN REGISTRY: '{title[:80]}'"
+                    f" not found in BiB paper index]\n"
+                )
+    except Exception:
+        pass
+
+    return "\n".join(parts)
+
+
 def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5) -> str:
     """Retrieve relevant docs from all three collections and format as context."""
     context_parts = []
+
+    # ── Exact registry lookups (highest authority, prepended before semantic results) ──
+    exact_ctx = _exact_match_registry_lookup(query, client)
+    if exact_ctx:
+        context_parts.append(exact_ctx)
 
     # ── Papers ───────────────────────────────────────────────────────────────
     try:

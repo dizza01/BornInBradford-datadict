@@ -302,17 +302,34 @@ def _validate_record(record: dict[str, Any], registries: dict[str, Any]) -> bool
         table_id = str(metadata.get("table_id", ""))
         return (table_id in table_ids) != should_abstain
 
-    if generation_type in {"var_table_pair_positive", "var_table_pair_negative"}:
+    if generation_type == "var_table_pair_positive":
         variable = str(metadata.get("variable", ""))
         table_id = str(metadata.get("table_id", ""))
         is_true_pair = variable in variable_to_tables and table_id in variable_to_tables[variable]
-        return is_true_pair != should_abstain
+        return is_true_pair and not should_abstain
 
-    if generation_type in {"table_project_positive", "table_project_negative"}:
+    if generation_type == "var_table_pair_negative":
+        # Variable exists in the index but in a different table → model can answer "no"
+        # so should_abstain=False. Validate: variable exists AND pairing is wrong.
+        variable = str(metadata.get("variable", ""))
+        table_id = str(metadata.get("table_id", ""))
+        is_true_pair = variable in variable_to_tables and table_id in variable_to_tables[variable]
+        return (variable in variable_names) and not is_true_pair and not should_abstain
+
+    if generation_type == "table_project_positive":
         table_id = str(metadata.get("table_id", ""))
         project_name = str(metadata.get("project_name", ""))
         exists = table_id in table_to_project and table_to_project.get(table_id) == project_name
-        return exists != should_abstain
+        return exists and not should_abstain
+
+    if generation_type == "table_project_negative":
+        # Table exists in the index but belongs to a different project → model can answer "no"
+        # so should_abstain=False. Validate: table exists AND project claim is wrong.
+        table_id = str(metadata.get("table_id", ""))
+        project_name = str(metadata.get("project_name", ""))
+        table_exists = table_id in table_to_project
+        is_correct_project = table_to_project.get(table_id) == project_name
+        return table_exists and not is_correct_project and not should_abstain
 
     if generation_type == "out_of_scope_negative":
         return should_abstain and str(metadata.get("domain", "")) in {"non_bib", "external"}
@@ -337,7 +354,7 @@ def _generate_positive(
 
     if template == "var_exists_positive":
         v = rng.choice(variables)
-        question = f"Is {v.variable} a BiB variable in the datasphere?"
+        question = f"Is {v.variable} a variable documented in the BiB data dictionary?"
         reason = "variable exists in registry"
         metadata = {"variable": v.variable, "table_id": v.table_id, "project_name": v.project}
         group_key = f"variable::{v.variable}"
@@ -345,7 +362,7 @@ def _generate_positive(
 
     if template == "table_exists_positive":
         t = rng.choice(tables)
-        question = f"Does the table {t.table_id} exist in the BiB datasphere?"
+        question = f"Does the table {t.table_id} exist in the BiB data dictionary?"
         reason = "table exists in registry"
         metadata = {"table_id": t.table_id, "project_name": t.project_name}
         group_key = f"table::{t.table_id}"
@@ -394,7 +411,7 @@ def _generate_negative(
         while candidate in variable_names and retries < 20:
             candidate = _perturb_identifier(base.variable, rng)
             retries += 1
-        question = f"Is {candidate} a BiB variable in the datasphere?"
+        question = f"Is {candidate} a variable documented in the BiB data dictionary?"
         reason = "variable not in registry"
         metadata = {"variable": candidate, "derived_from": base.variable, "table_id": base.table_id}
         group_key = f"variable::{base.variable}"
@@ -407,7 +424,7 @@ def _generate_negative(
         while candidate in table_ids and retries < 20:
             candidate = _perturb_identifier(base.table_id, rng)
             retries += 1
-        question = f"Does the table {candidate} exist in the BiB datasphere?"
+        question = f"Does the table {candidate} exist in the BiB data dictionary?"
         reason = "table not in registry"
         metadata = {"table_id": candidate, "derived_from": base.table_id}
         group_key = f"table::{base.table_id}"
@@ -445,14 +462,14 @@ def _generate_negative(
         return question, reason, template, metadata, group_key
 
     out_questions = [
-        "Is the UK Biobank data dictionary part of the BiB datasphere registry?",
-        "Does BiB include a table called nhanes_lab_results_2019?",
-        "Is variable icd10_primary_diagnosis from NHS HES automatically in the BiB registry?",
-        "Can you find a BiB table for NOAA daily temperature summaries?",
-        "Does the BiB datasphere include a variable named census_block_population_density_2021?",
+        "Is the UK Biobank data dictionary documented in the BiB data dictionary?",
+        "Does the BiB data dictionary include a table called nhanes_lab_results_2019?",
+        "Is variable icd10_primary_diagnosis from NHS HES documented in the BiB data dictionary?",
+        "Can you find a BiB data dictionary entry for NOAA daily temperature summaries?",
+        "Does the BiB data dictionary include a variable named census_block_population_density_2021?",
     ]
     question = rng.choice(out_questions)
-    reason = "question is out of scope for BiB registries"
+    reason = "question is out of scope for the BiB data dictionary"
     metadata = {"domain": "non_bib"}
     group_key = f"oos::{_normalize_text(question)}"
     return question, reason, "out_of_scope_negative", metadata, group_key
@@ -593,7 +610,14 @@ def main() -> None:
                 tables=tables,
                 registries=registries,
             )
-            should_abstain = True
+            # Policy split: mismatch types have a definitive "no" answer because the
+            # entity EXISTS in the index but the claimed mapping is wrong. The model
+            # should answer "no", not abstain. True abstentions are reserved for
+            # non-existent entities and out-of-scope questions.
+            if generation_type in {"var_table_pair_negative", "table_project_negative"}:
+                should_abstain = False
+            else:
+                should_abstain = True
             label_key = "negative"
 
         normalized_question = _normalize_text(question)

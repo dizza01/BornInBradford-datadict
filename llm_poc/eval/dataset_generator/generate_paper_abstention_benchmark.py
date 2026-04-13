@@ -343,14 +343,14 @@ def _generate_negative(
         return question, reason, template, metadata, f"paper::{_normalize_text(p.title)}"
 
     out_questions = [
-        "Is there an indexed BiB paper titled 'Genome-wide atlas of Martian microbiome shifts' ?",
-        "Does BiB index the Lancet paper 'Global burden of disease in penguins 2030' ?",
-        "Is DOI '10.5555/nonbib.424242' linked to a BiB indexed paper?",
-        "Is there a BiB full-text PDF chunk for the paper 'NHANES Nutrition Trial in Icelandic Teens'?",
-        "Does the BiB paper index include a 2027 Nature paper on quantum cardiology?",
+        "Is there a BiB research paper titled 'Genome-wide atlas of Martian microbiome shifts'?",
+        "Does the BiB data dictionary index the Lancet paper 'Global burden of disease in penguins 2030'?",
+        "Is DOI '10.5555/nonbib.424242' linked to a Born in Bradford research paper?",
+        "Is there full-text PDF content for the paper 'NHANES Nutrition Trial in Icelandic Teens' in the BiB data dictionary?",
+        "Does the BiB data dictionary include a 2027 Nature paper on quantum cardiology?",
     ]
     question = rng.choice(out_questions)
-    reason = "question is out of scope for indexed BiB papers"
+    reason = "question is out of scope for the BiB data dictionary paper index"
     metadata = {"domain": "non_bib_papers"}
     return question, reason, "paper_out_of_scope_negative", metadata, f"oos::{_normalize_text(question)}"
 
@@ -371,11 +371,18 @@ def _validate_record(
         exists = title in title_set
         return exists != should_abstain
 
-    if generation_type in {"paper_title_year_positive", "paper_title_year_negative"}:
+    if generation_type == "paper_title_year_positive":
         title = _normalize_text(str(metadata.get("title", "")))
         year = str(metadata.get("year", "")).strip()
-        exists = (title, year) in title_year_set
-        return exists != should_abstain
+        return (title, year) in title_year_set and not should_abstain
+
+    if generation_type == "paper_title_year_negative":
+        # Paper exists but wrong year claimed → model can answer "no" → should_abstain=False
+        title = _normalize_text(str(metadata.get("title", "")))
+        year = str(metadata.get("year", "")).strip()
+        title_exists = title in title_set
+        year_matches = (title, year) in title_year_set
+        return title_exists and not year_matches and not should_abstain
 
     if generation_type in {"paper_doi_exists_positive", "paper_doi_exists_negative"}:
         doi = str(metadata.get("doi", "")).strip()
@@ -384,10 +391,16 @@ def _validate_record(
         exists = doi in doi_set
         return exists != should_abstain
 
-    if generation_type in {"paper_has_pdf_positive", "paper_has_pdf_negative"}:
+    if generation_type == "paper_has_pdf_positive":
         title = _normalize_text(str(metadata.get("title", "")))
-        exists = title in pdf_title_set
-        return exists != should_abstain
+        return title in pdf_title_set and not should_abstain
+
+    if generation_type == "paper_has_pdf_negative":
+        # Paper exists but has no PDF chunks → model can answer "no" → should_abstain=False
+        title = _normalize_text(str(metadata.get("title", "")))
+        title_exists = title in title_set
+        has_pdf = title in pdf_title_set
+        return title_exists and not has_pdf and not should_abstain
 
     if generation_type == "paper_out_of_scope_negative":
         return should_abstain
@@ -493,7 +506,13 @@ def main() -> None:
                 doi_set=doi_set,
                 pdf_title_set=pdf_title_set,
             )
-            should_abstain = True
+            # Policy split: mismatch types (wrong year, no PDF) have a definitive "no"
+            # answer because the paper EXISTS. True abstentions are reserved for
+            # non-existent titles/DOIs and out-of-scope queries.
+            if generation_type in {"paper_title_year_negative", "paper_has_pdf_negative"}:
+                should_abstain = False
+            else:
+                should_abstain = True
             label_key = "negative"
 
         normalized_question = _normalize_text(question)

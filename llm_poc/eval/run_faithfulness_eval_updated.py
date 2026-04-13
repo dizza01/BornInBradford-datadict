@@ -13,7 +13,7 @@ Usage
 -----
 
     # Evaluate with the Qwen base model (public API)
-    ../../.venv/bin/python eval/run_faithfulness_eval.py \
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
         --answer-model Qwen/Qwen2.5-72B-Instruct \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
@@ -21,7 +21,7 @@ Usage
         --run-name faithfulness_baseline
 
     # Evaluate with your merged model using a Hugging Face Inference Endpoint
-    ../../.venv/bin/python eval/run_faithfulness_eval.py \
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
         --answer-model dizza01/qwen2.5-7b-finetunerag-merged-4bit \
         --answer-api-mode hf_endpoint \
@@ -32,37 +32,27 @@ Usage
         --run-name faithfulness_qwen_finetuned_endpoint
 
 
-    # Evaluate with your merged model using a Hugging Face Inference Endpoint
-    ../../.venv/bin/python eval/run_faithfulness_eval.py \
-        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
-        --answer-model dizza01/qwen2.5-7b-finetunerag-merged \
-        --answer-api-mode hf_endpoint \
-        --answer-endpoint-url https://woo97muev69lrrvd.us-east-1.aws.endpoints.huggingface.cloud \
-        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
-        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --judge-retries 2
-        --run-name faithfulness_qwen_finetuned_endpoint
-
-    ../../.venv/bin/python eval/run_faithfulness_eval.py \
-        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
-        --answer-model dizza01/qwen2.5-7b-pdf-merged \
-        --answer-api-mode hf_endpoint \
-        --answer-endpoint-url https://eyicswzutfjqodxe.us-east-1.aws.endpoints.huggingface.cloud \
-        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
-        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --judge-retries 2
-        --run-name faithfulness_qwen_pdf_finetuned_endpoint
-
-    ../../.venv/bin/python eval/run_faithfulness_eval.py \
-        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
-        --answer-model dizza01/BioMistral-7B-DARE \
-        --answer-api-mode hf_endpoint \
-        --answer-endpoint-url https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud \
-        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
-        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --judge-retries 2
-        --run-name faithfulness_BioMistral_endpoint
     # (Replace <your-endpoint-url> with your actual endpoint URL)
+
+set -e
+
+MODELS=(
+  "Qwen/Qwen2.5-7B-Instruct|qwen25_7b_instruct"
+  "meta-llama/Llama-3.1-8B-Instruct|llama31_8b_instruct"
+  "meta-llama/Llama-3.1-70B-Instruct|llama31_70b_instruct"
+  "Qwen/Qwen2.5-72B-Instruct|qwen25_72b_instruct"   
+)
+
+for entry in "${MODELS[@]}"; do
+  IFS="|" read -r MODEL RUN_NAME <<< "$entry"
+  ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+    --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
+    --answer-model "$MODEL" \
+    --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+    --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+    --run-name "$RUN_NAME"
+done
+
 """
 
 from __future__ import annotations
@@ -93,7 +83,7 @@ from bib_research_assistant import (
 )
 
 DEFAULT_TRIPLES = Path(__file__).resolve().parent / "evaluation_datasets" / "triples" / "pdf_retrieval_triples.jsonl"
-DEFAULT_OUTPUT = Path(__file__).resolve().parent / "faithfulness_eval_results.json"
+DEFAULT_OUTPUT = Path(__file__).resolve().parent / "faithfulness_eval_results_updated.json"
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "results" / "llm_faithfulness_metrics"
 DEFAULT_COMPARISON_CSV = DEFAULT_RESULTS_DIR / "comparison.csv"
 DEFAULT_EXTERNAL_JUDGE = "meta-llama/Llama-3.1-70B-Instruct"
@@ -303,13 +293,44 @@ def _strip_code_fences(text: str) -> str:
 
 def _parse_json_response(text: str) -> dict[str, Any]:
     cleaned = _strip_code_fences(text)
+    decoder = json.JSONDecoder()
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError:
+        start_positions = [idx for idx, char in enumerate(cleaned) if char == "{"]
+        for start in start_positions:
+            try:
+                parsed, _ = decoder.raw_decode(cleaned[start:])
+            except json.JSONDecodeError:
+                continue
+            if isinstance(parsed, dict):
+                return parsed
         match = JSON_BLOCK_RE.search(cleaned)
         if not match:
             raise
         return json.loads(match.group(0))
+
+
+def _normalize_endpoint_generation_response(response: Any) -> str:
+    if isinstance(response, str):
+        return response
+    if isinstance(response, dict):
+        for key in ("generated_text", "text", "answer", "output"):
+            value = response.get(key)
+            if isinstance(value, str):
+                return value
+        raise TypeError(f"Unsupported endpoint response dict keys: {sorted(response.keys())}")
+    if isinstance(response, list) and response:
+        first = response[0]
+        if isinstance(first, str):
+            return first
+        if isinstance(first, dict):
+            return _normalize_endpoint_generation_response(first)
+    for attr in ("generated_text", "text"):
+        value = getattr(response, attr, None)
+        if isinstance(value, str):
+            return value
+    raise TypeError(f"Unsupported endpoint response type: {type(response).__name__}")
 
 
 def _parse_tsv_judge_response(text: str) -> dict[str, Any]:
@@ -448,7 +469,7 @@ def _generate_rag_answer(
                     temperature=0.2,
                     max_tokens=max_tokens,
                 )
-                answer = response
+                answer = _normalize_endpoint_generation_response(response)
                 # Some endpoints return the prompt + answer, so try to strip the prompt if present
                 if answer.startswith(prompt):
                     answer = answer[len(prompt):].strip()
@@ -899,6 +920,10 @@ def _append_comparison_csv(
         "run_name",
         "judge_type",
         "judge_model",
+        "attempted_queries",
+        "succeeded_queries",
+        "failed_queries",
+        "failure_rate",
         "n_queries",
         "total_claims",
         "claim_support_rate",
@@ -950,6 +975,7 @@ def _append_comparison_csv(
     summary = eval_results.get("summary", {})
     agreement = summary.get("judge_agreement", {})
     generation_quality = summary.get("generation_quality", {})
+    run_status = summary.get("run_status", {})
     now = datetime.now().isoformat(timespec="seconds")
 
     rows = [
@@ -977,6 +1003,10 @@ def _append_comparison_csv(
                     "run_name": run_name,
                     "judge_type": judge_type,
                     "judge_model": judge_model,
+                    "attempted_queries": run_status.get("attempted_queries", ""),
+                    "succeeded_queries": run_status.get("succeeded_queries", ""),
+                    "failed_queries": run_status.get("failed_queries", ""),
+                    "failure_rate": run_status.get("failure_rate", ""),
                     "n_queries": payload.get("n_queries", ""),
                     "total_claims": payload.get("total_claims", ""),
                     "claim_support_rate": payload.get("claim_support_rate", ""),
@@ -1033,7 +1063,7 @@ def main() -> None:
     answer_model_for_call = args.answer_model
     if args.answer_api_mode == "hf_endpoint":
         rag_client = _get_hf_endpoint_client(args.answer_endpoint_url)
-        answer_model_for_call = args.answer_endpoint_model.strip()
+        answer_model_for_call = args.answer_endpoint_model.strip() or args.answer_model
     else:
         rag_client = _get_hf_client(args.answer_model)
 
@@ -1058,6 +1088,8 @@ def main() -> None:
     per_query: list[dict[str, Any]] = []
     external_judgments: list[dict[str, Any]] = []
     qwen_judgments: list[dict[str, Any]] = []
+    failed_queries: list[dict[str, str]] = []
+    attempted_queries = len(triples)
 
     for idx, triple in enumerate(triples, start=1):
         question = str(triple.get("question", "")).strip()
@@ -1117,6 +1149,13 @@ def main() -> None:
 
         except Exception as exc:
             print(f"⚠️  {idx:>3}/{len(triples)} failed ({query_id}): {exc}")
+            failed_queries.append(
+                {
+                    "query_id": query_id,
+                    "question": question,
+                    "error": str(exc),
+                }
+            )
             continue
 
         external_judgments.append(ext)
@@ -1171,8 +1210,20 @@ def main() -> None:
     qwen_summary = _summarize(qwen_judgments)
     agreement = _judge_agreement(external_judgments, qwen_judgments)
     generation_quality = _summarize_generation_quality(per_query)
+    failed_count = len(failed_queries)
+    succeeded_count = len(per_query)
+    run_status = {
+        "attempted_queries": attempted_queries,
+        "succeeded_queries": succeeded_count,
+        "failed_queries": failed_count,
+        "failure_rate": _safe_div(failed_count, attempted_queries),
+    }
 
     eval_results = {
+        "n_queries_attempted": attempted_queries,
+        "n_queries_succeeded": succeeded_count,
+        "n_queries_failed": failed_count,
+        "failed_queries_preview": failed_queries[:25],
         "config": {
             "triples": str(args.triples),
             "retrieval_mode": args.retrieval_mode,
@@ -1193,6 +1244,7 @@ def main() -> None:
             "evaluated_at": datetime.now().isoformat(timespec="seconds"),
         },
         "summary": {
+            "run_status": run_status,
             "primary_faithfulness_metric": {
                 "judge": "external",
                 "unfaithful_claim_rate": external_summary["unfaithful_claim_rate"],
@@ -1231,6 +1283,13 @@ def main() -> None:
         )
 
     print("\n════════════════════════════════════════════════════")
+    print(
+        "Run status: "
+        f"attempted={run_status['attempted_queries']}, "
+        f"succeeded={run_status['succeeded_queries']}, "
+        f"failed={run_status['failed_queries']}, "
+        f"failure_rate={run_status['failure_rate']:.3f}"
+    )
     print("Primary metric (external judge):")
     print(
         "  unfaithful_claim_rate="

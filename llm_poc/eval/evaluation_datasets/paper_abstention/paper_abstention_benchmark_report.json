@@ -1,15 +1,15 @@
 {
-  "dataset_version": "combined_abstention_benchmark_v1__papers",
+  "dataset_version": "combined_abstention_benchmark_v2__papers",
   "index_snapshot_filter_enabled": true,
   "index_snapshot_id": "18217fc361b3652e",
   "n_examples": 400,
-  "n_positive": 200,
-  "n_negative": 200,
+  "n_positive": 295,
+  "n_negative": 105,
   "attempts": 481,
   "unique_questions": 400,
   "split_distribution": {
-    "train": 299,
-    "dev": 50,
+    "train": 300,
+    "dev": 49,
     "test": 51
   },
   "generation_type_distribution": {
