@@ -28,8 +28,21 @@ Usage
         --answer-endpoint-url https://skqrt4ar5z72zlb7.us-east-1.aws.endpoints.huggingface.cloud \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --judge-retries 2
+        --judge-retries 2 \
         --run-name faithfulness_qwen_finetuned_endpoint
+
+    # Evaluate with your merged model using a Hugging Face Inference Endpoint
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
+        --answer-model dizza01/BioMistral-7B-DARE \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --run-name faithfulness_biomistral-7b-dare_endpoint
+
+        
 
 
     # (Replace <your-endpoint-url> with your actual endpoint URL)
