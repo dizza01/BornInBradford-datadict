@@ -20,16 +20,25 @@ Usage
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --run-name faithfulness_baseline
 
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
+        --answer-model Qwen/Qwen2.5-7B-Instruct \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --run-name faithfulness_baseline
+
     # Evaluate with your merged model using a Hugging Face Inference Endpoint
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
-        --answer-model dizza01/qwen2.5-7b-finetunerag-merged-4bit \
+        --answer-model dizza01/qwen2.5-7b-finetunerag-merged \
         --answer-api-mode hf_endpoint \
-        --answer-endpoint-url https://skqrt4ar5z72zlb7.us-east-1.aws.endpoints.huggingface.cloud \
+        --answer-endpoint-url https://eyicswzutfjqodxe.us-east-1.aws.endpoints.huggingface.cloud \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
-        --run-name faithfulness_qwen_finetuned_endpoint
+        --run-name faithfulness_qwen_finetuned_endpoint_step_3 \
+        --answer-endpoint-mode chat_completions \
+        --max-queries 100
 
     # Evaluate with your merged model using a Hugging Face Inference Endpoint
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
@@ -43,7 +52,15 @@ Usage
         --run-name faithfulness_biomistral-7b-dare_endpoint
 
         
-
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
+        --answer-model dizza01/qwen2.5-7b-pdf-merged \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://eyicswzutfjqodxe.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --run-name faithfulness_qwen7b_pdf_finetuned_endpoint
 
     # (Replace <your-endpoint-url> with your actual endpoint URL)
 
@@ -196,6 +213,24 @@ def parse_args() -> argparse.Namespace:
         type=str,
         default="",
         help="Optional model name sent to endpoint chat API. If empty, --answer-model is used.",
+    )
+    parser.add_argument(
+        "--answer-endpoint-mode",
+        type=str,
+        choices=["text_generation", "chat_completions"],
+        default="text_generation",
+        help=(
+            "How to call a Hugging Face endpoint when --answer-api-mode=hf_endpoint. "
+            "text_generation sends a flat prompt; chat_completions sends system/user messages."
+        ),
+    )
+    parser.add_argument(
+        "--allow-endpoint-chat-fallback",
+        action="store_true",
+        help=(
+            "Only for hf_endpoint + chat_completions: if /v1/chat/completions is unavailable (404), "
+            "fall back to text_generation instead of failing fast."
+        ),
     )
     parser.add_argument(
         "--retrieval-mode",
@@ -427,7 +462,7 @@ def _validate_models(answer_model: str, external_judge_model: str, qwen_judge_mo
         raise ValueError("answer-model cannot be empty")
 
 
-def _get_hf_endpoint_client(base_url: str) -> Any:
+def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
     try:
         from huggingface_hub import InferenceClient
     except ImportError as exc:
@@ -447,8 +482,9 @@ def _get_hf_endpoint_client(base_url: str) -> Any:
     client = InferenceClient(model=base_url.strip(), token=token)
 
     class _Wrapper:
-        def __init__(self, hf_client):
+        def __init__(self, hf_client, mode: str):
             self._hf = hf_client
+            self.endpoint_mode = mode
 
         def generate(self, prompt, temperature=0.2, max_tokens=1500, **kw):
             # Standard HF Inference Endpoint API
@@ -459,7 +495,19 @@ def _get_hf_endpoint_client(base_url: str) -> Any:
                 **kw
             )
 
-    return _Wrapper(client)
+        def chat_generate(self, messages, model="", temperature=0.2, max_tokens=1500):
+            request = {
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+            }
+            if model:
+                request["model"] = model
+
+            response = self._hf.chat.completions.create(**request)
+            return (response.choices[0].message.content or "").strip()
+
+    return _Wrapper(client, endpoint_mode)
 
 
 def _generate_rag_answer(
@@ -468,9 +516,68 @@ def _generate_rag_answer(
     llm_client: Any,
     model: str,
     max_tokens: int,
+    allow_endpoint_chat_fallback: bool = False,
 ) -> str:
     # If llm_client has 'generate', use standard HF endpoint; else, use chat.completions.create
     if hasattr(llm_client, "generate"):
+        endpoint_mode = getattr(llm_client, "endpoint_mode", "text_generation")
+
+        def _is_chat_404(exc: Exception) -> bool:
+            msg = str(exc)
+            return (
+                "404" in msg
+                and "chat/completions" in msg
+                and "Not Found" in msg
+            )
+
+        if endpoint_mode == "chat_completions":
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": (
+                        f"Retrieved knowledge base context:\n\n{context}\n\n"
+                        f"---\n\nResearcher question: {question}"
+                    ),
+                },
+            ]
+
+            max_attempts = 6
+            base_delay = 1.0
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    answer = llm_client.chat_generate(
+                        messages=messages,
+                        model=model,
+                        temperature=0.2,
+                        max_tokens=max_tokens,
+                    )
+                    return _strip_filler(answer).strip()
+                except Exception as exc:
+                    msg = str(exc)
+                    if _is_chat_404(exc):
+                        if not allow_endpoint_chat_fallback:
+                            raise RuntimeError(
+                                "Endpoint does not support /v1/chat/completions (404). "
+                                "For strict chat-vs-chat comparison, use a chat-capable endpoint. "
+                                "Or rerun with --allow-endpoint-chat-fallback to permit text_generation fallback."
+                            ) from exc
+
+                        print(
+                            "[WARN] Endpoint does not support /v1/chat/completions. "
+                            "Falling back to text_generation for this run (--allow-endpoint-chat-fallback enabled)."
+                        )
+                        llm_client.endpoint_mode = "text_generation"
+                        endpoint_mode = "text_generation"
+                        break
+                    if "503" in msg or "Service Unavailable" in msg:
+                        if attempt < max_attempts:
+                            wait = base_delay * (2 ** (attempt - 1))
+                            print(f"[WARN] 503 Service Unavailable, retrying in {wait:.1f}s (attempt {attempt}/{max_attempts})...")
+                            time.sleep(wait)
+                            continue
+                    raise
+
         # Standard HF endpoint: build a single prompt string
         prompt = f"{SYSTEM_PROMPT}\n\nRetrieved knowledge base context:\n\n{context}\n\n---\n\nResearcher question: {question}"
         max_attempts = 6  # up to ~31s total wait
@@ -1075,7 +1182,7 @@ def main() -> None:
     rag_client = None
     answer_model_for_call = args.answer_model
     if args.answer_api_mode == "hf_endpoint":
-        rag_client = _get_hf_endpoint_client(args.answer_endpoint_url)
+        rag_client = _get_hf_endpoint_client(args.answer_endpoint_url, args.answer_endpoint_mode)
         answer_model_for_call = args.answer_endpoint_model.strip() or args.answer_model
     else:
         rag_client = _get_hf_client(args.answer_model)
@@ -1094,6 +1201,7 @@ def main() -> None:
     print(f"🤖 Answer API mode: {args.answer_api_mode}")
     if args.answer_api_mode == "hf_endpoint":
         print(f"🌐 Answer endpoint: {args.answer_endpoint_url}")
+        print(f"🧩 Endpoint inference mode: {args.answer_endpoint_mode}")
         print(f"🔖 Endpoint model arg: {answer_model_for_call}")
     print(f"⚖️  Primary judge (external): {args.external_judge_model}")
     print(f"🧪 Sensitivity judge (Qwen): {args.qwen_judge_model}")
@@ -1129,6 +1237,7 @@ def main() -> None:
                 llm_client=rag_client,
                 model=answer_model_for_call,
                 max_tokens=args.answer_max_tokens,
+                allow_endpoint_chat_fallback=args.allow_endpoint_chat_fallback,
             )
             answer_ms = (time.perf_counter() - t_answer_start) * 1000.0
 
@@ -1161,6 +1270,12 @@ def main() -> None:
             time.sleep(args.sleep_seconds)
 
         except Exception as exc:
+            err_msg = str(exc)
+            if "Endpoint does not support /v1/chat/completions (404)" in err_msg:
+                print("\n❌ Endpoint chat route unavailable: aborting strict chat run.")
+                print(err_msg)
+                sys.exit(2)
+
             print(f"⚠️  {idx:>3}/{len(triples)} failed ({query_id}): {exc}")
             failed_queries.append(
                 {
@@ -1245,6 +1360,8 @@ def main() -> None:
             "answer_api_mode": args.answer_api_mode,
             "answer_endpoint_url": args.answer_endpoint_url,
             "answer_endpoint_model": answer_model_for_call,
+            "answer_endpoint_mode": args.answer_endpoint_mode,
+            "allow_endpoint_chat_fallback": args.allow_endpoint_chat_fallback,
             "external_judge_model": args.external_judge_model,
             "qwen_judge_model": args.qwen_judge_model,
             "judge_max_tokens": args.judge_max_tokens,
