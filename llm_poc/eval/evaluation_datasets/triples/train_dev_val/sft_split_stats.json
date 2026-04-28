@@ -1,0 +1,21 @@
+{
+  "input_path": "eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl",
+  "output_dir": "eval/evaluation_datasets/triples/train_dev_val",
+  "raw_rows": 300,
+  "deduped_rows": 300,
+  "filtered_rows": 299,
+  "dropped_reasons": {
+    "question_not_natural": 1
+  },
+  "documents_after_filter": 139,
+  "train_ratio_requested": 0.3,
+  "train_target_rows": 90,
+  "train_rows": 90,
+  "train_docs": 41,
+  "exact_train_target_achieved": true,
+  "dev_rows": 104,
+  "dev_docs": 50,
+  "test_rows": 105,
+  "test_docs": 48,
+  "seed": 42
+}

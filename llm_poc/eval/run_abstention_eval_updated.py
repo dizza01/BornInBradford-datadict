@@ -2,11 +2,15 @@
 Usage
 -----
 
-    ../../.venv/bin/python eval/run_abstention_eval.py \
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
         --run-name abstention_baseline \
         --model Qwen/Qwen2.5-72B-Instruct
 
-    ../../.venv/bin/python eval/run_abstention_eval.py \
+     ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --run-name abstention_qwen7B \
+        --model Qwen/Qwen2.5-7B-Instruct
+
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
         --prediction-mode model_strict \
         --max-queries-per-slice 100 \
         --run-name abstention_strict_smoke
