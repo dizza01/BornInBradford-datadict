@@ -1,0 +1,231 @@
+{
+  "n_queries_attempted": 105,
+  "n_queries_succeeded": 0,
+  "n_queries_failed": 105,
+  "failed_queries_preview": [
+    {
+      "query_id": "q_1",
+      "question": "What is the relationship between prenatal alcohol exposure and early education outcomes according to the study?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: oXHUPJ)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: 5gr96g)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_3",
+      "question": "What is the odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: CClMc3)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_4",
+      "question": "What factors were not included in the study due to lack of information?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: ff9Urp)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_5",
+      "question": "What is the recommended mean sleep duration for infants and toddlers according to the systematic review by Galland et al.?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: j15Pm3)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_6",
+      "question": "What is the relationship between physical activity and mental health outcomes in children according to a 2011 meta-analysis?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: ZHd1OY)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_7",
+      "question": "What are the four core studies included in the MR-PREG collaboration?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: lM9Dzj)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_8",
+      "question": "What is the difference in the prevalence of gestational diabetes between Pakistani and White British women according to the study?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: VObWo3)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_9",
+      "question": "What is the multi-method approach used in the BiB age 7-11 years follow-up?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: PCytYJ)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_10",
+      "question": "What criteria were used to exclude certain feeding problem codes from the study?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: RpvnrP)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_11",
+      "question": "What does the abbreviation 'PRS' stand for in the context of genetic risk studies?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: Ze5bzd)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_12",
+      "question": "What is one of the aims of the MR-PREG collaboration regarding maternal predisposition to conditions?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: 3kUBOy)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_13",
+      "question": "What is one of the key reasons why a successful RSV vaccine needs to induce a stronger immune response than natural infection?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: gy73QE)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_14",
+      "question": "What is the difference in the likelihood of achieving a Good Level of Development (GLD) on the Early Years Foundation Stage Profile (EYFSP) between children whose mothers drank during pregnancy and those whose mothers did not?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: sz8G_e)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_15",
+      "question": "What validated measure is used to assess family affluence in the Age of Wonder cohort questionnaires?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: xd2Gz8)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_16",
+      "question": "What were the reported differences in sleep timing between South Asian and white children?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: WF95o2)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_17",
+      "question": "What is the relationship between mdNLR and ethnic differences in DNA methylation between South Asians and Europeans?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: LpaP_h)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_18",
+      "question": "What percentage of respondents ranked 'Diet and Nutrition' as the top priority for helping children be healthy?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: r-23sp)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_19",
+      "question": "What does the study suggest about the impact of the pandemic on children's wellbeing in Bradford?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: YkF7bb)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_20",
+      "question": "What is the average growth rate in kilograms per month during early infancy according to the ALSPAC study?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: Z7accg)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_21",
+      "question": "What is the effect of low diet quality on the genetic risk score (PRS) for 2-hour post-load glucose in South Asian women?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: rAYh8M)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_22",
+      "question": "What services does the NHS in Bradford provide to closely related married couples to address genetic risks?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: mZAYh2)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_23",
+      "question": "What is the odds ratio for gestational diabetes mellitus (GDM) associated with a parental history of type 2 diabetes (T2D) in the study?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: CarL7V)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_24",
+      "question": "What is the age range of the young people being asked to complete questionnaires in the Born in Bradford Age of Wonder study?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: 1YPCVl)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_25",
+      "question": "What was one of the main challenges faced during the first year of data collection in the AoW pilot phase?",
+      "error": "Client error '404 Not Found' for url 'https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: yBVKeE)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    }
+  ],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/Qwen2.5-14B-Instruct",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/Qwen2.5-14B-Instruct",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 0,
+    "evaluated_at": "2026-04-30T13:24:42"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 105,
+      "succeeded_queries": 0,
+      "failed_queries": 105,
+      "failure_rate": 1.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 0,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 0,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 0,
+      "faithful_label_agreement": 0.0,
+      "unfaithful_presence_agreement": 0.0
+    },
+    "generation_quality": {
+      "n_queries": 0,
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.0,
+      "answer_correctness_token_f1": 0.0,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 0.0,
+      "latency_total_p95_ms": 0.0,
+      "latency_retrieval_avg_ms": 0.0,
+      "latency_answer_avg_ms": 0.0,
+      "avg_retrieved_tokens": 0.0,
+      "avg_answer_tokens": 0.0,
+      "answer_tokens_per_retrieved_token": 0.0
+    }
+  },
+  "per_query": []
+}

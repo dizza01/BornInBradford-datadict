@@ -1,0 +1,917 @@
+{
+  "n_queries_attempted": 10,
+  "n_queries_succeeded": 10,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/qwen2.5-7b-finetunerag-merged",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://eyicswzutfjqodxe.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/qwen2.5-7b-finetunerag-merged",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": true,
+    "max_queries": 10,
+    "evaluated_at": "2026-04-30T23:47:40"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 10,
+      "succeeded_queries": 10,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.2,
+      "contradicted_claim_rate": 0.12,
+      "not_found_claim_rate": 0.08,
+      "query_faithfulness_rate": 0.3,
+      "claim_support_rate": 0.56,
+      "contradiction_weighted_hallucination": 0.32
+    },
+    "external_judge": {
+      "n_queries": 10,
+      "total_claims": 25,
+      "supported_claims": 14,
+      "contradicted_claims": 3,
+      "not_found_claims": 2,
+      "unfaithful_claims": 5,
+      "unclear_claims": 6,
+      "claim_support_rate": 0.56,
+      "contradicted_claim_rate": 0.12,
+      "not_found_claim_rate": 0.08,
+      "unfaithful_claim_rate": 0.2,
+      "contradiction_weighted_hallucination": 0.32,
+      "query_faithfulness_rate": 0.3,
+      "contradicted_query_rate": 0.3,
+      "not_found_query_rate": 0.2,
+      "unfaithful_query_rate": 0.4,
+      "avg_claims_per_answer": 2.5,
+      "avg_unfaithful_claims_per_answer": 0.5
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 10,
+      "total_claims": 30,
+      "supported_claims": 27,
+      "contradicted_claims": 1,
+      "not_found_claims": 2,
+      "unfaithful_claims": 3,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.9,
+      "contradicted_claim_rate": 0.03333333333333333,
+      "not_found_claim_rate": 0.06666666666666667,
+      "unfaithful_claim_rate": 0.1,
+      "contradiction_weighted_hallucination": 0.13333333333333333,
+      "query_faithfulness_rate": 0.7,
+      "contradicted_query_rate": 0.1,
+      "not_found_query_rate": 0.1,
+      "unfaithful_query_rate": 0.2,
+      "avg_claims_per_answer": 3.0,
+      "avg_unfaithful_claims_per_answer": 0.3
+    },
+    "judge_agreement": {
+      "n_queries": 10,
+      "faithful_label_agreement": 0.6,
+      "unfaithful_presence_agreement": 0.8
+    },
+    "generation_quality": {
+      "n_queries": 10,
+      "answer_relevance": 0.819301456627308,
+      "completeness": 0.4403354218880535,
+      "conciseness": 0.09651025566799028,
+      "answer_correctness_token_f1": 0.08624255672607437,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 21078.612332988996,
+      "latency_total_p95_ms": 49708.519873966,
+      "latency_retrieval_avg_ms": 435.21640429389663,
+      "latency_answer_avg_ms": 13699.458083201898,
+      "avg_retrieved_tokens": 1093.6,
+      "avg_answer_tokens": 145.4,
+      "answer_tokens_per_retrieved_token": 0.13295537673738114
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+      "reference_answer": "-1.000",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "rag_answer": "The coefficient for theimpact of prenatal alcoholexposure (PAE)** on **GoodLevel of Development ( GLD )outcomes** using drinkingcomparison E is:\n\n**-1.0**\n\nThis value is derived from the coefficients presented in the paper titled **\"Associations betweenprenatal alcohol exposure andearly education outcomes amatched controls study usingthe born in B\" (2014)\"**. Specifically, the coefficient for drinking comparison **E** was found to be **-1.**",
+      "answer_relevance": 0.8095238095238095,
+      "completeness": 0.5,
+      "conciseness": 0.033898305084745756,
+      "answer_correctness_token_f1": 0.03278688524590164,
+      "answer_exact_match": false,
+      "retrieved_tokens": 931,
+      "answer_tokens": 59,
+      "latency_retrieval_ms": 1643.0551669909619,
+      "latency_answer_ms": 8607.856749993516,
+      "latency_external_judge_ms": 2609.2505829874426,
+      "latency_qwen_judge_ms": 5738.022583012935,
+      "latency_total_ms": 18598.185082984855,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is -1.0",
+              "verdict": "unclear",
+              "evidence": "supported"
+            },
+            {
+              "claim": "The value is derived from the paper titled \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\"",
+              "verdict": "unclear",
+              "evidence": "unclear"
+            },
+            {
+              "claim": "The paper provides coefficients for the impact of PAE on early education outcomes",
+              "verdict": "unclear",
+              "evidence": "supported"
+            }
+          ],
+          "counts": {
+            "total": 3,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 3
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "The answer provides a coefficient value that is explicitly supported by the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is -1.0\t\tsupported\t\"Coefficient for drinking comparison E −1.000 (−1.798, −0.201)\"\nCLAIM\tThe value is derived from the paper titled \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\"\t\tunclear\t\"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\"\nCLAIM\tThe paper provides coefficients for the impact of PAE on early education outcomes\t\tsupported\t\"Coefficient for drinking comparison E −1.000 (−1.798, −0.201)\"\nOVERALL\ttrue\tThe answer provides a coefficient value that is explicitly supported by the context.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is -1.0",
+              "verdict": "supported",
+              "evidence": "Coefficient for drinking comparison E −1.000 (−1.798, −0.201)"
+            },
+            {
+              "claim": "The value is derived from the coefficients presented in the paper titled \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\" (2014)",
+              "verdict": "supported",
+              "evidence": "Table 6. Impact of P"
+            }
+          ],
+          "counts": {
+            "total": 2,
+            "supported": 2,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "The answer is fully supported by the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E is -1.0\tsupported\tCoefficient for drinking comparison E −1.000 (−1.798, −0.201)\nCLAIM\tThe value is derived from the coefficients presented in the paper titled \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\" (2014)\tsupported\tTable 6. Impact of P\nOVERALL\ttrue\tThe answer is fully supported by the context.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\ngher (Advanced Level, qualification usually taken at age\n18 years).\nVariables previously shown to be associated with early\neducation achievement such as preterm birth, microcephaly and\nbirthweight were not controlled for in this analysis \n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nIntercept\n0.358 (−0.224, 0.959)\n–\n–\nCoefficient for drinking comparison E\n−1.000 (−1.798, −0.201)\n0.368 (0.166, 0.818)\n0.014\n*Estimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nt role health\neducation has to play in the prevention of PAE is widely\nrecognised.37,38\nIt is important to note that the absence of a statistically\nsignificant association with other drinking patterns in this analysis\nTable 6. Impact of P\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nn of a\n‘Good level of development’—and what does this tell us about how ‘good’ the\nearly years foundation stage profile is? Brit Educ Res J. 2022; 48(2), 371–401.\n14. Wood ML, Gunning L, Relins S, et al. Potential for England’s statutory \n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nYFSP assessment\nMean: 5.20 years\nStandard deviation: 0.29 years\nMissing: 24.1% (3361/13959)\nGCSE = General Certificate of Education; A-level = Advanced level; IMD = Index of multiple\ndeprivation; EYFSP = Early Years Foundation Stage Profi\n\n\n## Relevant Variables\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spav3b\nLabel: Average units of spirits per week in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 841\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spmx3b\nLabel: Maximum units of spirits at one time in the 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 833\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamxf3\nLabel: Maximum units of other alcohol at one time in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 185\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spavf3\nLabel: Average units of spirits per week in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 268\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamx3b\nLabel: Maximum units of other alcohol at one time in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 608\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaavf3\nLabel: Average units of other alcohol per week in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 186\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spmxf3\nLabel: Maximum units of spirits at one time in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 263\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcinpreg\nLabel: Do you drink any alcohol during this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 NT]\nNon-missing records: 2553\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaav3b\nLabel: Average units of other alcohol per week in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 613\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtChildMouthAffec\nLabel: How is your child's overall wellbeing affected by the condition of their mouth\nTopic: oral_dental_health\nType: categorical\nCategories/Values: [1 Not at all] [2 Very little] [3 Some] [4 A lot] [5 Very much]\nNon-missing records: 5156\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_Pregnancy.eclipse_baby\nDisplay name: Eclipse neonatal record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 29 | Rows: 13525 | Entities: 13525\nLast updated: 2024-05-14 09:13:55\n```\n\n```\nTable: BiB_ChildGrowth.anthropometry\nDisplay name: Child anthropometry\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 12 | Rows: 72386 | Entities: 13597\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiB_Pregnancy.eclipse_preg\nDisplay name: Eclipse pregnancy record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 35 | Rows: 13361 | Entities: 12075\nLast updated: 2024-05-14 09:13:56\n```\n\n```\nTable: BiB_ChildGrowth.bioimpedance\nDisplay name: Child bioimpedance\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 17 | Rows: 6424 | Entities: 5494\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiB_CohortInfo.preg_info\nDisplay name: Pregnancy information\nProject: BiB_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 10 | Rows: 13776 | Entities: 12453\nLast updated: 2024-05-14 09:12:26\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+      "question": "What are the primary outcome goals for personal, social, and emotional development in the Incredible Years Toddler parenting programme?",
+      "reference_answer": "The primary outcome goals for personal, social, and emotional development include self-regulation, managing self, and building relationships.",
+      "source_chunk_id": "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+      "rag_answer": "The primary outcome goals in the IncredibleYears Toddler parenting program for personal,social,and emotional development can be summarized as follows:\n\n1. **Emotional Regulation**: Children learn to recognize and manage their emotions effectively.\n\n2. **Empathy Development**: Children develop the ability to understand and share the feelings of others.\n\n3. **Pro-social Behavior**: Children learn behaviors that are beneficial to themselves and others, such as sharing, helping, and cooperating.\n\n4. **Self-Esteem and Confidence**: Children build positive self-esteem and confidence through experiences of success and recognition.\n\nThese goals are designed to foster holistic development in young children, preparing them for successful social interactions and emotional well-being.",
+      "answer_relevance": 0.7777777777777778,
+      "completeness": 0.7777777777777778,
+      "conciseness": 0.16822429906542055,
+      "answer_correctness_token_f1": 0.22399999999999998,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1237,
+      "answer_tokens": 107,
+      "latency_retrieval_ms": 312.14895797893405,
+      "latency_answer_ms": 10625.166459009051,
+      "latency_external_judge_ms": 2230.955750012072,
+      "latency_qwen_judge_ms": 5617.609457985964,
+      "latency_total_ms": 18785.88062498602,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The retrieved context does not provide evidence for the primary outcome goals."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe primary outcome goal for personal, social, and emotional development in the Incredible Years Toddler parenting programme is Emotional Regulation.\tnot_found\t\nCLAIM\tThe primary outcome goal for personal, social, and emotional development in the Incredible Years Toddler parenting programme is Empathy Development.\tnot_found\t\nCLAIM\tThe primary outcome goal for personal, social, and emotional development in the Incredible Years Toddler parenting programme is Pro-social Behavior.\tnot_found\t\nCLAIM\tThe primary outcome goal for personal, social, and emotional development in the Incredible Years Toddler parenting programme is Self-Esteem and Confidence.\tnot_found\t\nOVERALL\tfalse\tThe retrieved context does not provide evidence for the primary outcome goals.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "No specific evidence in the context supports the claimed primary outcome goals."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tEmotional Regulation: Children learn to recognize and manage their emotions effectively.\tnot_found\t\nCLAIM\tEmpathy Development: Children develop the ability to understand and share the feelings of others.\tnot_found\t\nCLAIM\tPro-social Behavior: Children learn behaviors that are beneficial to themselves and others, such as sharing, helping, and cooperating.\tnot_found\t\nCLAIM\tSelf-Esteem and Confidence: Children build positive self-esteem and confidence through experiences of success and recognition.\tnot_found\t\nOVERALL\tfalse\tNo specific evidence in the context supports the claimed primary outcome goals.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nlevels), or “Exceed-\ning” for each ELG [30, 31]. For the new EYFSP (post September 2021), children are assigned a\nPLOS ONE\nStudy protocol for effectiveness evaluation of the ‘Incredible Years Toddler’ parenting programme\nPLOS ONE | https:\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nistening and attention\n2. Understanding\n3. Speaking\n1. Listening, attention and understanding\n2. Speaking\nPhysical development\n4. Moving and handling\n5. Health and self-care\n3. Gross motor skills\n4. Fine motor skills\nPersonal, social and \n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\n‘personal, social,\nand emotional’ ELGs, with total 5 goals (see Table 2). The binary responses for each of these\n5 goals will be summed to generate a summary score between 0 and 5.\n2. For the secondary outcome (child early years developme\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nh Child-Directed Coaching\n• Part three–Social and Emotion Coaching\n• Part four–The Art of Praise and Encouragement\n• Part five–Spontaneous Incentives for Toddlers\n• Part six–Handling Separations and Reunions\n• Part seven–Positive Discipli\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nnsity score [38, 39]. We will match on the 7 characteris-\ntics on the left-hand side of the graph (prenatal attachment, prenatal depression, prenatal anxi-\nety, ethnicity, socioeconomic status, language status, and immigration status) to \n\n\n## Relevant Variables\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadt4weeksbehaviour_3\nLabel: When this child cries, he/she gets on my nerves\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 All the time]\nNon-missing records: 365\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadt4weeksbehaviour_3\nLabel: When this child cries, he/she gets on my nerves\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 All the time]\nNon-missing records: 367\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtBehaveWithChild_2\nLabel: I feel that I am very good at calming this child when he/she is upset\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 367\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtPAOwnBehavi\nLabel: How much do you use your own behaviour to encourage your child to be active\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 I donâ€™t use my own behaviour to encourage my child to be active] [2 I rarely use my own behaviour to encourage my child to be active] [3 I often use my own behaviour to encourage my child to be active] [4 I constantly use my own behaviour to encourage my child to be active]\nNon-missing records: 365\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtPAOwnBehavi\nLabel: How much do you use your own behaviour to encourage your child to be active\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 I donâ€™t use my own behaviour to encourage my child to be active] [2 I rarely use my own behaviour to encourage my child to be active] [3 I often use my own behaviour to encourage my child to be active] [4 I constantly use my own behaviour to encourage my child to be active]\nNon-missing records: 369\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtBehaveWithChild_4\nLabel: I feel I am very good at routine tasks of caring for child (e.g. feeding)\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 367\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtBehaveWithChild_2\nLabel: I feel that I am very good at calming this child when he/she is upset\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 365\n```\n\n```\nTable: BiB_PrimarySchoolYears.sdq_data\nVariable: psysdqBOverallDiffic\nLabel: Overall, do you think that this child has difficulties in one or more of the foll\nTopic: personality_temperament\nType: categorical\nCategories/Values: [1 No] [2 Yes - minor difficulties] [3 Yes - definite difficulties] [4 Yes - severe difficulties]\nNon-missing records: 3482\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtBehaveWithChild_4\nLabel: I feel I am very good at routine tasks of caring for child (e.g. feeding)\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 365\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtChildEffect\nLabel: Does this condition reduce your child's ability to do everyday activities\nTopic: general_health\nType: categorical\nCategories/Values: [1 Not at all] [2 Yes, a little] [3 Yes, a lot] [4 Do not wish to answer] [5 Don't know]\nNon-missing records: 616\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_ChildGrowth.growth_PrimaryCare\nDisplay name: Child growth primary care data\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 14 | Rows: 91086 | Entities: 13419\nLast updated: 2024-06-04 12:06:51.043816\n```\n\n```\nTable: BiB_ChildGrowth.anthropometry\nDisplay name: Child anthropometry\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 12 | Rows: 72386 | Entities: 13597\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiB_PrimarySchoolYears.child_info\nDisplay name: Primary School Years child information\nProject: BiB_PrimarySchoolYears\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 23 | Rows: 18149 | Entities: 18149\nLast updated: 2024-05-14 09:14:09\n```\n\n```\nTable: BiBBS_CohortInfo.child\nDisplay name: Child information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 13 | Rows: 2510 | Entities: 2510\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_PrimarySchoolYears.child_quiz\nDisplay name: Primary School Years child quiz\nProject: BiB_PrimarySchoolYears\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 90 | Rows: 15641 | Entities: 15641\nLast updated: 2024-05-14 09:14:11\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+      "question": "What is the recommended serving size for sugary drinks for 1- to 3-year-olds in the United Kingdom?",
+      "reference_answer": "100–120 ml",
+      "source_chunk_id": "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+      "rag_answer": "Based on the guidelines from the National Institute for Health and Care Excellence (NICE) in the United States, and considering the dietary recommendations for the United Kingdom, there isn't a specific recommended serving size listed for 1-to 3-year-old children in the United Kingdo\n\nHowever, general guidance suggests limiting the intake of sugary drinks. For example, the World Health Organization (WHO) recommends reducing the consumption of free sugars to less than 10% of total energy intake. For children aged 1 to 3 years, this translates into a very limited amount of sugary beverages.\n\nGiven the lack of specific serving sizes in the literature, it's important to focus on overall dietary patterns and minimizing the intake of added sugars, including those found in sugary drinks.\n\nFor more detailed and specific dietary guidelines, consulting official documents from organizations such as Public Health England (PHE) or the Department of Health and Social Care (DHSC) would be advisable.",
+      "answer_relevance": 0.8235294117647058,
+      "completeness": 0.0,
+      "conciseness": 0.018987341772151903,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1226,
+      "answer_tokens": 158,
+      "latency_retrieval_ms": 304.8001670103986,
+      "latency_answer_ms": 14768.445916008204,
+      "latency_external_judge_ms": 3425.7887919957284,
+      "latency_qwen_judge_ms": 12701.385041000322,
+      "latency_total_ms": 31200.419916014653,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The National Institute for Health and Care Excellence (NICE) in the United States provides guidelines for sugary drink serving sizes for 1- to 3-year-olds in the United Kingdom.",
+              "verdict": "contradicted",
+              "evidence": "NICE is in the UK, not the US."
+            },
+            {
+              "claim": "The World Health Organization (WHO) recommends reducing the consumption of free sugars to less than 10% of total energy intake.",
+              "verdict": "supported",
+              "evidence": "World Health Organization recommends reducing free sugars."
+            },
+            {
+              "claim": "The WHO recommendation translates into a very limited amount of sugary beverages for children aged 1 to 3 years.",
+              "verdict": "unclear",
+              "evidence": "No specific amount is given in the context."
+            },
+            {
+              "claim": "There is a lack of specific serving sizes in the literature for 1- to 3-year-old children in the United Kingdom.",
+              "verdict": "supported",
+              "evidence": "No specific serving size is mentioned in the context."
+            },
+            {
+              "claim": "Consulting official documents from organizations such as Public Health England (PHE) or the Department of Health and Social Care (DHSC) would be advisable for detailed dietary guidelines.",
+              "verdict": "unclear",
+              "evidence": "No evidence in the context to support this claim."
+            }
+          ],
+          "counts": {
+            "total": 5,
+            "supported": 2,
+            "contradicted": 1,
+            "not_found": 0,
+            "unclear": 2
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer contains a contradicted claim and lacks supported claims about the specific serving size."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe National Institute for Health and Care Excellence (NICE) in the United States provides guidelines for sugary drink serving sizes for 1- to 3-year-olds in the United Kingdom.\tcontradicted\tNICE is in the UK, not the US.\nCLAIM\tThe World Health Organization (WHO) recommends reducing the consumption of free sugars to less than 10% of total energy intake.\tsupported\tWorld Health Organization recommends reducing free sugars.\nCLAIM\tThe WHO recommendation translates into a very limited amount of sugary beverages for children aged 1 to 3 years.\tunclear\tNo specific amount is given in the context.\nCLAIM\tThere is a lack of specific serving sizes in the literature for 1- to 3-year-old children in the United Kingdom.\tsupported\tNo specific serving size is mentioned in the context.\nCLAIM\tConsulting official documents from organizations such as Public Health England (PHE) or the Department of Health and Social Care (DHSC) would be advisable for detailed dietary guidelines.\tunclear\tNo evidence in the context to support this claim.\nOVERALL\tfalse\tThe answer contains a contradicted claim and lacks supported claims about the specific serving size.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "General guidance suggests limiting the intake of sugary drinks.",
+              "verdict": "supported",
+              "evidence": "Limiting the intake of sugary drinks is a common recommendation."
+            },
+            {
+              "claim": "The World Health Organization (WHO) recommends reducing the consumption of free sugars to less than 10% of total energy intake.",
+              "verdict": "supported",
+              "evidence": "World Health Organization (WHO) recommends reducing the consumption of free sugars."
+            },
+            {
+              "claim": "For children aged 1 to 3 years, this translates into a very limited amount of sugary beverages.",
+              "verdict": "supported",
+              "evidence": "For children aged 1 to 3 years, a very limited amount of sugary beverages is recommended."
+            },
+            {
+              "claim": "Given the lack of specific serving sizes in the literature, it's important to focus on overall dietary patterns and minimizing the intake of added sugars, including those found in sugary drinks.",
+              "verdict": "supported",
+              "evidence": "Focusing on overall dietary patterns and minimizing added sugars is a common recommendation."
+            },
+            {
+              "claim": "For more detailed and specific dietary guidelines, consulting official documents from organizations such as Public Health England (PHE) or the Department of Health and Social Care (DHSC) would be advisable.",
+              "verdict": "supported",
+              "evidence": "Consulting official documents from organizations such as Public Health England (PHE) or the Department of Health and Social Care (DHSC) is advisable."
+            }
+          ],
+          "counts": {
+            "total": 5,
+            "supported": 5,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "All claims are either supported or not found, and at least one claim was evaluated."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tBased on the guidelines from the National Institute for Health and Care Excellence (NICE) in the United States, and considering the dietary recommendations for the United Kingdom, there isn't a specific recommended serving size listed for 1-to 3-year-old children in the United Kingdom.\tnot_found\t\nCLAIM\tGeneral guidance suggests limiting the intake of sugary drinks.\tsupported\tLimiting the intake of sugary drinks is a common recommendation.\nCLAIM\tThe World Health Organization (WHO) recommends reducing the consumption of free sugars to less than 10% of total energy intake.\tsupported\tWorld Health Organization (WHO) recommends reducing the consumption of free sugars.\nCLAIM\tFor children aged 1 to 3 years, this translates into a very limited amount of sugary beverages.\tsupported\tFor children aged 1 to 3 years, a very limited amount of sugary beverages is recommended.\nCLAIM\tGiven the lack of specific serving sizes in the literature, it's important to focus on overall dietary patterns and minimizing the intake of added sugars, including those found in sugary drinks.\tsupported\tFocusing on overall dietary patterns and minimizing added sugars is a common recommendation.\nCLAIM\tFor more detailed and specific dietary guidelines, consulting official documents from organizations such as Public Health England (PHE) or the Department of Health and Social Care (DHSC) would be advisable.\tsupported\tConsulting official documents from organizations such as Public Health England (PHE) or the Department of Health and Social Care (DHSC) is advisable.\nOVERALL\ttrue\tAll claims are either supported or not found, and at least one claim was evaluated.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Obesogenic home food availability diet and BMI in Pakistani and White toddlers** (2021) — \nTitle: Obesogenic home food availability diet and BMI in Pakistani and White toddlers\nYear: 2021\nSource: full-text PDF\n\nmonths and BMI data from 36 months.\n*p < 0.05. **p < 0.01.\nLECROY ET AL.\n11 of 15\n\nLacy, 2018) and higher overall diet quality (Collins, Lacy, Campbell, &\nMcNaughton, 2016) at follow-up. Though the measures of HFA and\ndiet used in the present study differed, together these findin\n\n**Circulating 25-Hydroxyvitamin D Levels During Pregnancy and Risk of Congenital Heart Diseases Multivariable and Mendelia** (2025) — Walker Karen Christina, Specht Ina O, Hjortdal Vibeke, Christesen Henrik T, Heit\nTitle: Circulating 25-Hydroxyvitamin D Levels During Pregnancy and Risk of Congenital Heart Diseases Multivariable and Mendelia\nYear: 2025\nSource: full-text PDF\n\n18 months after birth, in order to reduce the likelihood \nof misclassification of cases with CHD, which might \noccur if only those diagnosed around the time of birth \nare included. Blood was taken for 25(OH)D levels on \naverage 15 months \n\n**Obesogenic home food availability diet and BMI in Pakistani and White toddlers** (2021) — \nTitle: Obesogenic home food availability diet and BMI in Pakistani and White toddlers\nYear: 2021\nSource: full-text PDF\n\netary recall (Willett, 2012). It is also possible that the\nweights/volumes of some FFQ items were not correctly specified due\nto assumptions regarding what constitutes a ‘small’ portion size and\nuse of a US-based tool for estimating weights of foods from the\nUnited Kingdom. Simil\n\n**An approach to identifying young children with developmental disabilities via primary care records** (2021) — Masefield Sarah C, Prady Stephanie L, Pickett Kate E\nTitle: An approach to identifying young children with developmental disabilities via primary care records\nYear: 2021\nSource: full-text PDF\n\ns of differences in how developmen-\ntal disabilities are classified and prevalence estimates derived \nvia healthcare systems also provides valuable information for \nmaking inter- and intra-country comparisons; and thus, iden-\ntifying differences in need. The i\n\n**Relationships Between Exposure to Gestational Diabetes Treatment and Neonatal Anthropometry Evidence from the Born in Br** (2024) — Martine-Edith Gilberte, Johnson William, Petherick Emily S\nTitle: Relationships Between Exposure to Gestational Diabetes Treatment and Neonatal Anthropometry Evidence from the Born in Br\nYear: 2024\nSource: full-text PDF\n\nropometry · Metformin\nIntroduction\nGestational diabetes mellitus (GDM) is a pregnancy compli-\ncation characterised by an impaired glucose tolerance (Kaaja \n& Rönnemaa, 2008). In the United Kingdom (UK), GDM \nprevalence is approximately 4.\n\n\n## Relevant Variables\n\n```\nTable: BiB_AgeOfWonder.survey_mod03_dr23\nVariable: awb5_1_food_dt_6_r7\nLabel: How often do you drink sugary drinks like regular cola or squash?\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [-2 Revised in version 7] [1 Every day] [2 Most days] [3 About once a week] [4 Less often] [5 Never]\nNon-missing records: 1952\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod231_main_dr24\nVariable: awb5_1_food_dt_6_r7\nLabel: How often do you drink sugary drinks like regular cola or squash\nType: categorical\nCategories/Values: [1 Every day] [2 Most days] [3 About once a week] [4 Less often] [5 Never] [-2 Revised in version 7]\nNon-missing records: 10514\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod03_dr23\nVariable: awb5_1_food_dt_5\nLabel: How often do you drink diet drinks or sugar free drinks like diet cola or sugar-\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Every day] [2 Most days] [3 About once a week] [4 Less often] [5 Never]\nNon-missing records: 1979\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtFood24hours_5\nLabel: In past 24hrs, how often has your child had Regular Yoghurt/Custard\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five + times]\nNon-missing records: 364\n```\n\n```\nTable: BiB_1000.bib1000_18m_main\nVariable: bib18e95frequency\nLabel: Frequency child had fizzy drinks (not low cal)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Never] [2 1-3 time per month] [3 1 day per week] [4 2 days per week] [5 3 days per week] [6 4 days per week] [7 5 days per week] [8 6 days per week] [9 7 days per week]\nNon-missing records: 1289\n```\n\n```\nTable: BiB_1000.bib1000_18m_main\nVariable: bib18e96frequency\nLabel: Frequency child had fizzy drinks (low cal)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Never] [2 1-3 time per month] [3 1 day per week] [4 2 days per week] [5 3 days per week] [6 4 days per week] [7 5 days per week] [8 6 days per week] [9 7 days per week]\nNon-missing records: 1288\n```\n\n```\nTable: BiB_1000.bib1000_12m_main\nVariable: bib12f95frequency\nLabel: Frequency child had fizzy drinks (not low cal)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Never] [2 1-3 time per month] [3 1 day per week] [4 2 days per week] [5 3 days per week] [6 4 days per week] [7 5 days per week] [8 6 days per week] [9 7 days per week]\nNon-missing records: 1304\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtFood24hours_5\nLabel: In past 24hrs, how often has your child had Regular Yoghurt/Custard\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five + times]\nNon-missing records: 367\n```\n\n```\nTable: BiB_1000.bib1000_12m_main\nVariable: bib12f96frequency\nLabel: Frequency child had fizzy drinks (low cal)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Never] [2 1-3 time per month] [3 1 day per week] [4 2 days per week] [5 3 days per week] [6 4 days per week] [7 5 days per week] [8 6 days per week] [9 7 days per week]\nNon-missing records: 1304\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtFood24hours_1\nLabel: In past 24hrs, how often has your child had Fruit Juice/Fruit Drink\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five + times]\nNon-missing records: 365\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_1000.bib1000_18m_b18qh2\nDisplay name: BiB 1000 18m Other snacks consumed by parent\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 4 | Rows: 1293 | Entities: 1293\nLast updated: 2024-05-14 09:11:47\n```\n\n```\nTable: BiB_1000.bib1000_36m_b36j17\nDisplay name: BiB 1000 36m Other foods consumed by child\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 5 | Rows: 1232 | Entities: 1232\nLast updated: 2024-05-14 09:11:49\n```\n\n```\nTable: BiB_1000.bib1000_18m_bee104\nDisplay name: BiB 1000 18m Other foods and drinks\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 7 | Rows: 1318 | Entities: 1293\nLast updated: 2024-05-14 09:11:47\n```\n\n```\nTable: BiB_Metabolomics.metms_pairc_s\nDisplay name: MS metabolomics paired child samples scaled\nProject: BiB_Metabolomics\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 1170 | Rows: 1000 | Entities: 1000\nLast updated: 2024-05-14 09:13:35\n```\n\n```\nTable: BiB_Metabolomics.metms_pairc_h\nDisplay name: MS metabolomics paired child samples header\nProject: BiB_Metabolomics\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 6 | Rows: 1000 | Entities: 1000\nLast updated: 2024-05-14 09:13:29\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+      "question": "What is the reaction of younger women in the Pakistani heritage community in Bradford towards the idea of marrying a cousin?",
+      "reference_answer": "Younger women express a negative reaction, describing it as 'like my brother'.",
+      "source_chunk_id": "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+      "rag_answer": "Based on the provided text and additional tables, here is the analysis of the reaction of young women in the Pakistan-origin community in Bradford toward the idea of cousin marriage:\n\n1. **Cultural Context**: The text mentions that younger women feel that traditions and support are important and achievable without cousin marriage. This indicates a preference for maintaining cultural practices through more conventional means rather than through cousin marriage.\n\n2. **Personal Choice vs. Tradition**: Younger women seem to value personal choice and autonomy over adhering strictly to traditional practices regarding cousin marriage. They recognize that maintaining strong family ties and support networks does not necessarily require entering into cousin marriages.\n\n3. **Support Networks and Family Ties**: While acknowledging the importance of maintaining close-knit family relationships and robust support networks within the community, younger women appear to believe that these connections can be fostered and maintained through various means beyond the confines of cousin marriage.\n\nIn summary, the younger women in this Pakistani heritage community view cousin marriage as an option among many others for maintaining strong family bonds and support systems. Their stance reflects a nuanced understanding of cultural identity and personal choice.",
+      "answer_relevance": 0.8235294117647058,
+      "completeness": 0.4166666666666667,
+      "conciseness": 0.06185567010309278,
+      "answer_correctness_token_f1": 0.04854368932038835,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1469,
+      "answer_tokens": 194,
+      "latency_retrieval_ms": 360.31191700021736,
+      "latency_answer_ms": 17321.042374998797,
+      "latency_external_judge_ms": 2464.12266700645,
+      "latency_qwen_judge_ms": 9620.869624981424,
+      "latency_total_ms": 29766.346583986888,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "Younger women in the Pakistani heritage community in Bradford feel that traditions and support are important and achievable without cousin marriage.",
+              "verdict": "supported",
+              "evidence": "\"younger groups felt that tradition and support were important and could be achieved without cousin marriage\""
+            },
+            {
+              "claim": "Younger women believe that maintaining close-knit family relationships and robust support networks can be fostered through various means beyond cousin marriage.",
+              "verdict": "supported",
+              "evidence": "\"younger groups felt that tradition and support were important and could be achieved without cousin marriage\""
+            },
+            {
+              "claim": "A younger woman talking about the idea of marrying a cousin said, “ew, that’s like my brother!”",
+              "verdict": "supported",
+              "evidence": "“ew, that’s like my brother!” (YW, 33)"
+            }
+          ],
+          "counts": {
+            "total": 3,
+            "supported": 3,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "At least one claim was supported by the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tYounger women in the Pakistani heritage community in Bradford feel that traditions and support are important and achievable without cousin marriage.\tsupported\t\"younger groups felt that tradition and support were important and could be achieved without cousin marriage\"\nCLAIM\tYounger women value personal choice and autonomy over adhering strictly to traditional practices regarding cousin marriage.\tunclear\t\nCLAIM\tYounger women believe that maintaining close-knit family relationships and robust support networks can be fostered through various means beyond cousin marriage.\tsupported\t\"younger groups felt that tradition and support were important and could be achieved without cousin marriage\"\nCLAIM\tA younger woman talking about the idea of marrying a cousin said, “ew, that’s like my brother!”\tsupported\t“ew, that’s like my brother!” (YW, 33)\nOVERALL\ttrue\tAt least one claim was supported by the context.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "Younger women feel that traditions and support are important and achievable without cousin marriage.",
+              "verdict": "supported",
+              "evidence": "younger groups felt that tradition and support were important and could be achieved without cousin marriage."
+            },
+            {
+              "claim": "Younger women value personal choice and autonomy over adhering strictly to traditional practices regarding cousin marriage.",
+              "verdict": "supported",
+              "evidence": "Sometimes positions discussed in the same focus group were contradictory, in the older women’s group for example, one member said, “Cousin marriages are forbidden” and another said that cousin marriages are “allowed”."
+            },
+            {
+              "claim": "Younger women believe that maintaining strong family ties and support networks can be done without cousin marriage.",
+              "verdict": "supported",
+              "evidence": "younger groups felt that tradition and support were important and could be achieved without cousin marriage."
+            },
+            {
+              "claim": "Younger women view cousin marriage as an option among many others for maintaining strong family bonds and support systems.",
+              "verdict": "supported",
+              "evidence": "younger groups felt that tradition and support were important and could be achieved without cousin marriage."
+            },
+            {
+              "claim": "One younger woman expressed disgust at the idea of marrying a cousin, saying \"ew, that’s like my brother!\"",
+              "verdict": "supported",
+              "evidence": "First, a younger women talking about the idea of marrying a cousin said, “ew, that’s like my brother!”"
+            }
+          ],
+          "counts": {
+            "total": 5,
+            "supported": 5,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "All claims are supported by the provided context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tYounger women feel that traditions and support are important and achievable without cousin marriage.\tsupported\tyounger groups felt that tradition and support were important and could be achieved without cousin marriage.\nCLAIM\tYounger women value personal choice and autonomy over adhering strictly to traditional practices regarding cousin marriage.\tsupported\tSometimes positions discussed in the same focus group were contradictory, in the older women’s group for example, one member said, “Cousin marriages are forbidden” and another said that cousin marriages are “allowed”.\nCLAIM\tYounger women believe that maintaining strong family ties and support networks can be done without cousin marriage.\tsupported\tyounger groups felt that tradition and support were important and could be achieved without cousin marriage.\nCLAIM\tYounger women view cousin marriage as an option among many others for maintaining strong family bonds and support systems.\tsupported\tyounger groups felt that tradition and support were important and could be achieved without cousin marriage.\nCLAIM\tOne younger woman expressed disgust at the idea of marrying a cousin, saying \"ew, that’s like my brother!\"\tsupported\tFirst, a younger women talking about the idea of marrying a cousin said, “ew, that’s like my brother!”\nOVERALL\ttrue\tAll claims are supported by the provided context.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit** (2024) — Small Neil, Razaq Rifat, Sharma Vishal, Cunningham Alice, Khurshid Zuneera et al\nTitle: Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit\nYear: 2024\nSource: full-text PDF\n\ncile a faith \nbased position with different choices:\n“It’s allowed. And about destiny, you know, like, your fate is \nin your hands. You can’t say it’s Allah’s will. Allah has given \nyou that choice to make it possible” (OW, 60–608),\nThe i\n\n**Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit** (2024) — Small Neil, Razaq Rifat, Sharma Vishal, Cunningham Alice, Khurshid Zuneera et al\nTitle: Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit\nYear: 2024\nSource: full-text PDF\n\nultural change is vividly captured in the next two quotes. \nFirst, a younger women talking about the idea of marrying \na cousin said, “ew, that’s like my brother!” (YW, 33).\nTable 2. Glossary.\nWord used\nMeaning\nAllah Subhan’a Tallah\nMay H\n\n**Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit** (2024) — Small Neil, Razaq Rifat, Sharma Vishal, Cunningham Alice, Khurshid Zuneera et al\nTitle: Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit\nYear: 2024\nSource: full-text PDF\n\nhibitions. \nSometimes positions discussed in the same focus group were \ncontradictory, in the older women’s group for example, one \nmember said, “Cousin marriages are forbidden” and another \nsaid that cousin marriages are “allowed”. In th\n\n**Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit** (2024) — Small Neil, Razaq Rifat, Sharma Vishal, Cunningham Alice, Khurshid Zuneera et al\nTitle: Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit\nYear: 2024\nSource: full-text PDF\n\nes a commit-\nment to tradition and it has benefits in terms of social support, \nyounger groups felt that tradition and support were important \nand could be achieved without cousin marriage.\nPage 17 of 43\nWellcome Open Research 2025, 9:690\n\n**Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit** (2024) — Small Neil, Razaq Rifat, Sharma Vishal, Cunningham Alice, Khurshid Zuneera et al\nTitle: Changing patterns in marriage choice and related health risk in the Pakistani heritage community in Bradford UK a qualit\nYear: 2024\nSource: full-text PDF\n\n:\n“Yeah, because then you’ve got your arranged marriages, you’ve \ngot your family support, you’ve got your biraderi support, \nand everybody knows each other and their backgrounds”. \n(OM- 418–420).\nOlder men and older women felt that it wa\n\n\n## Relevant Variables\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: org0pgmmir\nLabel: Paternal grandmother born in Mirpur (if born in Pakistan)\nTopic: place_of_birth\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know]\nNon-missing records: 4817\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtHouseRelatChild9\nLabel: Relationship of ninth household member to child\nTopic: household_composition\nType: categorical\nCategories/Values: [1 Natural father] [2 Adoptive mother/father] [3 Foster mother/father] [4 Stepmother/father] [5 Partner of mother/father] [6 Grandmother/grandfather] [7 Aunt/uncle] [8 Brother or sister (same mother and father)] [9 Half-brother or sister (same mother or father but not both)] [10 Step-brother or sister (different mother and father)] [11 Cousin] [12 Other] [13 Half-brother or sister (same mother but\nNon-missing records: 92\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: org0pgfmir\nLabel: Paternal grandfather born in Mirpur (if born in Pakistan)\nTopic: place_of_birth\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know]\nNon-missing records: 4836\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtHouseRelatChild10\nLabel: Relationship of tenth household member to child\nTopic: household_composition\nType: categorical\nCategories/Values: [1 Natural father] [2 Adoptive mother/father] [3 Foster mother/father] [4 Stepmother/father] [5 Partner of mother/father] [6 Grandmother/grandfather] [7 Aunt/uncle] [8 Brother or sister (same mother and father)] [9 Half-brother or sister (same mother or father but not both)] [10 Step-brother or sister (different mother and father)] [11 Cousin] [12 Other] [13 Half-brother or sister (same mother but\nNon-missing records: 52\n```\n\n```\nTable: BiB_1000.bib1000_12m_b12qb4\nVariable: bib12b4relationship\nLabel: Relationship to mother\nTopic: family_members_and_relations\nType: categorical\nCategories/Values: [1 Your husband/partner] [2 Your male children] [3 Your female children] [4 Your mother] [5 Your father] [6 Partner's mother] [7 Partner's father] [8 Your brother] [9 Your sister] [10 Partner's brother] [11 Partner's sister] [12 Your grandmother] [13 Your grandfather] [14 Partner's grandmother] [15 Partner's grandfather] [16 Other adult male relative (aged 16+)] [17 Other adult female relative (ag\nNon-missing records: 512\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtHouseRelatChild2\nLabel: Relationship of second household member to child\nTopic: household_composition\nType: categorical\nCategories/Values: [1 Natural father] [2 Adoptive mother/father] [3 Foster mother/father] [4 Stepmother/father] [5 Partner of mother/father] [6 Grandmother/grandfather] [7 Aunt/uncle] [8 Brother or sister (same mother and father)] [9 Half-brother or sister (same mother or father but not both)] [10 Step-brother or sister (different mother and father)] [11 Cousin] [12 Other] [13 Half-brother or sister (same mother but\nNon-missing records: 4634\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtHouseRelatChild8\nLabel: Relationship of eighth household member to child\nTopic: household_composition\nType: categorical\nCategories/Values: [1 Natural father] [2 Adoptive mother/father] [3 Foster mother/father] [4 Stepmother/father] [5 Partner of mother/father] [6 Grandmother/grandfather] [7 Aunt/uncle] [8 Brother or sister (same mother and father)] [9 Half-brother or sister (same mother or father but not both)] [10 Step-brother or sister (different mother and father)] [11 Cousin] [12 Other] [13 Half-brother or sister (same mother but\nNon-missing records: 146\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eth_ethnic\nLabel: Mother ethnicity all categories\nTopic: ethnic_group\nType: categorical\nCategories/Values: [1 White British] [2 White Irish] [3 Pakistani] [4 Indian] [5 Bangladeshi] [6 White Polish] [7 White Slovakian] [8 White Romanian] [9 White Czech] [10 Other White] [11 White Gypsy/Roma/Irish traveller] [12 Chinese] [13 African] [14 Caribbean] [15 Mixed White/ Black Caribbean] [16 Mixed White/ Black African] [17 Mixed White/ Asian] [18 Do not wish to answer] [19 Other]\nNon-missing records: 2554\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: org0mgmmir\nLabel: Maternal grandmother born in Mirpur (if born in Pakistan)\nTopic: place_of_birth\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know]\nNon-missing records: 4773\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtHouseRelatChild4\nLabel: Relationship of fourth household member to child\nTopic: household_composition\nType: categorical\nCategories/Values: [1 Natural father] [2 Adoptive mother/father] [3 Foster mother/father] [4 Stepmother/father] [5 Partner of mother/father] [6 Grandmother/grandfather] [7 Aunt/uncle] [8 Brother or sister (same mother and father)] [9 Half-brother or sister (same mother or father but not both)] [10 Step-brother or sister (different mother and father)] [11 Cousin] [12 Other] [13 Half-brother or sister (same mother but\nNon-missing records: 2048\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_AgeOfWonder.survey_mod231_derived_dr24\nDisplay name: AoW survey module 231 2024 release with derived variables\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 27 | Rows: 13563 | Entities: 11505\nLast updated: 2025-01-21 14:19:11.642897\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod232_derived_dr24\nDisplay name: AoW survey module 232 2024 release with derived variables\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 56 | Rows: 12608 | Entities: 10684\nLast updated: 2025-01-21 14:17:30.646074\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nDisplay name: AoW survey module 4 2023 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 352 | Rows: 1868 | Entities: 1868\nLast updated: 2024-05-14 16:44:08.383841\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod01_dr23\nDisplay name: AoW survey module 1 2023 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 268 | Rows: 4353 | Entities: 4353\nLast updated: 2024-05-14 16:42:47.350132\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nDisplay name: AoW survey module 2 2023 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 182 | Rows: 3932 | Entities: 3932\nLast updated: 2024-05-14 16:43:15.711699\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+      "question": "What factors should be considered when determining the final knot point locations in linear spline multilevel models?",
+      "reference_answer": "Model fit and interpretability.",
+      "source_chunk_id": "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+      "rag_answer": "When determining the final locations of knot points in linear spline models, several key factors should be carefully considered:\n\n1. **Subject Matter Expertise**: Input from domain experts who understand the biological or physiological processes being modeled can provide valuable insights into where knots should be placed.\n\n2. **Previous Literature and Studies**: Reviewing existing literature and studies related to the same or similar datasets can reveal patterns or trends that might inform the placement of knots.\n\n3. **Model Fit and Residual Analysis**: Conducting thorough residual analysis to check for any systematic patterns or outliers that could indicate suboptimal knot placements. Additionally, evaluating how well different knot configurations fit the observed data can also guide the selection process.\n\n4. **Computational Efficiency Considerations**: While achieving optimal model fit is crucial, practical considerations regarding computational efficiency must also be taken into account during the knot placement decision-making process.\n\nBy integrating these factors, researchers can make more informed decisions about the final knot points in their linear spline multivariate models.",
+      "answer_relevance": 0.8235294117647058,
+      "completeness": 0.75,
+      "conciseness": 0.02409638554216868,
+      "answer_correctness_token_f1": 0.03529411764705882,
+      "answer_exact_match": false,
+      "retrieved_tokens": 849,
+      "answer_tokens": 166,
+      "latency_retrieval_ms": 335.9818749886472,
+      "latency_answer_ms": 14479.866083012894,
+      "latency_external_judge_ms": 1879.312042001402,
+      "latency_qwen_judge_ms": 7650.095290999161,
+      "latency_total_ms": 24345.255291002104,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "No claim is supported by the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tSubject Matter Expertise is a factor to consider when determining knot point locations.\tnot_found\t\nCLAIM\tPrevious Literature and Studies can inform knot placement.\tnot_found\t\nCLAIM\tModel Fit and Residual Analysis can guide knot selection.\tnot_found\t\nCLAIM\tComputational Efficiency Considerations are important in knot placement.\tnot_found\t\nOVERALL\tfalse\tNo claim is supported by the context.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "Reviewing existing literature and studies can reveal patterns or trends that might inform the placement of knots.",
+              "verdict": "supported",
+              "evidence": "Reviewing existing literature and studies related to the same or similar datasets can reveal patterns or trends."
+            },
+            {
+              "claim": "Conducting thorough residual analysis can help identify suboptimal knot placements.",
+              "verdict": "supported",
+              "evidence": "Conducting thorough residual analysis to check for any systematic patterns or outliers that could indicate suboptimal knot placements."
+            },
+            {
+              "claim": "Evaluating how well different knot configurations fit the observed data can guide the selection process.",
+              "verdict": "supported",
+              "evidence": "Evaluating how well different knot configurations fit the observed data can also guide the selection process."
+            },
+            {
+              "claim": "Practical considerations regarding computational efficiency must be taken into account.",
+              "verdict": "supported",
+              "evidence": "Practical considerations regarding computational efficiency must also be taken into account during the knot placement decision-making process."
+            }
+          ],
+          "counts": {
+            "total": 4,
+            "supported": 4,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "All claims are either supported or not found, with no contradicted claims."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tSubject matter expertise can provide valuable insights into where knots should be placed.\tnot_found\t\nCLAIM\tReviewing existing literature and studies can reveal patterns or trends that might inform the placement of knots.\tsupported\tReviewing existing literature and studies related to the same or similar datasets can reveal patterns or trends.\nCLAIM\tConducting thorough residual analysis can help identify suboptimal knot placements.\tsupported\tConducting thorough residual analysis to check for any systematic patterns or outliers that could indicate suboptimal knot placements.\nCLAIM\tEvaluating how well different knot configurations fit the observed data can guide the selection process.\tsupported\tEvaluating how well different knot configurations fit the observed data can also guide the selection process.\nCLAIM\tPractical considerations regarding computational efficiency must be taken into account.\tsupported\tPractical considerations regarding computational efficiency must also be taken into account during the knot placement decision-making process.\nOVERALL\ttrue\tAll claims are either supported or not found, with no contradicted claims.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example** (2016) — \nTitle: Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example\nYear: 2016\nSource: full-text PDF\n\nts identified in the five cohorts\nshown in this paper (i.e. 10 days in data permits, then 3–4 months, 9–12 months, 3 years (height) and 7 years\n(weight)).\n2. Test various models to determine the final knot point locations. We suggest that\n\n**Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example** (2016) — \nTitle: Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example\nYear: 2016\nSource: full-text PDF\n\nh respect to the research, authorship, and/or\npublication of this article.\nBox 1. Suggested workflow for the application of linear spline multilevel models.\n1. Choose approximate knot point locations. Possible strategies include the follo\n\n**Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example** (2016) — \nTitle: Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example\nYear: 2016\nSource: full-text PDF\n\nrowth for the rest of the ﬁrst year of life and an even\nslower growth rate later in childhood. The similarity of the knot points selected in each of these\ndiverse cohorts provides some external validity to the model and reassurance that t\n\n**Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example** (2016) — \nTitle: Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example\nYear: 2016\nSource: full-text PDF\n\nindividuals have measurements between the knot points. In\ncohorts with fewer measurement occasions, knot points had to be ﬁxed at planned follow-up ages.\nHowever, the analyses of the ALSPAC cohort demonstrated that the exact position of t\n\n**Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example** (2016) — \nTitle: Linear spline multilevel models for summarising childhood growth trajectories A guide to their application using example\nYear: 2016\nSource: full-text PDF\n\nat can be used to compare growth rates across populations, assess associations\nbetween early life exposures and child growth or examine associations between child growth and\n1870\nStatistical Methods in Medical Research 25(5)\n\n40\n60\n80\n100\n\n\n## Relevant Variables\n\n```\nTable: BiB_ChildGrowth.anthropometry\nVariable: csubscap\nLabel: Subscapular skinfold (mm)\nType: float\nNon-missing records: 31373\n```\n\n```\nTable: BiB_ChildGrowth.anthropometry\nVariable: ctriceps\nLabel: Triceps skinfold (mm)\nType: float\nNon-missing records: 32153\n```\n\n```\nTable: BiB_ChildGrowth.anthropometry\nVariable: cthigh\nLabel: Thigh skinfold (mm)\nType: float\nNon-missing records: 4385\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_f\nVariable: trnkdiff_leanmass\nLabel: Lean mass (g) of left vs right trunk difference\nTopic: anthropometry\nType: float\nNon-missing records: 58\n```\n\n```\nTable: BiB_AgeOfWonder.skinfold_dr23\nVariable: sk_subscap\nLabel: Subscapular fold (mm)\nTopic: anthropometry\nType: float\nNon-missing records: 1218\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_m\nVariable: trnkdiff_leanmass\nLabel: Lean mass (g) of left vs right trunk difference\nTopic: anthropometry\nType: float\nNon-missing records: 488\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_c\nVariable: trnkdiff_leanmass\nLabel: Lean mass (g) of left vs right trunk difference\nTopic: anthropometry\nType: float\nNon-missing records: 541\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_f\nVariable: trnkdiff_bmc\nLabel: Bone mineral content (g) of left vs right trunk difference\nTopic: anthropometry\nType: float\nNon-missing records: 58\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_m\nVariable: trnkdiff_bmc\nLabel: Bone mineral content (g) of left vs right trunk difference\nTopic: anthropometry\nType: float\nNon-missing records: 488\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_f\nVariable: spin_area\nLabel: Bone area (cm2) of spine\nTopic: anthropometry\nType: float\nNon-missing records: 58\n```\n\n\n## Relevant Tables\n\n```\nTable: BiBBS_Geographic.bibbs_geog_ndvi_longitudinal\nDisplay name: BiBBS property level longitudinal NDVI data\nProject: BiBBS_Geographic\nEntity type: property\nData subjects: \nCohort: bibbs\nVariables: 46 | Rows: 6531 | Entities: 6531\nLast updated: 2024-07-17 11:39:49.836023\n```\n\n```\nTable: BiBBS_Geographic.bibbs_geog_sc_walkability_lu\nDisplay name: BiBBS property level street centrality, walkability and land use data\nProject: BiBBS_Geographic\nEntity type: property\nData subjects: \nCohort: bibbs\nVariables: 37 | Rows: 6531 | Entities: 6531\nLast updated: 2024-07-29 09:15:04.8417\n```\n\n```\nTable: BiB4All_Geographic.bib4all_geog_sc_walkability_lu\nDisplay name: BiB4All property level street centrality, walkability and land use data\nProject: BiB4All_Geographic\nEntity type: property\nData subjects: \nCohort: bib4all\nVariables: 37 | Rows: 11274 | Entities: 11274\nLast updated: 2024-07-29 09:16:48.960369\n```\n\n```\nTable: BiB4All_Geographic.bib4all_geog_ndvi_longitudinal\nDisplay name: BiB4All property level longitudinal NDVI data\nProject: BiB4All_Geographic\nEntity type: property\nData subjects: \nCohort: bib4all\nVariables: 46 | Rows: 11274 | Entities: 11274\nLast updated: 2024-07-17 11:36:19.984755\n```\n\n```\nTable: BiB_Geographic.bib_geog_sc_walkability_lu\nDisplay name: BiB property level street centrality, walkability and land use data\nProject: BiB_Geographic\nEntity type: property\nData subjects: \nCohort: bib\nVariables: 37 | Rows: 32486 | Entities: 32486\nLast updated: 2024-07-29 09:18:44.366495\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_28",
+      "question": "What is the relationship between home food availability of snack foods and SSBs and dietary intake in toddlers at 18 and 36 months of age?",
+      "reference_answer": "The variety and quantity of snack foods and SSBs available in the home were positively associated with dietary intake at 18 and 36 months.",
+      "source_chunk_id": "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_28",
+      "rag_answer": "Based on the literature and data available through the BiB project, we can explore the relationship between the home food availability—specifically snack foods and sugary sweetened beverages (SSBs)—and dietary intake in Pakistani and white toddlers at 3 years (18 months) and 3.5 years (36 months).\n\n### Key Findings and Relationships\n\n#### 1. **Home Food Availability and Dietary Intake**\n\n   - **Snack Foods:** The availability of snack food items in the home environment is positively correlated with higher consumption rates among toddlers. This suggests that easy access to snack foods at home increases their likelihood of being consumed.\n\n   - **Sugary Sweetened Beverages (SSBs):** Similarly, the presence of SSBs within the household is also linked to higher intakes of these beverages among young children. This indicates that having readily available SSBs at home contributes to their frequent consumption.\n\n#### 2. **Comparative Analysis Across Ethnic Groups**\n\n   - The study found that the availability of snack and SSB items in the homes of both Pakistani and white ethnic groups was significantly associated with higher dietary intakes among toddlers aged 18 to 36-months-old.\n\n   - Specifically, the research indicated that the presence of snack foods in the home was more prevalent among Pakistani families compared to white families. However, regardless of ethnicity, the overall availability of snack items in the household was consistently linked to higher snack consumption rates among young children.\n\n   - Similarly, the study found that while the prevalence of SSB availability in the home varied slightly between Pakistani and white families, the general trend remained consistent across both ethnic groups. That is, the greater the availability of SSB items within the household, the higher the likelihood of these beverages being frequently consumed by young children.\n\n### Conclusion\n\nIn summary, the findings suggest that the availability and accessibility of snack foods (including pre-sugared and sugar-added cereals) and SSB beverages within the home environment play significant roles in shaping the dietary habits and intakes of young children, particularly those aged 1.5 to 3.0 years.\n\nThese insights highlight the importance of considering the home food environment and its impact on children’s dietary patterns and nutritional outcomes.",
+      "answer_relevance": 0.9090909090909091,
+      "completeness": 0.875,
+      "conciseness": 0.06857142857142857,
+      "answer_correctness_token_f1": 0.1122994652406417,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1116,
+      "answer_tokens": 350,
+      "latency_retrieval_ms": 281.5068749769125,
+      "latency_answer_ms": 32395.340791001217,
+      "latency_external_judge_ms": 3949.873999983538,
+      "latency_qwen_judge_ms": 13081.79820800433,
+      "latency_total_ms": 49708.519873966,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The availability of snack food items in the home environment is positively correlated with higher consumption rates among toddlers.",
+              "verdict": "supported",
+              "evidence": "The availability of snack foods and SSBs in the home is associated with children's dietary intake of snack foods and SSBs at 36 months of age."
+            },
+            {
+              "claim": "The presence of SSBs within the household is linked to higher intakes of these beverages among young children.",
+              "verdict": "supported",
+              "evidence": "The availability of snack foods and SSBs in the home is associated with children's dietary intake of snack foods and SSBs at 36 months of age."
+            },
+            {
+              "claim": "The study found that the availability of snack and SSB items in the homes of both Pakistani and white ethnic groups was significantly associated with higher dietary intakes among toddlers aged 18 to 36-months-old.",
+              "verdict": "not_found",
+              "evidence": "No direct evidence in the provided context."
+            },
+            {
+              "claim": "The presence of snack foods in the home was more prevalent among Pakistani families compared to white families.",
+              "verdict": "contradicted",
+              "evidence": "Contrary to the hypothesis, there were no differences in HFA of snack foods and SSBs according to immigrant generation."
+            },
+            {
+              "claim": "The greater the availability of SSB items within the household, the higher the likelihood of these beverages being frequently consumed by young children.",
+              "verdict": "supported",
+              "evidence": "The availability of snack foods and SSBs in the home is associated with children's dietary intake of snack foods and SSBs at 36 months of age."
+            }
+          ],
+          "counts": {
+            "total": 5,
+            "supported": 3,
+            "contradicted": 1,
+            "not_found": 1,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer contains claims that are not supported or are contradicted by the retrieved context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe availability of snack food items in the home environment is positively correlated with higher consumption rates among toddlers.\tsupported\tThe availability of snack foods and SSBs in the home is associated with children's dietary intake of snack foods and SSBs at 36 months of age.\nCLAIM\tThe presence of SSBs within the household is linked to higher intakes of these beverages among young children.\tsupported\tThe availability of snack foods and SSBs in the home is associated with children's dietary intake of snack foods and SSBs at 36 months of age.\nCLAIM\tThe study found that the availability of snack and SSB items in the homes of both Pakistani and white ethnic groups was significantly associated with higher dietary intakes among toddlers aged 18 to 36-months-old.\tnot_found\tNo direct evidence in the provided context.\nCLAIM\tThe presence of snack foods in the home was more prevalent among Pakistani families compared to white families.\tcontradicted\tContrary to the hypothesis, there were no differences in HFA of snack foods and SSBs according to immigrant generation.\nCLAIM\tThe greater the availability of SSB items within the household, the higher the likelihood of these beverages being frequently consumed by young children.\tsupported\tThe availability of snack foods and SSBs in the home is associated with children's dietary intake of snack foods and SSBs at 36 months of age.\nOVERALL\tfalse\tThe answer contains claims that are not supported or are contradicted by the retrieved context.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The availability of snack food items in the home environment is positively correlated with higher consumption rates among toddlers.",
+              "verdict": "supported",
+              "evidence": "We did not find an association between the availability of snack foods and SSBs in the home and BMI."
+            },
+            {
+              "claim": "The presence of SSBs within the household is also linked to higher intakes of these beverages among young children.",
+              "verdict": "supported",
+              "evidence": "We did not find an association between the availability of snack foods and SSBs in the home and BMI."
+            },
+            {
+              "claim": "The availability of snack and SSB items in the homes of both Pakistani and white ethnic groups was significantly associated with higher dietary intakes among toddlers aged 18 to 36-months-old.",
+              "verdict": "supported",
+              "evidence": "We did not find an association between the availability of snack foods and SSBs in the home and BMI."
+            },
+            {
+              "claim": "The presence of snack foods in the home was more prevalent among Pakistani families compared to white families.",
+              "verdict": "not_found",
+              "evidence": "Contrary to the hypothesis, there were no differences in HFA of snack foods and SSBs according to immigrant generation."
+            },
+            {
+              "claim": "The prevalence of SSB availability in the home varied slightly between Pakistani and white families, but the general trend remained consistent across both ethnic groups.",
+              "verdict": "not_found",
+              "evidence": "Contrary to the hypothesis, there were no differences in HFA of snack foods and SSBs according to immigrant generation."
+            },
+            {
+              "claim": "The availability and accessibility of snack foods (including pre-sugared and sugar-added cereals) and SSB beverages within the home environment play significant roles in shaping the dietary habits and intakes of young children, particularly those aged 1.5 to 3.0 years.",
+              "verdict": "supported",
+              "evidence": "We did not find an association between the availability of snack foods and SSBs in the home and BMI."
+            }
+          ],
+          "counts": {
+            "total": 6,
+            "supported": 4,
+            "contradicted": 0,
+            "not_found": 2,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer contains claims that are not supported by the provided context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe availability of snack food items in the home environment is positively correlated with higher consumption rates among toddlers.\tsupported\tWe did not find an association between the availability of snack foods and SSBs in the home and BMI.\nCLAIM\tThe presence of SSBs within the household is also linked to higher intakes of these beverages among young children.\tsupported\tWe did not find an association between the availability of snack foods and SSBs in the home and BMI.\nCLAIM\tThe availability of snack and SSB items in the homes of both Pakistani and white ethnic groups was significantly associated with higher dietary intakes among toddlers aged 18 to 36-months-old.\tsupported\tWe did not find an association between the availability of snack foods and SSBs in the home and BMI.\nCLAIM\tThe presence of snack foods in the home was more prevalent among Pakistani families compared to white families.\tnot_found\tContrary to the hypothesis, there were no differences in HFA of snack foods and SSBs according to immigrant generation.\nCLAIM\tThe prevalence of SSB availability in the home varied slightly between Pakistani and white families, but the general trend remained consistent across both ethnic groups.\tnot_found\tContrary to the hypothesis, there were no differences in HFA of snack foods and SSBs according to immigrant generation.\nCLAIM\tThe availability and accessibility of snack foods (including pre-sugared and sugar-added cereals) and SSB beverages within the home environment play significant roles in shaping the dietary habits and intakes of young children, particularly those aged 1.5 to 3.0 years.\tsupported\tWe did not find an association between the availability of snack foods and SSBs in the home and BMI.\nOVERALL\tfalse\tThe answer contains claims that are not supported by the provided context.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Obesogenic home food availability diet and BMI in Pakistani and White toddlers** (2021) — \nTitle: Obesogenic home food availability diet and BMI in Pakistani and White toddlers\nYear: 2021\nSource: full-text PDF\n\nnberg, Berge, Arcan, & Neumark-Sztainer, 2015), but this study is\nthe first to report differences in HFA of Pakistani and White house-\nholds at 36 months of age. Contrary to the hypothesis, there were no\ndifferences in HFA of snack foods and SSBs according to immigrant\ngeneration\n\n**Obesogenic home food availability diet and BMI in Pakistani and White toddlers** (2021) — \nTitle: Obesogenic home food availability diet and BMI in Pakistani and White toddlers\nYear: 2021\nSource: full-text PDF\n\n-\nated with children's dietary intake of snack foods and\nSSBs at 36 months of age, respectively.\n• We did not find an association between the availability of\nsnack foods and SSBs in the home and BMI.\n2 of 15\nLECROY ET AL.\n\nThis manuscript addresses these gaps using data from BiB1\n\n**Obesogenic home food availability diet and BMI in Pakistani and White toddlers** (2021) — \nTitle: Obesogenic home food availability diet and BMI in Pakistani and White toddlers\nYear: 2021\nSource: full-text PDF\n\n08; Park,\nPan, Sherry, & Li, 2014), examining how early-life HFA is associated\nwith later dietary intake in South Asian households may provide key\ninsight into a potential intervention target for childhood obesity inter-\nventions in this at-risk population. Further, no studies of\n\n**Obesogenic home food availability, diet, and BMI in Pakistani and White toddlers.** (2021) — LeCroy Madison N, Bryant Maria, Albrecht Sandra S, Siega-Riz Anna Maria, Ward Di\nAbstract: Individuals of South Asian ethnicity have an increased risk for obesity and related diseases. Foods available in the home during the first 1000 days (conception to 24 months old) are an important determinant of diet, yet no study has examined the association of early-life home food availability (HFA) with later diet and obesity risk in South Asian households. We examined whether obesogenic HFA at 18 months of age is associated with dietary intake and body mass index (BMI) at 36 months of age in low-income Pakistani and White households in the United Kingdom. In this prospective birth\n\n**Obesogenic home food availability diet and BMI in Pakistani and White toddlers** (2021) — \nTitle: Obesogenic home food availability diet and BMI in Pakistani and White toddlers\nYear: 2021\nSource: full-text PDF\n\n>5 GCSEs is comparable to a high school diploma in\nthe United States. An A-level equivalent is comparable to a high school diploma with a transcript that includes advanced courses (i.e. advancement\nplacement or International Baccalaureate courses).\nbDenotes a smaller sample size \n\n\n## Relevant Variables\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtSnacksTV\nLabel: How often does your child eat snacks in front of the TV each week\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 0] [2 1] [3 2] [4 3] [5 4] [6 5] [7 6] [8 7]\nNon-missing records: 372\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtFood24hours_7\nLabel: In past 24hrs, how often has your child had Vegetables (raw or cooked)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five + times]\nNon-missing records: 368\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtFood24hours_7\nLabel: In past 24hrs, how often has your child had Vegetables (raw or cooked)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five + times]\nNon-missing records: 364\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtSnacks7days_2\nLabel: Over past 7 days, has child eaten Pre-sugared cereals or sugar added to cereal\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five times] [7 Six+ times]\nNon-missing records: 368\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtFruit7days_other\nLabel: List other fruit your child has eaten over the past 7 days\nTopic: diet_and_nutrition\nType: text\nNon-missing records: 5304\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtSnacks7days_14\nLabel: Over past 7 days, has child eaten Takeaway food\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five times] [7 Six+ times]\nNon-missing records: 368\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtVeg7days_16\nLabel: Over the past 7 days, has your child eaten Celery\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes]\nNon-missing records: 17\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtDinnerAwayHome\nLabel: How often does your child eat dinner away from home each week\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 0] [2 1] [3 2] [4 3] [5 4] [6 5] [7 6] [8 7]\nNon-missing records: 373\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtFruit7days_16\nLabel: Over the past 7 days, has your child eaten Nectarine\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes]\nNon-missing records: 27\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtSnacks7days_2\nLabel: Over past 7 days, has child eaten Pre-sugared cereals or sugar added to cereal\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Nil] [2 Once] [3 Twice] [4 Three times] [5 Four times] [6 Five times] [7 Six+ times]\nNon-missing records: 365\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_1000.bib1000_36m_b36j17\nDisplay name: BiB 1000 36m Other foods consumed by child\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 5 | Rows: 1232 | Entities: 1232\nLast updated: 2024-05-14 09:11:49\n```\n\n```\nTable: BiB_Baseline.base_m2_foodfrequency\nDisplay name: Mother food frequency and knowledge survey questions phase 2\nProject: BiB_Baseline\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 43 | Rows: 4494 | Entities: 4494\nLast updated: 2024-05-14 09:12:04\n```\n\n```\nTable: BiB_Baseline.base_m1_foodfrequency\nDisplay name: BiB Baseline mother food frequency phase 1\nProject: BiB_Baseline\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 116 | Rows: 1776 | Entities: 1776\nLast updated: 2024-05-14 09:12:03\n```\n\n```\nTable: BiB_1000.bib1000_18m_b18qh2\nDisplay name: BiB 1000 18m Other snacks consumed by parent\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 4 | Rows: 1293 | Entities: 1293\nLast updated: 2024-05-14 09:11:47\n```\n\n```\nTable: BiB_1000.bib1000_18m_bib18n\nDisplay name: BiB 1000 18 month child nutrients intake\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 58 | Rows: 1257 | Entities: 1257\nLast updated: 2024-05-14 09:11:47\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_the_feasibility_of_an_objective_measure_of_the_parent_child__chunk_7",
+      "question": "What is the estimated prevalence rate of insecure attachment in a Danish community study?",
+      "reference_answer": "35%",
+      "source_chunk_id": "pdf_the_feasibility_of_an_objective_measure_of_the_parent_child__chunk_7",
+      "rag_answer": "The information provided does not contain specific details about the estimated prevalence rates of insecure attachment from a Danish communitystudy. \n\nHowever, based on general literature, studies on attachment styles in various communities typically report prevalence rates ranging from approximately 40% to 60% for insecure attachment styles (including avoidant and anxious-ambivalent).\n\nFor a precise estimate from a Danish study, one would need to refer to the specific findings reported in the Danish study in question. If you have access to the full text of the Danish study, you could extract the exact prevalence rate they found.\n\nGiven the lack of specific reference to the Danish study's findings, the above estimates are based on typical findings in attachment studies rather than being derived specifically from the referenced Danish study.",
+      "answer_relevance": 0.7857142857142857,
+      "completeness": 0.0,
+      "conciseness": 0.007751937984496126,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1066,
+      "answer_tokens": 129,
+      "latency_retrieval_ms": 328.5818340082187,
+      "latency_answer_ms": 11370.358665997628,
+      "latency_external_judge_ms": 1969.6231249836273,
+      "latency_qwen_judge_ms": 7410.048707999522,
+      "latency_total_ms": 21078.612332988996,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer contains claims not supported by the retrieved context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe information provided does not contain specific details about the estimated prevalence rates of insecure attachment from a Danish community study.\tnot_found\t\nCLAIM\tStudies on attachment styles in various communities typically report prevalence rates ranging from approximately 40% to 60% for insecure attachment styles.\tnot_found\t\nCLAIM\tFor a precise estimate from a Danish study, one would need to refer to the specific findings reported in the Danish study in question.\tunclear\t\nOVERALL\tfalse\tThe answer contains claims not supported by the retrieved context.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "For a precise estimate from a Danish study, one would need to refer to the specific findings reported in the Danish study in question.",
+              "verdict": "supported",
+              "evidence": "For a precise estimate from a Danish study, one would need to refer to the specific findings reported in the Danish study in question."
+            },
+            {
+              "claim": "If you have access to the full text of the Danish study, you could extract the exact prevalence rate they found.",
+              "verdict": "supported",
+              "evidence": "If you have access to the full text of the Danish study, you could extract the exact prevalence rate they found."
+            }
+          ],
+          "counts": {
+            "total": 2,
+            "supported": 2,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "There are no specific details about the Danish study's prevalence rates in the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe information provided does not contain specific details about the estimated prevalence rates of insecure attachment from a Danish community study.\tnot_found\t\nCLAIM\tStudies on attachment styles in various communities typically report prevalence rates ranging from approximately 40% to 60% for insecure attachment styles.\tunclear\t\nCLAIM\tFor a precise estimate from a Danish study, one would need to refer to the specific findings reported in the Danish study in question.\tsupported\tFor a precise estimate from a Danish study, one would need to refer to the specific findings reported in the Danish study in question.\nCLAIM\tIf you have access to the full text of the Danish study, you could extract the exact prevalence rate they found.\tsupported\tIf you have access to the full text of the Danish study, you could extract the exact prevalence rate they found.\nOVERALL\tfalse\tThere are no specific details about the Danish study's prevalence rates in the context.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**The feasibility of an objective measure of the parent-child relationship in health visiting practice assessment of the M** (2022) — Dunn Abigail, Bird Philippa K, Endacott Charlotte, Bywater Tracey, Howes Joanna \nTitle: The feasibility of an objective measure of the parent-child relationship in health visiting practice assessment of the M\nYear: 2022\nSource: full-text PDF\n\nental state and level of devel-\nopment is a crucial precursor of a child’s ability to develop a \nsecure attachment (Ainsworth et al., 1978; Kim et al., 2017). \nSecure attachment predicts a child’s later social-emotional \ndevelopment (Fear\n\n**The feasibility of an objective measure of the parent-child relationship in health visiting practice assessment of the M** (2022) — Dunn Abigail, Bird Philippa K, Endacott Charlotte, Bywater Tracey, Howes Joanna \nTitle: The feasibility of an objective measure of the parent-child relationship in health visiting practice assessment of the M\nYear: 2022\nSource: full-text PDF\n\nhealth \nprofessional in contact with young families and have a key \nrole in health promotion and health needs assessment. There \nare no eligibility criteria to be met for health visiting and it \nis provided universally and is free at the \n\n**Exploring attitudes and variation by sociodemographic factors in consent provided for financial data** (2024) — Reece Sian, Dickerson Josie, Pickett Kate E\nTitle: Exploring attitudes and variation by sociodemographic factors in consent provided for financial data\nYear: 2024\nSource: full-text PDF\n\nrs.org.uk\nFull list of author information is available at the end of the article\nAbstract\nBackground  Improving our understanding of household incomes and what constitutes financial insecurity can \nhelp us to better understand how financial insecurity is exp\n\n**Exploring attitudes and variation by sociodemographic factors in consent provided for financial data linkage in an exper** (2024) — Reece Sian, Dickerson Josie, Pickett Kate E\nAbstract: Improving our understanding of household incomes and what constitutes financial insecurity can help us to better understand how financial insecurity is experienced and how this can change over time within and between individuals and populations. However, financial circumstances are often perceived as sensitive and stigmatising, particularly within some ethnic minority groups. This research aims to explore attitudes and variation by sociodemographic factors in consent provided for financial data linkage in an experimental birth cohort study, in order to obtain validated income and ben\n\n**Changes in prevalence and patterns of consanguinity in Bradford  UK  - evidence from two cohort stud** (2024) — \nTitle: Changes in prevalence and patterns of consanguinity in Bradford  UK  - evidence from two cohort stud\nYear: 2024\nSource: full-text PDF\n\nof autosomal recessive genetic disorders. It calls for improved genetic counseling \nand screening services for affected populations. The research indicates a shift in marriage \npatterns in the South Asian community, with a higher rate of consanguinity in lat\n\n\n## Relevant Variables\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nVariable: awb8_2_afraid_rsn_1___7\nLabel: Did people act afraid of you because of your sexuality?\nTopic: social_attitudes\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: Sexuality]\nNon-missing records: 1868\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nVariable: awb8_2_threat_rsn_1___7\nLabel: Were you threatened because of your sexuality?\nTopic: social_attitudes\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: Sexuality]\nNon-missing records: 1868\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: awb2_9_seek_hlp_ppl_1_r4\nLabel: How likely would you seek help from partner?\nTopic: social_support\nType: categorical\nCategories/Values: [-2 Revised in version 4] [1 1(extremely  unlikely)] [2 2] [3 3(unlikely)] [4 4] [5 5(likely)] [6 6] [7 7(extremely likely)] [8 I dont have a girlfriend, boyfriend or partner]\nNon-missing records: 3718\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nVariable: awb8_2_age_rsn_1___7\nLabel: Did people expect less of you because of your sexuality?\nTopic: social_attitudes\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: Sexuality]\nNon-missing records: 1868\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nVariable: awb8_2_police_rsn_1___7\nLabel: Were you hassled by police because of your sexuality?\nTopic: social_attitudes\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: Sexuality]\nNon-missing records: 1868\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nVariable: awb8_2_lang_rsn_1___7\nLabel: Did people assume your English was poor because of your sexuality?\nTopic: social_attitudes\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: Sexuality]\nNon-missing records: 1868\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nVariable: awb8_2_excl_rsn_1___7\nLabel: Were you excluded from activities because of your sexuality?\nTopic: social_attitudes\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: Sexuality]\nNon-missing records: 1868\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: awb2_1_illhealth_5\nLabel: How often do you worry that something awful will happen to someone in family?\nTopic: mental_disorders\nType: categorical\nCategories/Values: [1 Never] [2 Sometimes] [3 Often] [4 Always]\nNon-missing records: 3836\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod04_dr23\nVariable: addi_inst_exp\nLabel: Adolescent Discrimination Distress Index Institutional (higher = more discrim)\nTopic: social_attitudes\nType: integer\nNon-missing records: 1868\n```\n\n```\nTable: BiB_GrowingUp.adult_survey\nVariable: guadtAgeIllnessv2_8\nLabel: Age first had anxiety\nTopic: mental_disorders\nType: text\nNon-missing records: 5594\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_SDQs.BiB1000_sdq\nDisplay name: Strength and Difficulties questionnaire from the BiB1000 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 56 | Rows: 1226 | Entities: 1226\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_SDQs.PrimarySchoolYears_sdq\nDisplay name: Strength and Difficulties questionnaire from the Primary School Years surve\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 58 | Rows: 3502 | Entities: 3234\nLast updated: 2024-05-14 09:15:37\n```\n\n```\nTable: BiB_SDQs.GrowingUp_sdq\nDisplay name: Strength and Difficulties questionnaire from the Growing Up survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 61 | Rows: 5279 | Entities: 5279\nLast updated: 2024-12-09 13:01:12.602888\n```\n\n```\nTable: BiB_SDQs.COVID_phase1_sdq\nDisplay name: Strength and Difficulties questionnaire from the COVID phase 1 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 71 | Rows: 913 | Entities: 913\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_GrowingUp.adult_survey\nDisplay name: BiB Growing Up adult survey\nProject: BiB_GrowingUp\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 276 | Rows: 5594 | Entities: 5594\nLast updated: 2024-06-25 11:48:02.253941\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_exploring_the_causal_effect_of_maternal_pregnancy_adiposity__chunk_11",
+      "question": "What was the impact of removing cryptic relatedness on the sample size in the ALSPAC cohort?",
+      "reference_answer": "Removing cryptic relatedness at a level corresponding to first cousins dropped 6.7% of individuals in the ALSPAC cohort.",
+      "source_chunk_id": "pdf_exploring_the_causal_effect_of_maternal_pregnancy_adiposity__chunk_11",
+      "rag_answer": "Based on the information provided in the context, the removal of cryptic related ness had no significant impact on the sample sizes in the ALSPA C cohort.\n\nSpecifically, the context mentions that results were similar whether cryptic relatednes was removed or not. \n\nHowever, exact numbers before and after the removal of relatedness would be needed to fully quantify the impact. Since these precise figures are not provided in the given context, I cannot provide a specific numerical change in sample size.",
+      "answer_relevance": 0.7857142857142857,
+      "completeness": 0.42105263157894735,
+      "conciseness": 0.23456790123456786,
+      "answer_correctness_token_f1": 0.16,
+      "answer_exact_match": false,
+      "retrieved_tokens": 814,
+      "answer_tokens": 81,
+      "latency_retrieval_ms": 277.2597500006668,
+      "latency_answer_ms": 7624.689917021897,
+      "latency_external_judge_ms": 2236.8365839938633,
+      "latency_qwen_judge_ms": 4769.210792001104,
+      "latency_total_ms": 14907.99704301753,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The removal of cryptic relatedness had no significant impact on the sample sizes in the ALSPAC cohort.",
+              "verdict": "supported",
+              "evidence": "\"results were similar when we removed cryptic relatedness\""
+            },
+            {
+              "claim": "Exact numbers before and after the removal of relatedness would be needed to fully quantify the impact.",
+              "verdict": "supported",
+              "evidence": "\"results were similar when we removed cryptic relatedness\""
+            },
+            {
+              "claim": "The context provides precise figures for the sample size change after removing cryptic relatedness.",
+              "verdict": "contradicted",
+              "evidence": "\"exact numbers... are not provided\""
+            }
+          ],
+          "counts": {
+            "total": 3,
+            "supported": 2,
+            "contradicted": 1,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer contains a claim that is contradicted by the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe removal of cryptic relatedness had no significant impact on the sample sizes in the ALSPAC cohort.\tsupported\t\"results were similar when we removed cryptic relatedness\"\nCLAIM\tExact numbers before and after the removal of relatedness would be needed to fully quantify the impact.\tsupported\t\"results were similar when we removed cryptic relatedness\"\nCLAIM\tThe context provides precise figures for the sample size change after removing cryptic relatedness.\tcontradicted\t\"exact numbers... are not provided\"\nOVERALL\tfalse\tThe answer contains a claim that is contradicted by the context.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The removal of cryptic relatedness had no significant impact on the sample sizes in the ALSPAC cohort.",
+              "verdict": "supported",
+              "evidence": "results were similar when we removed cryptic relat"
+            },
+            {
+              "claim": "Results were similar whether cryptic relatedness was removed or not.",
+              "verdict": "supported",
+              "evidence": "results were similar when we removed cryptic relat"
+            }
+          ],
+          "counts": {
+            "total": 2,
+            "supported": 2,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "The claims are supported by the context, and no contradictions or missing evidence were found."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe removal of cryptic relatedness had no significant impact on the sample sizes in the ALSPAC cohort.\tsupported\tresults were similar when we removed cryptic relat\nCLAIM\tResults were similar whether cryptic relatedness was removed or not.\tsupported\tresults were similar when we removed cryptic relat\nCLAIM\tExact numbers before and after the removal of relatedness are needed to fully quantify the impact.\tnot_found\t\nOVERALL\ttrue\tThe claims are supported by the context, and no contradictions or missing evidence were found.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Exploring the causal effect of maternal pregnancy adiposity on offspring adiposity Mendelian randomisation using polygen** (2022) — Bond Tom A, Richmond Rebecca C, Karhunen Ville, Cuellar-Partida Gabriel, Borges \nTitle: Exploring the causal effect of maternal pregnancy adiposity on offspring adiposity Mendelian randomisation using polygen\nYear: 2022\nSource: full-text PDF\n\nmates. We did not remove cryptic relatedness for our\nprimary analyses, in order to maximise the sample size\nand because the LMM controls for bias due to cryptic\nrelatedness [71]. However, results were similar when we\nremoved cryptic relat\n\n**Exploring parental prenatal influences on child health  a multicohort study and data visualisation t** (2025) — \nTitle: Exploring parental prenatal influences on child health  a multicohort study and data visualisation t\nYear: 2025\nSource: full-text PDF\n\nmoking, but part of a broader pattern of disadvantage. The researcher could \nthen perform a ‘Deep Dive’ to explore (for model 2b) cohort sample sizes, summary \nstatistics, a forest plot, and a verbal interpretation of the findings. This shows that three \ncoh\n\n**Exploring the causal effect of maternal pregnancy adiposity on offspring adiposity Mendelian randomisation using polygen** (2022) — Bond Tom A, Richmond Rebecca C, Karhunen Ville, Cuellar-Partida Gabriel, Borges \nTitle: Exploring the causal effect of maternal pregnancy adiposity on offspring adiposity Mendelian randomisation using polygen\nYear: 2022\nSource: full-text PDF\n\n(Additional file 1: Supplementary information S11).\nIn order to avoid overfitting due to overlap between the\nbase and target samples, we excluded attendees of the\nBristol\n(where\nALSPAC\nparticipants\nwould\nhave\nattended) or Leeds (where Bor\n\n**Challenges in using data on fathers partners to study prenatal exposures and offspring health** (2024) — \nTitle: Challenges in using data on fathers partners to study prenatal exposures and offspring health\nYear: 2024\nSource: full-text PDF\n\nlies\nwith participating partners and those without could introduce\nselection bias. To assess the potential for sample selection in these\ncohorts we used logistic regression to estimate the univariable\nassociation of family characteristics in pregnancy with partner\n\n\n**Exome sequencing of UK birth cohorts** (2024) — \nTitle: Exome sequencing of UK birth cohorts\nYear: 2024\nSource: full-text PDF\n\nand on-target depth. Samples \nfailing any of these checks were removed (Figure 1).\nPage 6 of 34\nWellcome Open Research 2024, 9:390 Last updated: 30 JAN 2025\n\nFigure 1. Overview of quality control steps and the sample size remaining at each step. The sample sizes shown do not include five \nGenome In a Bottle (GIAB) sample\n\n\n## Relevant Variables\n\n```\nTable: BiB_Metabolomics.metms_pairm_s\nVariable: metmss57467\nLabel: docosatrienoate (22:3n6)* [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n```\nTable: BiB_Metabolomics.metms_pairc_s\nVariable: metmss33953\nLabel: N-acetylarginine [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n```\nTable: BiB_Metabolomics.metms_2k_s\nVariable: metm2s33946\nLabel: N-acetylhistidine [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 2000\n```\n\n```\nTable: BiB_Metabolomics.metms_pairc_s\nVariable: metmss37432\nLabel: N-acetyl-beta-alanine [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n```\nTable: BiB_Metabolomics.metms_pairc_s\nVariable: metmss32415\nLabel: docosadienoate (22:2n6) [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n```\nTable: BiB_Metabolomics.metms_pairc_s\nVariable: metmss57814\nLabel: (N(1) + N(8))-acetylspermidine [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n```\nTable: BiB_Metabolomics.metms_2k_s\nVariable: metm2s57467\nLabel: docosatrienoate (22:3n6)* [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 2000\n```\n\n```\nTable: BiB_Metabolomics.metms_pairm_s\nVariable: metmss57814\nLabel: (N(1) + N(8))-acetylspermidine [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n```\nTable: BiB_Metabolomics.metms_pairm_s\nVariable: metmss33953\nLabel: N-acetylarginine [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n```\nTable: BiB_Metabolomics.metms_pairc_s\nVariable: metmss36752\nLabel: N6-acetyllysine [scaled]\nTopic: metabolomics\nType: float\nNon-missing records: 1000\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_AgeOfWonder.recruitment_dr23\nDisplay name: AoW recruitment denominator 2023 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 39 | Rows: 10385 | Entities: 8991\nLast updated: 2024-05-14 16:41:44.130247\n```\n\n```\nTable: BiB_AgeOfWonder.recruitment_dr24\nDisplay name: AoW recruitment denominator 2024 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 35 | Rows: 23482 | Entities: 17840\nLast updated: 2025-01-15 08:42:14.961153\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod01_dr23\nDisplay name: AoW survey module 1 2023 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 268 | Rows: 4353 | Entities: 4353\nLast updated: 2024-05-14 16:42:47.350132\n```\n\n```\nTable: BiB_CohortInfo.dnam_info\nDisplay name: BiB DNA methylation data linkage\nProject: BiB_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 6 | Rows: 1885 | Entities: 1883\nLast updated: 2024-05-14 09:12:24\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod232_derived_dr24\nDisplay name: AoW survey module 232 2024 release with derived variables\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 56 | Rows: 12608 | Entities: 10684\nLast updated: 2025-01-21 14:17:30.646074\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_associations_between_insomnia_and_pregnancy_and_perinatal_ou_chunk_2",
+      "question": "What were the odds ratios and confidence intervals for the association between insomnia and perinatal depression in the study?",
+      "reference_answer": "The odds ratio for the association between insomnia and perinatal depression was 3.56, with a 95% confidence interval of 1.49 to 8.54.",
+      "source_chunk_id": "pdf_associations_between_insomnia_and_pregnancy_and_perinatal_ou_chunk_2",
+      "rag_answer": "Based on the abstract provided for the paper titled **\"Associations between insulin and pregnancy and peri...\n**\nUnfortunately, there is no direct mention of the association between **insomnia and perinat...\n**\n\nHowever, the abstract does discuss the association between insulin and various perinatal conditions, including perinatal depressive symptoms.\n\nGiven the lack of specific details regarding the association between insulation and perinantal depression, we cannot provide precise odds ratios and corresponding confidence intervals.\n\nFor more detailed information, you would need to refer to the full text of the study.",
+      "answer_relevance": 0.8125,
+      "completeness": 0.52,
+      "conciseness": 0.29069767441860467,
+      "answer_correctness_token_f1": 0.2342342342342342,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1136,
+      "answer_tokens": 86,
+      "latency_retrieval_ms": 258.3529579860624,
+      "latency_answer_ms": 8814.860332990065,
+      "latency_external_judge_ms": 2133.787666010903,
+      "latency_qwen_judge_ms": 4521.595917001832,
+      "latency_total_ms": 15728.596873988863,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The answer states there is no direct mention of the association between insomnia and perinatal depression.",
+              "verdict": "supported",
+              "evidence": "\"Unfortunately, there is no direct mention of the association between **insomnia and perinat...\""
+            },
+            {
+              "claim": "The answer mentions the association between insulin and various perinatal conditions, including perinatal depressive symptoms.",
+              "verdict": "not_found",
+              "evidence": "No evidence of \"insulin\" being related to the question about insomnia."
+            },
+            {
+              "claim": "The answer suggests referring to the full text of the study for more detailed information.",
+              "verdict": "unclear",
+              "evidence": "No clear evidence in the context to support this claim as a direct answer to the question."
+            }
+          ],
+          "counts": {
+            "total": 3,
+            "supported": 1,
+            "contradicted": 0,
+            "not_found": 1,
+            "unclear": 1
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer does not provide odds ratios and confidence intervals for insomnia and perinatal depression."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe answer states there is no direct mention of the association between insomnia and perinatal depression.\t supported\t\"Unfortunately, there is no direct mention of the association between **insomnia and perinat...\"\nCLAIM\tThe answer mentions the association between insulin and various perinatal conditions, including perinatal depressive symptoms.\t not_found\tNo evidence of \"insulin\" being related to the question about insomnia.\nCLAIM\tThe answer suggests referring to the full text of the study for more detailed information.\t unclear\tNo clear evidence in the context to support this claim as a direct answer to the question.\nOVERALL\t false\t The answer does not provide odds ratios and confidence intervals for insomnia and perinatal depression.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The abstract discusses the association between insulin and various perinatal conditions, including perinatal depressive symptoms.",
+              "verdict": "contradicted",
+              "evidence": "The abstract discusses the association between insomnia and various perinatal outcomes, not insulin."
+            },
+            {
+              "claim": "The abstract does not provide specific details regarding the association between insomnia and perinatal depression.",
+              "verdict": "supported",
+              "evidence": "The abstract does not provide specific details about the association between insomnia and perinatal depression."
+            }
+          ],
+          "counts": {
+            "total": 2,
+            "supported": 1,
+            "contradicted": 1,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "notes": "The answer contains a contradicted claim."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe abstract discusses the association between insulin and various perinatal conditions, including perinatal depressive symptoms.\tcontradicted\tThe abstract discusses the association between insomnia and various perinatal outcomes, not insulin.\nCLAIM\tThe abstract does not provide specific details regarding the association between insomnia and perinatal depression.\tsupported\tThe abstract does not provide specific details about the association between insomnia and perinatal depression.\nOVERALL\tfalse\tThe answer contains a contradicted claim.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Associations between insomnia and pregnancy and perinatal outcomes: Evidence from mendelian randomization and multivaria** (2022) — Yang Qian, Borges Maria Carolina, Sanderson Eleanor, Magnus Maria C, Kilpi Fanny\nAbstract: Insomnia is common and associated with adverse pregnancy and perinatal outcomes in observational studies. However, those associations could be vulnerable to residual confounding or reverse causality. Our aim was to estimate the association of insomnia with stillbirth, miscarriage, gestational diabetes (GD), hypertensive disorders of pregnancy (HDP), perinatal depression, preterm birth (PTB), and low/high offspring birthweight (LBW/HBW). We used 2-sample mendelian randomization (MR) with 81 single-nucleotide polymorphisms (SNPs) instrumenting for a lifelong predisposition to insomnia.\n\n**Dental caries and school readiness in 5-year-olds: A birth cohort data linkage study.** (2024) — Giles Erin, Relins Samuel, Gray-Burrows Kara, Baker Sarah R, Day Peter F\nAbstract: To describe the association between dental caries and school readiness in 5-year-old children taking part in the Born in Bradford (BiB) birth cohort, UK. The Early Years Foundation Stage Profile (EYFSP) assesses the school readiness of young children and is strongly predictive of future academic attainment. Children are recorded as 'emerging' (below expected), 'expected', or 'exceeding' in five key learning areas. The Oral Health Survey of 5-year-olds (OHS5) is undertaken biennially in England, assessing caries experience at a dentine threshold (d3mft). EYFSP and OHS5 were available \n\n**Associations between insomnia and pregnancy and perinatal outcomes Evidence from mendelian randomization and multivariab** (2022) — \nTitle: Associations between insomnia and pregnancy and perinatal outcomes Evidence from mendelian randomization and multivariab\nYear: 2022\nSource: full-text PDF\n\nllcome Trust (WT088806), and offspring\nsamples were genotyped by Sample Logistics and\nGenotyping Facilities at the Wellcome Trust Sanger\nInstitute and LabCorp (Laboratory Corporation of\nAmerica) using support from 23andMe. A\ncomprehensive\n\n**Associations between insomnia and pregnancy and perinatal outcomes Evidence from mendelian randomization and multivariab** (2022) — \nTitle: Associations between insomnia and pregnancy and perinatal outcomes Evidence from mendelian randomization and multivariab\nYear: 2022\nSource: full-text PDF\n\nor reverse causality. Our aim was to estimate the association of insomnia with still-\nbirth, miscarriage, gestational diabetes (GD), hypertensive disorders of pregnancy (HDP),\nperinatal depression, preterm birth (PTB), and low/high offspr\n\n**Associations between insomnia and pregnancy and perinatal outcomes Evidence from mendelian randomization and multivariab** (2022) — \nTitle: Associations between insomnia and pregnancy and perinatal outcomes Evidence from mendelian randomization and multivariab\nYear: 2022\nSource: full-text PDF\n\ngitudinal Study\nof Parents and Children; BiB, Born in Bradford; CI,\nconfidence interval; GD, gestational diabetes;\nGWAS, genome-wide association study; HBW,\nhigh offspring birthweight; HDP, hypertensive\ndisorders of pregnancy; IV, instrum\n\n\n## Relevant Variables\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eq5d_anxietydepression\nLabel: ANXIETY / DEPRESSION\nTopic: wellbeing\nType: categorical\nCategories/Values: [1 I am not anxious or depressed] [2 I am slightly anxious or depressed] [3 I am moderately anxious or depressed] [4 I am severely anxious or depressed] [5 I am extremely anxious or depressed]\nNon-missing records: 1545\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: awb2_1_illhealth_9\nLabel: How often do you feel scared to sleep alone?\nTopic: mental_disorders\nType: categorical\nCategories/Values: [1 Never] [2 Sometimes] [3 Often] [4 Always]\nNon-missing records: 3866\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: phq_q3\nLabel: Trouble falling or staying asleep, or sleeping too much\nTopic: wellbeing\nType: categorical\nCategories/Values: [1 Not at all] [2 Several days] [3 More than half the days] [4 Nearly every day] [5 Do not wish to answer]\nNon-missing records: 2545\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: par_2dreamsbaby\nLabel: Over past 2wks I have had dreams about the pregnancy or baby\nTopic: pregnancy\nType: categorical\nCategories/Values: [1 Not at all] [2 Occasionally] [3 Frequently] [4 Very frequently] [5 Almost every night] [6 Do not wish to answer] [7 NT]\nNon-missing records: 1868\n```\n\n```\nTable: COVID19_Survey.child_phase3_covid\nVariable: c19c2_yhw_difslp\nLabel: 4A) How often do you have difficulty sleeping?\nTopic: mental_health_and_mental_processes_cv19\nType: categorical\nCategories/Values: [1 Every day] [2 More than once a week] [3 About every week] [4 About every month] [5 Rarely or never]\nNon-missing records: 590\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: gad_nervous\nLabel: Feeling nervous, anxious or on an edge?\nTopic: wellbeing\nType: categorical\nCategories/Values: [1 Not at all] [2 Several days] [3 More than half the days] [4 Nearly every day] [5 Do not wish to answer] [6 NT]\nNon-missing records: 1932\n```\n\n```\nTable: COVID19_Survey.adult_bibplus_phase3\nVariable: fh_eq5d_anx_dep_bre1\nLabel: 47) Which answer best describes your current anxiety/depression?\nTopic: mental_health_and_mental_processes_cv19\nType: categorical\nCategories/Values: [1 I am extremely anxious or depressed] [2 I am severely anxious or depressed] [3 I am moderately anxious or depressed] [4 I am slightly anxious or depressed] [5 I am not anxious or depressed]\nNon-missing records: 1554\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: awb2_1_illhealth_8\nLabel: How often do you have trouble sleeping?\nTopic: mental_disorders\nType: categorical\nCategories/Values: [1 Never] [2 Sometimes] [3 Often] [4 Always]\nNon-missing records: 3864\n```\n\n```\nTable: BiB_Breathes.BiBBr_Phase1\nVariable: fh_eq5d_anx_dep_bre1\nLabel: Which answer best describes your current anxiety/depression?\nTopic: mental_health_and_mental_processes\nType: categorical\nCategories/Values: [1 I am extremely anxious or depressed] [2 I am severely anxious or depressed] [3 I am moderately anxious or depressed] [4 I am slightly anxious or depressed] [5 I am not anxious or depressed]\nNon-missing records: 1551\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod232_main_dr24\nVariable: awb2_1_illhealth_9\nLabel: How often do you feel scared to sleep alone?\nType: categorical\nCategories/Values: [1 Never] [2 Sometimes] [3 Often] [4 Always]\nNon-missing records: 8497\n```\n\n\n## Relevant Tables\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nDisplay name: Mother baseline pregnancy survey\nProject: BiBBS_Baseline\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 328 | Rows: 2564 | Entities: 2378\nLast updated: 2024-05-14 09:15:45\n```\n\n```\nTable: BiB_Biosamples.pregnancy_gtt\nDisplay name: Maternal baseline GTT\nProject: BiB_Biosamples\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 12331 | Entities: 11231\nLast updated: 2024-05-14 09:12:09\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nDisplay name: Maternity records pregnancy blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 117578 | Entities: 10005\nLast updated: 2024-05-14 09:14:04\n```\n\n```\nTable: BiBBS_CohortInfo.pregnancy\nDisplay name: Recruited pregnancy information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 15 | Rows: 2626 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_meds\nDisplay name: Maternity records medications\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 6 | Rows: 4937 | Entities: 3664\nLast updated: 2024-05-14 09:13:58\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_differences_in_socioeconomic_position_lifestyle_and_health_r_chunk_27",
+      "question": "What is the unadjusted odds ratio for hypertensive disorders of pregnancy in all Pakistani births compared to White British births?",
+      "reference_answer": "0.74 (0.61 to 0.90)",
+      "source_chunk_id": "pdf_differences_in_socioeconomic_position_lifestyle_and_health_r_chunk_27",
+      "rag_answer": "Based on the information provided in the relevant published papers, there is no direct statement regarding the unadjusted OR for hypertensive disorder of pregnancy specifically comparing all Pakistani births to White British.\n\nHowever, we can infer from the studies cited that there might be differences in the prevalence of hypertensive disorders among different ethnic groups, including Pakistani and White British populations.\n\nTo provide a precise unadjusted odds ratios, one would need to refer to the specific datasets and statistical analyses conducted within the Born in Bradfor (BiB)) cohort study.\n\nGiven the lack of a direct statement in the provided references, I cannot provide a specific unadjusted odds ration without access to the raw data and detailed statistical analysis performed within the BiB cohort study.",
+      "answer_relevance": 0.8421052631578947,
+      "completeness": 0.14285714285714285,
+      "conciseness": 0.056451612903225805,
+      "answer_correctness_token_f1": 0.015267175572519085,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1092,
+      "answer_tokens": 124,
+      "latency_retrieval_ms": 250.1645419979468,
+      "latency_answer_ms": 10986.953541985713,
+      "latency_external_judge_ms": 3031.1651669908315,
+      "latency_qwen_judge_ms": 8617.119292001007,
+      "latency_total_ms": 22885.4025429755,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The Born in Bradford cohort study includes 476 White British and 534 Pakistani origin mother-offspring pairs.",
+              "verdict": "supported",
+              "evidence": "476 White British and 534 Pakistani origin mother-offspring pairs"
+            },
+            {
+              "claim": "The study used multinomial or logistic regression with the exposure as a continuous variable, considering two models for each outcome: model 1 was unadjusted, and model 2 was adjusted.",
+              "verdict": "supported",
+              "evidence": "two models were considered for each outcome: model 1 was unadjusted, and model 2 was adjusted"
+            },
+            {
+              "claim": "The unadjusted results are in the supplementary material.",
+              "verdict": "supported",
+              "evidence": "unadjusted (Model 1) results in the supplementary material"
+            }
+          ],
+          "counts": {
+            "total": 3,
+            "supported": 3,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "No direct statement regarding the unadjusted OR for hypertensive disorder of pregnancy comparing all Pakistani births to White British births."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe unadjusted odds ratio for hypertensive disorders of pregnancy in all Pakistani births compared to White British births is not directly stated in the provided context.\tnot_found\t\nCLAIM\tDifferences in socioeconomic position, lifestyle, and health-related pregnancy characteristics between Pakistani and White British populations may be associated with cardiovascular disease.\tunclear\t\nCLAIM\tThe Born in Bradford cohort study includes 476 White British and 534 Pakistani origin mother-offspring pairs.\tsupported\t476 White British and 534 Pakistani origin mother-offspring pairs\nCLAIM\tThe study used multinomial or logistic regression with the exposure as a continuous variable, considering two models for each outcome: model 1 was unadjusted, and model 2 was adjusted.\tsupported\ttwo models were considered for each outcome: model 1 was unadjusted, and model 2 was adjusted\nCLAIM\tThe unadjusted results are in the supplementary material.\tsupported\tunadjusted (Model 1) results in the supplementary material\nOVERALL\tfalse\tNo direct statement regarding the unadjusted OR for hypertensive disorder of pregnancy comparing all Pakistani births to White British births.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "To provide a precise unadjusted odds ratios, one would need to refer to the specific datasets and statistical analyses conducted within the Born in Bradford (BiB) cohort study.",
+              "verdict": "supported",
+              "evidence": "The study included 476 White British and 534 Pakistani origin mother-offspring pairs from the Born in Bradford cohort study."
+            },
+            {
+              "claim": "Given the lack of a direct statement in the provided references, I cannot provide a specific unadjusted odds ratio without access to the raw data and detailed statistical analysis performed within the BiB cohort study.",
+              "verdict": "supported",
+              "evidence": "Unadjusted (Model 1) results in the supplementary material."
+            }
+          ],
+          "counts": {
+            "total": 2,
+            "supported": 2,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "notes": "There are no contradicted claims, but there are not_found and unclear claims."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tBased on the information provided in the relevant published papers, there is no direct statement regarding the unadjusted OR for hypertensive disorder of pregnancy specifically comparing all Pakistani births to White British.\tnot_found\t\nCLAIM\tWe can infer from the studies cited that there might be differences in the prevalence of hypertensive disorders among different ethnic groups, including Pakistani and White British populations.\tunclear\t\nCLAIM\tTo provide a precise unadjusted odds ratios, one would need to refer to the specific datasets and statistical analyses conducted within the Born in Bradford (BiB) cohort study.\tsupported\tThe study included 476 White British and 534 Pakistani origin mother-offspring pairs from the Born in Bradford cohort study.\nCLAIM\tGiven the lack of a direct statement in the provided references, I cannot provide a specific unadjusted odds ratio without access to the raw data and detailed statistical analysis performed within the BiB cohort study.\tsupported\tUnadjusted (Model 1) results in the supplementary material.\nOVERALL\tfalse\tThere are no contradicted claims, but there are not_found and unclear claims.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Associations of maternal vitamin D PTH and calcium with hypertensive disorders of pregnancy and associated adverse perin** (2019) — \nTitle: Associations of maternal vitamin D PTH and calcium with hypertensive disorders of pregnancy and associated adverse perin\nYear: 2019\nSource: full-text PDF\n\na and associated adverse outcomes were assessed using multinomial or logistic \nregression with the exposure as a continuous variable. Two models were considered for each outcome: model \n1 was unadjusted, and model 2 was adjusted for the c\n\n**Differences in socioeconomic position lifestyle and health-related pregnancy characteristics between Pakistani and White** (2014) — \nTitle: Differences in socioeconomic position lifestyle and health-related pregnancy characteristics between Pakistani and White\nYear: 2014\nSource: full-text PDF\n\nublic health\ncampaigns.\nHealth-related pregnancy characteristics may be most\nimportant to the long-term health of South Asian\nmigrants in the UK, particularly in relation to the associ-\nation of these characteristics with cardiovascular d\n\n**Associations of maternal vitamin D PTH and calcium with hypertensive disorders of pregnancy and associated adverse perin** (2019) — \nTitle: Associations of maternal vitamin D PTH and calcium with hypertensive disorders of pregnancy and associated adverse perin\nYear: 2019\nSource: full-text PDF\n\nns of each exposure with \noutcomes in White British and Pakistani mother-offspring pairs are shown in Table 2, and Figs 3 and 4, with the \nunadjusted (Model 1) results in the supplementary material. In the adjusted analyses, higher concen\n\n**Associations of maternal vitamin D PTH and calcium with hypertensive disorders of pregnancy and associated adverse perin** (2019) — \nTitle: Associations of maternal vitamin D PTH and calcium with hypertensive disorders of pregnancy and associated adverse perin\nYear: 2019\nSource: full-text PDF\n\n1\nScientific Reports |          (2019) 9:1205  | https://doi.org/10.1038/s41598-018-37600-9\nwww.nature.com/scientificreports\nAssociations of maternal vitamin D, \nPTH and calcium with hypertensive \ndisorders of pregnancy and \nassociated ad\n\n**Associations of maternal vitamin D, PTH and calcium with hypertensive disorders of pregnancy and associated adverse peri** (2019) — Santorelli Gillian, Whitelaw Donald, Farrar Diane, West Jane, Lawlor Debbie A\nAbstract: Vitamin D and parathyroid hormone (PTH) regulate mineral metabolism and are required to maintain calcium levels. Vitamin D deficiency is common, particularly during pregnancy, and has been associated with hypertensive disorders of pregnancy. We sought to determine whether maternal 25(OH)D, PTH and calcium concentrations at 26 weeks gestation are associated with adverse outcomes of pregnancy and establish whether these differ by ethnicity. This study included 476 White British and 534 Pakistani origin mother-offspring pairs from the Born in Bradford cohort study. We used multinomial o\n\n\n## Relevant Variables\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: fat_cbirth\nLabel: Which country was the father of your baby born in\nTopic: place_of_birth\nType: categorical\nCategories/Values: [1 England] [2 Pakistan] [3 Bangladesh] [4 India] [5 Northern Ireland] [6 Scotland] [7 Wales] [8 Republic of Ireland] [9 Poland] [10 Czech Republic] [11 Slovakia] [12 Romania] [13 Hungary] [14 Other] [15 Don't know]\nNon-missing records: 2550\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnprfhisthypfa\nLabel: FH of hypertension in woman's father\nTopic: cardiovascular_system\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Not documented]\nNon-missing records: 10925\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnprfhisthypch\nLabel: FH of hypertension in woman's child\nTopic: cardiovascular_system\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Not documented]\nNon-missing records: 10925\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnprfhisthypmo\nLabel: FH of hypertension in woman's mother\nTopic: cardiovascular_system\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Not documented]\nNon-missing records: 10925\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eth_ethnic\nLabel: Mother ethnicity all categories\nTopic: ethnic_group\nType: categorical\nCategories/Values: [1 White British] [2 White Irish] [3 Pakistani] [4 Indian] [5 Bangladeshi] [6 White Polish] [7 White Slovakian] [8 White Romanian] [9 White Czech] [10 Other White] [11 White Gypsy/Roma/Irish traveller] [12 Chinese] [13 African] [14 Caribbean] [15 Mixed White/ Black Caribbean] [16 Mixed White/ Black African] [17 Mixed White/ Asian] [18 Do not wish to answer] [19 Other]\nNon-missing records: 2554\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnprfhisthyprelnd\nLabel: FH of hypertension, relationship not documented\nTopic: cardiovascular_system\nType: categorical\nCategories/Values: [1 No family history] [2 Relatives documented] [3 Relatives not documented] [4 Family history not documented]\nNon-missing records: 10925\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnprfhisthypsb\nLabel: FH of hypertension in woman's sibling\nTopic: cardiovascular_system\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Not documented]\nNon-missing records: 10925\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eth_fcountry\nLabel: Parents (father) country of birth\nTopic: place_of_birth\nType: categorical\nCategories/Values: [1 England] [2 Pakistan] [3 Bangladesh] [4 India] [5 Northern Ireland] [6 Scotland] [7 Wales] [8 Republic of Ireland] [9 Poland] [10 Czech Republic] [11 Slovakia] [12 Romania] [13 Hungary] [14 Other] [15 Don't know]\nNon-missing records: 1443\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nVariable: prnpregbptime\nLabel: Time pregnancy blood pressure was taken\nTopic: administration\nType: text\nNon-missing records: 117578\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eth_countryborn\nLabel: Country born\nTopic: place_of_birth\nType: categorical\nCategories/Values: [1 England] [2 Pakistan] [3 Bangladesh] [4 India] [5 Northern Ireland] [6 Scotland] [7 Wales] [8 Republic of Ireland] [9 Poland] [10 Czech Republic] [11 Slovakia] [12 Romania] [13 Hungary] [14 Other] [15 Don't know]\nNon-missing records: 2555\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nDisplay name: Maternity records pregnancy blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 117578 | Entities: 10005\nLast updated: 2024-05-14 09:14:04\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_postbp\nDisplay name: Maternity records post-partum blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 7 | Rows: 36379 | Entities: 9292\nLast updated: 2024-05-14 09:13:59\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_labbp\nDisplay name: Maternity records labour blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 8643 | Entities: 7995\nLast updated: 2024-05-14 09:13:58\n```\n\n```\nTable: BiBBS_CohortInfo.pregnancy\nDisplay name: Recruited pregnancy information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 15 | Rows: 2626 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_GrowingUp.blood_pressure\nDisplay name: BiB Growing Up child blood pressures\nProject: BiB_GrowingUp\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 16 | Rows: 15899 | Entities: 9082\nLast updated: 2024-05-14 09:12:44\n```\n"
+    }
+  ]
+}

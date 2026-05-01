@@ -18,21 +18,21 @@ Usage
         --answer-model Qwen/Qwen2.5-72B-Instruct \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --run-name faithfulness_baseline
+        --run-name faithfulness_Qwen2.5-72B-Instruct
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
-        --answer-model meta-llama/Llama-3.1-70B-Instruct \
+        --answer-model Qwen/Qwen2.5-32B-Instruct \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
-        --qwen-judge-model Qwen/Qwen2.5-7B-Instruct \
-        --run-name faithfulness_Llama-3.1-70B-Instruct
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --run-name faithfulness_Qwen2.5-32B-Instruct
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
-        --answer-model meta-llama/Llama-3.1-70B-Instruct \
+        --answer-model meta-llama/Llama-3.1-8B-Instruct \
         --external-judge-model Qwen/Qwen2.5-72B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-7B-Instruct \
-        --run-name faithfulness_baseline
+        --run-name faithfulness_Llama-3.1-8B-Instruct
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
@@ -63,6 +63,26 @@ Usage
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
         --run-name faithfulness_biomistral-7b-dare_endpoint
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model dizza01/medalpaca-13b \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://h46ed7c31gh0orh6.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --run-name faithfulness_medalpaca-13b_endpoint
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model dizza01/Qwen2.5-14B-Instruct \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --run-name faithfulness_Qwen2.5-14B-Instruct_endpoint
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
