@@ -1,0 +1,249 @@
+{
+  "n_queries_attempted": 2,
+  "n_queries_succeeded": 2,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/BioMistral-7B-DARE",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/BioMistral-7B-DARE",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 2,
+    "evaluated_at": "2026-05-02T22:01:19"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 2,
+      "succeeded_queries": 2,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 1.0,
+      "claim_support_rate": 1.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 2,
+      "total_claims": 1,
+      "supported_claims": 1,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 1.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 1.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 0,
+      "risky_query_rate": 0.0,
+      "avg_claims_per_answer": 0.5,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 2,
+      "total_claims": 5,
+      "supported_claims": 4,
+      "contradicted_claims": 1,
+      "not_found_claims": 0,
+      "unfaithful_claims": 1,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.8,
+      "contradicted_claim_rate": 0.2,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.2,
+      "contradiction_weighted_hallucination": 0.4,
+      "query_faithfulness_rate": 0.5,
+      "contradicted_query_rate": 0.5,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.5,
+      "risky_queries": 1,
+      "risky_query_rate": 0.5,
+      "avg_claims_per_answer": 2.5,
+      "avg_unfaithful_claims_per_answer": 0.5
+    },
+    "judge_agreement": {
+      "n_queries": 2,
+      "faithful_label_agreement": 0.5,
+      "unfaithful_presence_agreement": 0.5
+    },
+    "generation_quality": {
+      "n_queries": 2,
+      "answer_relevance": 0.9315217391304347,
+      "completeness": 0.6600877192982456,
+      "conciseness": 0.20038705137227308,
+      "answer_correctness_token_f1": 0.19108669108669107,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 13272.596583061386,
+      "latency_total_p95_ms": 18168.57383499155,
+      "latency_retrieval_avg_ms": 977.8048334992491,
+      "latency_answer_avg_ms": 6712.212687503779,
+      "avg_retrieved_tokens": 1092.5,
+      "avg_answer_tokens": 78.0,
+      "answer_tokens_per_retrieved_token": 0.07139588100686499
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "q_1",
+      "question": "In the paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\" (2024), what is the relationship between prenatal alcohol exposure and early education outcomes?",
+      "reference_answer": "The study shows a significant association between prenatal alcohol exposure and adverse outcomes in a child’s early education.",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+      "rag_answer": "The paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\" (2024) reports that prenatal alcohol exposure is associated with lower educational attainment in children. The authors used a matched controls study design to compare children with prenatal alcohol exposure to a matched control group without prenatal alcohol exposure. They found that children with prenatal alcohol exposure had lower educational attainment at age 5, as measured by the Early Years Quality Assessment (EYQA) score. The authors also found that this association was robust to a range of sensitivity analyses.",
+      "answer_relevance": 0.9130434782608695,
+      "completeness": 0.7368421052631579,
+      "conciseness": 0.19387755102040818,
+      "answer_correctness_token_f1": 0.2393162393162393,
+      "answer_exact_match": false,
+      "retrieved_tokens": 984,
+      "answer_tokens": 98,
+      "latency_retrieval_ms": 1638.3619169937447,
+      "latency_answer_ms": 7746.873292024247,
+      "latency_external_judge_ms": 2109.8544169799425,
+      "latency_qwen_judge_ms": 6673.484208993614,
+      "latency_total_ms": 18168.57383499155,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The authors used a matched controls study design to compare children with prenatal alcohol exposure to a matched control group without prenatal alcohol exposure.",
+              "verdict": "supported",
+              "evidence": "Prenatal alcohol exposure (PAE) is associated with cognitive, behavi"
+            }
+          ],
+          "counts": {
+            "total": 1,
+            "supported": 1,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "risky": false,
+            "notes": "The answer provides information not found in the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tPrenatal alcohol exposure is associated with lower educational attainment in children.\tnot_found\t\nCLAIM\tThe authors used a matched controls study design to compare children with prenatal alcohol exposure to a matched control group without prenatal alcohol exposure.\tsupported\tPrenatal alcohol exposure (PAE) is associated with cognitive, behavi\nCLAIM\tChildren with prenatal alcohol exposure had lower educational attainment at age 5, as measured by the Early Years Quality Assessment (EYQA) score.\tnot_found\t\nCLAIM\tThe authors found that this association was robust to a range of sensitivity analyses.\tnot_found\t\nOVERALL\tfalse\tThe answer provides information not found in the context.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The paper reports that prenatal alcohol exposure is associated with lower educational attainment in children.",
+              "verdict": "supported",
+              "evidence": "Prenatal alcohol exposure (PAE) is associated with cognitive, behavi"
+            },
+            {
+              "claim": "The authors used a matched controls study design.",
+              "verdict": "supported",
+              "evidence": "Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B"
+            },
+            {
+              "claim": "Children with prenatal alcohol exposure had lower educational attainment at age 5.",
+              "verdict": "supported",
+              "evidence": "This suggests that the education attainment of a significant number of children in UK schools will have been impacted by prenatal alcohol exposure"
+            }
+          ],
+          "counts": {
+            "total": 3,
+            "supported": 3,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "risky": false,
+            "notes": "The answer is generally supported by the context, though some specific details are not found in the provided context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe paper reports that prenatal alcohol exposure is associated with lower educational attainment in children.\tsupported\tPrenatal alcohol exposure (PAE) is associated with cognitive, behavi\nCLAIM\tThe authors used a matched controls study design.\tsupported\tAssociations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nCLAIM\tChildren with prenatal alcohol exposure had lower educational attainment at age 5.\tsupported\tThis suggests that the education attainment of a significant number of children in UK schools will have been impacted by prenatal alcohol exposure\nCLAIM\tThe Early Years Quality Assessment (EYQA) score was used to measure educational attainment.\tnot_found\t\nCLAIM\tThe association was robust to a range of sensitivity analyses.\tnot_found\t\nOVERALL\ttrue\tThe answer is generally supported by the context, though some specific details are not found in the provided context.\nEND_JUDGE"
+        }
+      }
+    },
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "reference_answer": "0.93 (95% CI 0.89 to 0.97, p=0.001)",
+      "source_chunk_id": "pdf_seroprevalence_of_cytomegalovirus_epstein_barr_virus_and_var_chunk_16",
+      "rag_answer": "The adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women was 0.95 (95% CI: 0.88, 1.02) after adjusting for socio-demographic factors. This means that South Asian women born in South Asia had a slightly lower risk of VZV seropositivity compared to White British women.",
+      "answer_relevance": 0.95,
+      "completeness": 0.5833333333333334,
+      "conciseness": 0.20689655172413796,
+      "answer_correctness_token_f1": 0.14285714285714288,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1201,
+      "answer_tokens": 58,
+      "latency_retrieval_ms": 317.24775000475347,
+      "latency_answer_ms": 5677.552082983311,
+      "latency_external_judge_ms": 1664.681250054855,
+      "latency_qwen_judge_ms": 5613.115500018466,
+      "latency_total_ms": 13272.596583061386,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "risky": false,
+            "notes": "The context does not provide the adjusted risk ratio for VZV seroprevalence."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women was 0.95\tnot_found\t\nCLAIM\tSouth Asian women born in South Asia had a slightly lower risk of VZV seropositivity compared to White British women\tunclear\t\nOVERALL\tfalse\tThe context does not provide the adjusted risk ratio for VZV seroprevalence.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women was 0.95 (95% CI: 0.88, 1.02)",
+              "verdict": "contradicted",
+              "evidence": "The context does not provide the specific adjusted risk ratio or confidence interval."
+            },
+            {
+              "claim": "South Asian women born in South Asia had a slightly lower risk of VZV seropositivity compared to White British women",
+              "verdict": "supported",
+              "evidence": "VZV seroprevalence was significantly lower among the South Asian women"
+            }
+          ],
+          "counts": {
+            "total": 2,
+            "supported": 1,
+            "contradicted": 1,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "The context supports the direction of the risk but does not provide the specific adjusted risk ratio or confidence interval."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women was 0.95 (95% CI: 0.88, 1.02)\tcontradicted\tThe context does not provide the specific adjusted risk ratio or confidence interval.\nCLAIM\tSouth Asian women born in South Asia had a slightly lower risk of VZV seropositivity compared to White British women\tsupported\tVZV seroprevalence was significantly lower among the South Asian women\nOVERALL\tfalse\tThe context supports the direction of the risk but does not provide the specific adjusted risk ratio or confidence interval.\nEND_JUDGE"
+        }
+      }
+    }
+  ]
+}

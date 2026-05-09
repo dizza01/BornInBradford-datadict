@@ -1,0 +1,664 @@
+{
+  "n_queries_attempted": 10,
+  "n_queries_succeeded": 10,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/BioMistral-7B-DARE",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/BioMistral-7B-DARE",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 10,
+    "evaluated_at": "2026-05-01T13:11:48"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 10,
+      "succeeded_queries": 10,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "query_faithfulness_rate_lenient": 0.0,
+      "query_faithfulness_rate_strict": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 10,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "query_faithfulness_rate_lenient": 0.0,
+      "query_faithfulness_rate_strict": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 10,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "query_faithfulness_rate_lenient": 0.0,
+      "query_faithfulness_rate_strict": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 10,
+      "faithful_label_agreement": 1.0,
+      "faithful_label_agreement_lenient": 1.0,
+      "faithful_label_agreement_strict": 1.0,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 10,
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.24993776106934007,
+      "answer_correctness_token_f1": 0.0,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 1472.3493340134155,
+      "latency_total_p95_ms": 3030.3140429896303,
+      "latency_retrieval_avg_ms": 389.59302520088386,
+      "latency_answer_avg_ms": 1222.410529392073,
+      "avg_retrieved_tokens": 1093.6,
+      "avg_answer_tokens": 0.0,
+      "answer_tokens_per_retrieved_token": 0.0
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+      "reference_answer": "-1.000",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.5,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 931,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 1671.4111249893904,
+      "latency_answer_ms": 1358.8854589906987,
+      "latency_external_judge_ms": 0.010541989468038082,
+      "latency_qwen_judge_ms": 0.006917020073160529,
+      "latency_total_ms": 3030.3140429896303,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+      "question": "What are the primary outcome goals for personal, social, and emotional development in the Incredible Years Toddler parenting programme?",
+      "reference_answer": "The primary outcome goals for personal, social, and emotional development include self-regulation, managing self, and building relationships.",
+      "source_chunk_id": "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.05555555555555554,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1237,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 235.73370798840187,
+      "latency_answer_ms": 1299.6675420145039,
+      "latency_external_judge_ms": 0.0022909953258931637,
+      "latency_qwen_judge_ms": 0.026416993932798505,
+      "latency_total_ms": 1535.4299579921644,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+      "question": "What is the recommended serving size for sugary drinks for 1- to 3-year-olds in the United Kingdom?",
+      "reference_answer": "100–120 ml",
+      "source_chunk_id": "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_35",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.3333333333333333,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1226,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 264.01658399845473,
+      "latency_answer_ms": 1248.3164999866858,
+      "latency_external_judge_ms": 0.002374988980591297,
+      "latency_qwen_judge_ms": 0.023333006538450718,
+      "latency_total_ms": 1512.3587919806596,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+      "question": "What is the reaction of younger women in the Pakistani heritage community in Bradford towards the idea of marrying a cousin?",
+      "reference_answer": "Younger women express a negative reaction, describing it as 'like my brother'.",
+      "source_chunk_id": "pdf_changing_patterns_in_marriage_choice_and_related_health_risk_chunk_45",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.08333333333333333,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1469,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 253.6743340024259,
+      "latency_answer_ms": 1502.7279169880785,
+      "latency_external_judge_ms": 0.011791998986154795,
+      "latency_qwen_judge_ms": 0.03158301115036011,
+      "latency_total_ms": 1756.445626000641,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+      "question": "What factors should be considered when determining the final knot point locations in linear spline multilevel models?",
+      "reference_answer": "Model fit and interpretability.",
+      "source_chunk_id": "pdf_linear_spline_multilevel_models_for_summarising_childhood_gr_chunk_42",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.25,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 849,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 250.5925000004936,
+      "latency_answer_ms": 880.9870000113733,
+      "latency_external_judge_ms": 0.011249998351559043,
+      "latency_qwen_judge_ms": 0.024957989808171988,
+      "latency_total_ms": 1131.6157080000266,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_28",
+      "question": "What is the relationship between home food availability of snack foods and SSBs and dietary intake in toddlers at 18 and 36 months of age?",
+      "reference_answer": "The variety and quantity of snack foods and SSBs available in the home were positively associated with dietary intake at 18 and 36 months.",
+      "source_chunk_id": "pdf_obesogenic_home_food_availability_diet_and_bmi_in_pakistani__chunk_28",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.041666666666666664,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1116,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 248.63000001641922,
+      "latency_answer_ms": 1102.8364999801852,
+      "latency_external_judge_ms": 0.00825000461190939,
+      "latency_qwen_judge_ms": 0.024040986318141222,
+      "latency_total_ms": 1351.4987909875344,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_the_feasibility_of_an_objective_measure_of_the_parent_child__chunk_7",
+      "question": "What is the estimated prevalence rate of insecure attachment in a Danish community study?",
+      "reference_answer": "35%",
+      "source_chunk_id": "pdf_the_feasibility_of_an_objective_measure_of_the_parent_child__chunk_7",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 1.0,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1066,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 245.37762498948723,
+      "latency_answer_ms": 1161.0275419952814,
+      "latency_external_judge_ms": 0.00825000461190939,
+      "latency_qwen_judge_ms": 0.021500018192455173,
+      "latency_total_ms": 1406.434917007573,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_exploring_the_causal_effect_of_maternal_pregnancy_adiposity__chunk_11",
+      "question": "What was the impact of removing cryptic relatedness on the sample size in the ALSPAC cohort?",
+      "reference_answer": "Removing cryptic relatedness at a level corresponding to first cousins dropped 6.7% of individuals in the ALSPAC cohort.",
+      "source_chunk_id": "pdf_exploring_the_causal_effect_of_maternal_pregnancy_adiposity__chunk_11",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.05263157894736841,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 814,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 249.46779201854952,
+      "latency_answer_ms": 1077.0516249758657,
+      "latency_external_judge_ms": 0.009708019206300378,
+      "latency_qwen_judge_ms": 0.024375010980293155,
+      "latency_total_ms": 1326.5535000246018,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_associations_between_insomnia_and_pregnancy_and_perinatal_ou_chunk_2",
+      "question": "What were the odds ratios and confidence intervals for the association between insomnia and perinatal depression in the study?",
+      "reference_answer": "The odds ratio for the association between insomnia and perinatal depression was 3.56, with a 95% confidence interval of 1.49 to 8.54.",
+      "source_chunk_id": "pdf_associations_between_insomnia_and_pregnancy_and_perinatal_ou_chunk_2",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.04000000000000001,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1136,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 250.66016698838212,
+      "latency_answer_ms": 1346.6493749874644,
+      "latency_external_judge_ms": 0.005415990017354488,
+      "latency_qwen_judge_ms": 0.020791980205103755,
+      "latency_total_ms": 1597.335749946069,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    },
+    {
+      "query_id": "pdf_pdf_differences_in_socioeconomic_position_lifestyle_and_health_r_chunk_27",
+      "question": "What is the unadjusted odds ratio for hypertensive disorders of pregnancy in all Pakistani births compared to White British births?",
+      "reference_answer": "0.74 (0.61 to 0.90)",
+      "source_chunk_id": "pdf_differences_in_socioeconomic_position_lifestyle_and_health_r_chunk_27",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.14285714285714285,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1092,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 226.36641701683402,
+      "latency_answer_ms": 1245.9558339905925,
+      "latency_external_judge_ms": 0.005582987796515226,
+      "latency_qwen_judge_ms": 0.021500018192455173,
+      "latency_total_ms": 1472.3493340134155,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "Empty answer; skipping judge."
+          },
+          "raw_judge_response": ""
+        }
+      }
+    }
+  ]
+}

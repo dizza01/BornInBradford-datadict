@@ -1,0 +1,220 @@
+{
+  "n_queries_attempted": 2,
+  "n_queries_succeeded": 2,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/BioMistral-7B-DARE",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/BioMistral-7B-DARE",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 2,
+    "evaluated_at": "2026-05-02T21:46:55"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 2,
+      "succeeded_queries": 2,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 2,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 2,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 2,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 2,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 2,
+      "faithful_label_agreement": 1.0,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 2,
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.06798245614035087,
+      "answer_correctness_token_f1": 0.0,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 1370.2130829333328,
+      "latency_total_p95_ms": 2948.9877090090886,
+      "latency_retrieval_avg_ms": 973.4074794978369,
+      "latency_answer_avg_ms": 1186.1929164733738,
+      "avg_retrieved_tokens": 1092.5,
+      "avg_answer_tokens": 0.0,
+      "answer_tokens_per_retrieved_token": 0.0
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "q_1",
+      "question": "In the paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\" (2024), what is the relationship between prenatal alcohol exposure and early education outcomes?",
+      "reference_answer": "The study shows a significant association between prenatal alcohol exposure and adverse outcomes in a child’s early education.",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.05263157894736841,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 984,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 1690.798084018752,
+      "latency_answer_ms": 1258.1896249903366,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 2948.9877090090886,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "empty_answer",
+      "classifier_decision_source_qwen": "empty_answer"
+    },
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "reference_answer": "0.93 (95% CI 0.89 to 0.97, p=0.001)",
+      "source_chunk_id": "pdf_seroprevalence_of_cytomegalovirus_epstein_barr_virus_and_var_chunk_16",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.08333333333333333,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1201,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 256.0168749769218,
+      "latency_answer_ms": 1114.196207956411,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 1370.2130829333328,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "empty_answer",
+      "classifier_decision_source_qwen": "empty_answer"
+    }
+  ]
+}

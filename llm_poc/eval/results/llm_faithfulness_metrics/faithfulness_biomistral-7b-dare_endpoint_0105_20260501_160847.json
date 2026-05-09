@@ -1,0 +1,342 @@
+{
+  "n_queries_attempted": 3,
+  "n_queries_succeeded": 3,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/BioMistral-7B-DARE",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/BioMistral-7B-DARE",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 3,
+    "evaluated_at": "2026-05-01T16:08:47"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 3,
+      "succeeded_queries": 3,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.3333333333333333,
+      "query_faithfulness_rate_lenient": 0.3333333333333333,
+      "query_faithfulness_rate_strict": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 3,
+      "total_claims": 1,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 1,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.3333333333333333,
+      "query_faithfulness_rate_lenient": 0.3333333333333333,
+      "query_faithfulness_rate_strict": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.3333333333333333,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 3,
+      "total_claims": 11,
+      "supported_claims": 11,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 1.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.6666666666666666,
+      "query_faithfulness_rate_lenient": 0.6666666666666666,
+      "query_faithfulness_rate_strict": 0.6666666666666666,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 3.6666666666666665,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 3,
+      "faithful_label_agreement": 0.6666666666666666,
+      "faithful_label_agreement_lenient": 0.6666666666666666,
+      "faithful_label_agreement_strict": 0.3333333333333333,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 3,
+      "answer_relevance": 0.4777777777777778,
+      "completeness": 0.10526315789473684,
+      "conciseness": 0.21528252798971034,
+      "answer_correctness_token_f1": 0.052083333333333336,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 13508.184917998733,
+      "latency_total_p95_ms": 40194.02229198022,
+      "latency_retrieval_avg_ms": 690.8548196661286,
+      "latency_answer_avg_ms": 11247.16274999082,
+      "avg_retrieved_tokens": 1082.6666666666667,
+      "avg_answer_tokens": 96.33333333333333,
+      "answer_tokens_per_retrieved_token": 0.08897783251231527
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "q_1",
+      "question": "What is the relationship between prenatal alcohol exposure and early education outcomes according to the study?",
+      "reference_answer": "The study shows a significant association between prenatal alcohol exposure and adverse outcomes in a child’s early education.",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+      "rag_answer": "I'm sorry, but I cannot provide a direct answer to your question. The study you are referring to is not specified in your question. Please provide more information about the study you are interested in, such as the title, authors, and year of publication.",
+      "answer_relevance": 0.3333333333333333,
+      "completeness": 0.3157894736842105,
+      "conciseness": 0.4222222222222222,
+      "answer_correctness_token_f1": 0.15625,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1013,
+      "answer_tokens": 45,
+      "latency_retrieval_ms": 1514.0357089985628,
+      "latency_answer_ms": 4565.014791995054,
+      "latency_external_judge_ms": 766.849125007866,
+      "latency_qwen_judge_ms": 6662.28529199725,
+      "latency_total_ms": 13508.184917998733,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "No claims to evaluate."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nOVERALL\tfalse\tNo claims to evaluate.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "No factual claims were evaluated due to lack of specific information."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tI cannot provide a direct answer to your question.\tunclear\t\nCLAIM\tThe study you are referring to is not specified in your question.\tunclear\t\nCLAIM\tPlease provide more information about the study you are interested in, such as the title, authors, and year of publication.\tunclear\t\nOVERALL\tfalse\tNo factual claims were evaluated due to lack of specific information.\nEND_JUDGE"
+        }
+      }
+    },
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "reference_answer": "0.93 (95% CI 0.89 to 0.97, p=0.001)",
+      "source_chunk_id": "pdf_seroprevalence_of_cytomegalovirus_epstein_barr_virus_and_var_chunk_16",
+      "rag_answer": "I'm sorry, but I cannot answer your question. The table you provided does not include information on VZV seroprevalence among South Asian women born in South Asia or White British women. It only provides information on the seroprevalence of CMV, EBV, and VZV among pregnant women in Bradford. If you have a different question or need further assistance, please let me know.",
+      "answer_relevance": 0.6,
+      "completeness": 0.0,
+      "conciseness": 0.19047619047619047,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1201,
+      "answer_tokens": 63,
+      "latency_retrieval_ms": 288.9101250038948,
+      "latency_answer_ms": 5483.8765829917975,
+      "latency_external_judge_ms": 828.846207994502,
+      "latency_qwen_judge_ms": 5218.9819579944015,
+      "latency_total_ms": 11820.614873984596,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "No claims to evaluate."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nOVERALL\tfalse\tNo claims to evaluate.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "It only provides information on the seroprevalence of CMV, EBV, and VZV among pregnant women in Bradford.",
+              "verdict": "supported",
+              "evidence": "The abstract mentions seroprevalence of CMV, EBV, and VZV among pregnant women in Bradford."
+            }
+          ],
+          "counts": {
+            "total": 1,
+            "supported": 1,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "faithful_lenient": true,
+            "faithful_strict": true,
+            "notes": "There are not_found and unclear claims."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tI'm sorry, but I cannot answer your question.\tunclear\t\nCLAIM\tThe table you provided does not include information on VZV seroprevalence among South Asian women born in South Asia or White British women.\tnot_found\t\nCLAIM\tIt only provides information on the seroprevalence of CMV, EBV, and VZV among pregnant women in Bradford.\tsupported\tThe abstract mentions seroprevalence of CMV, EBV, and VZV among pregnant women in Bradford.\nOVERALL\tfalse\tThere are not_found and unclear claims.\nEND_JUDGE"
+        }
+      }
+    },
+    {
+      "query_id": "q_3",
+      "question": "What is the odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women?",
+      "reference_answer": "1.36 (1.27, 1.45)",
+      "source_chunk_id": "pdf_a_comparison_of_south_asian_specific_and_established_bmi_thr_chunk_29",
+      "rag_answer": "I recommend the following variables for your analysis:\n\n* `mes1_bmi` (BMI calculated) from `BiBBS_Baseline.pregnancy_survey` (Pakistani women only)\n* `mes1_bmicat5` (BMI 5 categories) from `BiBBS_Baseline.pregnancy_survey` (Pakistani women only)\n* `mes1_bmicalc` (Whether BMI could be calculated) from `BiBBS_Baseline.pregnancy_survey` (Pakistani women only)\n* `mes1_qweight` (Weight (kg)) from `BiBBS_Baseline.pregnancy_survey` (Pakistani women only)\n* `bmi` (BMI (kg/m2)) from `BiB_AgeOfWonder.heightweight_dr23` (Pakistani women only)\n* `mussstomach` (Anatomy and position of stomach) from `BiB_Pregnancy.pregnancy_ultrasound` (Pakistani women only)\n* `mms0mbkbmi` (Mother's booking BMI (derived)) from `BiB_Baseline.base_m_survey` (Pakistani women only)\n* `mms0weight` (Mother's weight (at questionnaire)) from `BiB_Baseline.base_m_survey` (Pakistani women only)\n* `vit0pregca` (Pregnacare multivitamins during pregnancy) from `BiB_Baseline.base_m_survey` (Pakistani women only)\n\nNote that `mes1_bmi` is calculated BMI, while `bmi` is measured BMI. If you want to use measured BMI, you can use `bmi` instead of `mes1_bmi`. Also note that `mes1_bmicalc` indicates whether BMI could be calculated, so you may want to exclude records with missing weight or height information.",
+      "answer_relevance": 0.5,
+      "completeness": 0.0,
+      "conciseness": 0.03314917127071824,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1034,
+      "answer_tokens": 181,
+      "latency_retrieval_ms": 269.61862499592826,
+      "latency_answer_ms": 23692.59687498561,
+      "latency_external_judge_ms": 1421.0230419994332,
+      "latency_qwen_judge_ms": 14810.783749999246,
+      "latency_total_ms": 40194.02229198022,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women is 1.36",
+              "verdict": "unclear",
+              "evidence": "supported"
+            }
+          ],
+          "counts": {
+            "total": 1,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 1
+          },
+          "overall": {
+            "faithful": true,
+            "faithful_lenient": true,
+            "faithful_strict": false,
+            "notes": "The answer provides a supported odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women is 1.36\t\tsupported\t1.36 (1.27, 1.45)\nOVERALL\ttrue\tThe answer provides a supported odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "I recommend the following variables for your analysis:",
+              "verdict": "supported",
+              "evidence": "The answer lists specific variables for analysis."
+            },
+            {
+              "claim": "mes1_bmi (BMI calculated) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "mes1_bmicat5 (BMI 5 categories) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "mes1_bmicalc (Whether BMI could be calculated) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "mes1_qweight (Weight (kg)) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "bmi (BMI (kg/m2)) from BiB_AgeOfWonder.heightweight_dr23 (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "mussstomach (Anatomy and position of stomach) from BiB_Pregnancy.pregnancy_ultrasound (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "mms0mbkbmi (Mother's booking BMI (derived)) from BiB_Baseline.base_m_survey (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "mms0weight (Mother's weight (at questionnaire)) from BiB_Baseline.base_m_survey (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            },
+            {
+              "claim": "vit0pregca (Pregnacare multivitamins during pregnancy) from BiB_Baseline.base_m_survey (Pakistani women only)",
+              "verdict": "supported",
+              "evidence": "Variable is listed in the context."
+            }
+          ],
+          "counts": {
+            "total": 10,
+            "supported": 10,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "faithful_lenient": true,
+            "faithful_strict": true,
+            "notes": "All claims are supported by the retrieved context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tI recommend the following variables for your analysis:\tsupported\tThe answer lists specific variables for analysis.\nCLAIM\tmes1_bmi (BMI calculated) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tmes1_bmicat5 (BMI 5 categories) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tmes1_bmicalc (Whether BMI could be calculated) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tmes1_qweight (Weight (kg)) from BiBBS_Baseline.pregnancy_survey (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tbmi (BMI (kg/m2)) from BiB_AgeOfWonder.heightweight_dr23 (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tmussstomach (Anatomy and position of stomach) from BiB_Pregnancy.pregnancy_ultrasound (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tmms0mbkbmi (Mother's booking BMI (derived)) from BiB_Baseline.base_m_survey (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tmms0weight (Mother's weight (at questionnaire)) from BiB_Baseline.base_m_survey (Pakistani women only)\tsupported\tVariable is listed in the context.\nCLAIM\tvit0pregca (Pregnacare multivitamins during pregnancy) from BiB_Baseline.base_m_survey (Pakistani women only)\tsupported\tVariable is listed in the context.\nOVERALL\ttrue\tAll claims are supported by the retrieved context.\nEND_JUDGE"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "n_queries_attempted": 2,
+  "n_queries_succeeded": 2,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/BioMistral-7B-DARE",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/BioMistral-7B-DARE",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": true,
+    "max_queries": 2,
+    "evaluated_at": "2026-05-02T21:12:51"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 2,
+      "succeeded_queries": 2,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 2,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 2,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 2,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 2,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 2,
+      "faithful_label_agreement": 1.0,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 2,
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.2777777777777778,
+      "answer_correctness_token_f1": 0.0,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 1380.8567500091158,
+      "latency_total_p95_ms": 3179.992959019728,
+      "latency_retrieval_avg_ms": 851.7500210145954,
+      "latency_answer_avg_ms": 1428.6748334998265,
+      "avg_retrieved_tokens": 1084.0,
+      "avg_answer_tokens": 0.0,
+      "answer_tokens_per_retrieved_token": 0.0
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "pdf_pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "question": "What is the coefficient for the impact of prenatal alcohol exposure (PAE) on Good Level of Development (GLD) outcomes using drinking comparison E?",
+      "reference_answer": "-1.000",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_35",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.5,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 931,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 1438.3127500186674,
+      "latency_answer_ms": 1741.6802090010606,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 3179.992959019728,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "empty_answer",
+      "classifier_decision_source_qwen": "empty_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\ngher (Advanced Level, qualification usually taken at age\n18 years).\nVariables previously shown to be associated with early\neducation achievement such as preterm birth, microcephaly and\nbirthweight were not controlled for in this analysis \n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nIntercept\n0.358 (−0.224, 0.959)\n–\n–\nCoefficient for drinking comparison E\n−1.000 (−1.798, −0.201)\n0.368 (0.166, 0.818)\n0.014\n*Estimates from the model where data have been matched on the following variables: mother’s ethnicity; age of chi\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nt role health\neducation has to play in the prevention of PAE is widely\nrecognised.37,38\nIt is important to note that the absence of a statistically\nsignificant association with other drinking patterns in this analysis\nTable 6. Impact of P\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nn of a\n‘Good level of development’—and what does this tell us about how ‘good’ the\nearly years foundation stage profile is? Brit Educ Res J. 2022; 48(2), 371–401.\n14. Wood ML, Gunning L, Relins S, et al. Potential for England’s statutory \n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nYFSP assessment\nMean: 5.20 years\nStandard deviation: 0.29 years\nMissing: 24.1% (3361/13959)\nGCSE = General Certificate of Education; A-level = Advanced level; IMD = Index of multiple\ndeprivation; EYFSP = Early Years Foundation Stage Profi\n\n\n## Relevant Variables\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spav3b\nLabel: Average units of spirits per week in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 841\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spmx3b\nLabel: Maximum units of spirits at one time in the 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 833\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamxf3\nLabel: Maximum units of other alcohol at one time in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 185\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spavf3\nLabel: Average units of spirits per week in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 268\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamx3b\nLabel: Maximum units of other alcohol at one time in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 608\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaavf3\nLabel: Average units of other alcohol per week in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 186\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0spmxf3\nLabel: Maximum units of spirits at one time in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 263\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcinpreg\nLabel: Do you drink any alcohol during this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 NT]\nNon-missing records: 2553\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaav3b\nLabel: Average units of other alcohol per week in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 613\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtChildMouthAffec\nLabel: How is your child's overall wellbeing affected by the condition of their mouth\nTopic: oral_dental_health\nType: categorical\nCategories/Values: [1 Not at all] [2 Very little] [3 Some] [4 A lot] [5 Very much]\nNon-missing records: 5156\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_Pregnancy.eclipse_baby\nDisplay name: Eclipse neonatal record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 29 | Rows: 13525 | Entities: 13525\nLast updated: 2024-05-14 09:13:55\n```\n\n```\nTable: BiB_ChildGrowth.anthropometry\nDisplay name: Child anthropometry\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 12 | Rows: 72386 | Entities: 13597\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiB_Pregnancy.eclipse_preg\nDisplay name: Eclipse pregnancy record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 35 | Rows: 13361 | Entities: 12075\nLast updated: 2024-05-14 09:13:56\n```\n\n```\nTable: BiB_ChildGrowth.bioimpedance\nDisplay name: Child bioimpedance\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 17 | Rows: 6424 | Entities: 5494\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiB_CohortInfo.preg_info\nDisplay name: Pregnancy information\nProject: BiB_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 10 | Rows: 13776 | Entities: 12453\nLast updated: 2024-05-14 09:12:26\n```\n"
+    },
+    {
+      "query_id": "pdf_pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+      "question": "What are the primary outcome goals for personal, social, and emotional development in the Incredible Years Toddler parenting programme?",
+      "reference_answer": "The primary outcome goals for personal, social, and emotional development include self-regulation, managing self, and building relationships.",
+      "source_chunk_id": "pdf_a_quasi_experimental_effectiveness_evaluation_of_the_incredi_chunk_21",
+      "rag_answer": "",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.05555555555555554,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1237,
+      "answer_tokens": 0,
+      "latency_retrieval_ms": 265.1872920105234,
+      "latency_answer_ms": 1115.6694579985924,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 1380.8567500091158,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_empty_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "empty_answer",
+      "classifier_decision_source_qwen": "empty_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nlevels), or “Exceed-\ning” for each ELG [30, 31]. For the new EYFSP (post September 2021), children are assigned a\nPLOS ONE\nStudy protocol for effectiveness evaluation of the ‘Incredible Years Toddler’ parenting programme\nPLOS ONE | https:\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nistening and attention\n2. Understanding\n3. Speaking\n1. Listening, attention and understanding\n2. Speaking\nPhysical development\n4. Moving and handling\n5. Health and self-care\n3. Gross motor skills\n4. Fine motor skills\nPersonal, social and \n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\n‘personal, social,\nand emotional’ ELGs, with total 5 goals (see Table 2). The binary responses for each of these\n5 goals will be summed to generate a summary score between 0 and 5.\n2. For the secondary outcome (child early years developme\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nh Child-Directed Coaching\n• Part three–Social and Emotion Coaching\n• Part four–The Art of Praise and Encouragement\n• Part five–Spontaneous Incentives for Toddlers\n• Part six–Handling Separations and Reunions\n• Part seven–Positive Discipli\n\n**A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm** (2023) — \nTitle: A quasi-experimental effectiveness evaluation of the Incredible Years Toddler parenting programme on children s developm\nYear: 2023\nSource: full-text PDF\n\nnsity score [38, 39]. We will match on the 7 characteris-\ntics on the left-hand side of the graph (prenatal attachment, prenatal depression, prenatal anxi-\nety, ethnicity, socioeconomic status, language status, and immigration status) to \n\n\n## Relevant Variables\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadt4weeksbehaviour_3\nLabel: When this child cries, he/she gets on my nerves\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 All the time]\nNon-missing records: 365\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadt4weeksbehaviour_3\nLabel: When this child cries, he/she gets on my nerves\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 All the time]\nNon-missing records: 367\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtBehaveWithChild_2\nLabel: I feel that I am very good at calming this child when he/she is upset\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 367\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtPAOwnBehavi\nLabel: How much do you use your own behaviour to encourage your child to be active\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 I donâ€™t use my own behaviour to encourage my child to be active] [2 I rarely use my own behaviour to encourage my child to be active] [3 I often use my own behaviour to encourage my child to be active] [4 I constantly use my own behaviour to encourage my child to be active]\nNon-missing records: 365\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtPAOwnBehavi\nLabel: How much do you use your own behaviour to encourage your child to be active\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 I donâ€™t use my own behaviour to encourage my child to be active] [2 I rarely use my own behaviour to encourage my child to be active] [3 I often use my own behaviour to encourage my child to be active] [4 I constantly use my own behaviour to encourage my child to be active]\nNon-missing records: 369\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtBehaveWithChild_4\nLabel: I feel I am very good at routine tasks of caring for child (e.g. feeding)\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 367\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtBehaveWithChild_2\nLabel: I feel that I am very good at calming this child when he/she is upset\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 365\n```\n\n```\nTable: BiB_PrimarySchoolYears.sdq_data\nVariable: psysdqBOverallDiffic\nLabel: Overall, do you think that this child has difficulties in one or more of the foll\nTopic: personality_temperament\nType: categorical\nCategories/Values: [1 No] [2 Yes - minor difficulties] [3 Yes - definite difficulties] [4 Yes - severe difficulties]\nNon-missing records: 3482\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtBehaveWithChild_4\nLabel: I feel I am very good at routine tasks of caring for child (e.g. feeding)\nTopic: parenting\nType: categorical\nCategories/Values: [1 1 Not at all how I feel] [2 2] [3 3] [4 4] [5 5] [6 6] [7 7] [8 8] [9 9] [10 10 Exactly how I feel]\nNon-missing records: 365\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtChildEffect\nLabel: Does this condition reduce your child's ability to do everyday activities\nTopic: general_health\nType: categorical\nCategories/Values: [1 Not at all] [2 Yes, a little] [3 Yes, a lot] [4 Do not wish to answer] [5 Don't know]\nNon-missing records: 616\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_ChildGrowth.growth_PrimaryCare\nDisplay name: Child growth primary care data\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 14 | Rows: 91086 | Entities: 13419\nLast updated: 2024-06-04 12:06:51.043816\n```\n\n```\nTable: BiB_ChildGrowth.anthropometry\nDisplay name: Child anthropometry\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 12 | Rows: 72386 | Entities: 13597\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiB_PrimarySchoolYears.child_info\nDisplay name: Primary School Years child information\nProject: BiB_PrimarySchoolYears\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 23 | Rows: 18149 | Entities: 18149\nLast updated: 2024-05-14 09:14:09\n```\n\n```\nTable: BiBBS_CohortInfo.child\nDisplay name: Child information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 13 | Rows: 2510 | Entities: 2510\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_PrimarySchoolYears.child_quiz\nDisplay name: Primary School Years child quiz\nProject: BiB_PrimarySchoolYears\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 90 | Rows: 15641 | Entities: 15641\nLast updated: 2024-05-14 09:14:11\n```\n"
+    }
+  ]
+}

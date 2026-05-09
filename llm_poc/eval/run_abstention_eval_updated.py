@@ -10,13 +10,27 @@ Usage
         --run-name abstention_qwen7B \
         --model Qwen/Qwen2.5-7B-Instruct
 
+    
+        
+     ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --run-name abstention_Llama-3.1-70B-Instruct \
+        --model meta-llama/Llama-3.1-70B-Instruct
+
     ../../.venv/bin/python eval/run_abstention_eval_updated.py \
         --prediction-mode model_strict \
         --max-queries-per-slice 100 \
         --run-name abstention_strict_smoke
 
         
-    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+
+     ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --model dizza01/medalpaca-13b \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://h46ed7c31gh0orh6.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_medalpaca-13b
+
+     ../../.venv/bin/python eval/run_abstention_eval_updated.py \
         --prediction-mode model_strict \
         --max-queries-per-slice 100 \
         --model dizza01/qwen2.5-7b-finetunerag-merged-4bit \
@@ -48,30 +62,26 @@ Usage
         --model-endpoint-url https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud \
         --run-name abstention_BioMistral_endpoint_non_quantised   
  
- ----- All ----
 
-        set -e
 
-        MODELS=(
-        "Qwen/Qwen2.5-7B-Instruct|qwen25_7b_instruct"
-        "meta-llama/Llama-3.1-8B-Instruct|llama31_8b_instruct"
-        )
+# vLLM Engine (OpenAI-style HTTP API)     # Calls:    <endpoint>/v1/chat/completions if available, else <endpoint>/v1/completions
+ ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --model-api-mode hf_vllm \
+        --model-endpoint-url https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud/v1 \
+        --model-endpoint-model dizza01/Qwen2.5-14B-Instruct \
+        --max-queries-per-slice 50 \
+        --run-name abstention_dizza01_qwen25_14b_vllm
+ 
+               
+    ../../.venv/bin/python eval/run_abstention_eval_updated.py \
+        --prediction-mode model_strict \
+        --model dizza01/qwen2-5-14b-instruct \
+        --max-queries-per-slice 10 \
+        --model-api-mode hf_endpoint \
+        --model-endpoint-url https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud \
+        --run-name abstention_qwen2-5-14b-instruct_chat
 
-        for entry in "${MODELS[@]}"; do
-        model="${entry%%|*}"
-        run_name="${entry##*|}"
-
-        echo "Running $run_name ($model)"
-
-        ../../.venv/bin/python eval/run_abstention_eval_updated.py \
-            --run-name "$run_name" \
-            --prediction-mode model_strict \
-            --model "$model" \
-            --model-api-mode hf_api \
-            --retrieval-depth 5 \
-            --classifier-temperature 0.0 \
-            --classifier-retries 2
-        done
     
 This script evaluates answer-vs-abstain behavior on generated abstention
 benchmarks and reports aggregated and slice-level metrics.
@@ -182,12 +192,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model-api-mode",
         type=str,
-        choices=["hf_api", "hf_endpoint"],
+        choices=["hf_api", "hf_endpoint", "hf_vllm"],
         default="hf_api",
         help=(
             "How to call classifier model in model_strict mode. "
             "hf_api uses Hugging Face Inference API with --model, "
-            "hf_endpoint uses dedicated endpoint URL."
+            "hf_endpoint uses dedicated endpoint URL, "
+            "hf_vllm uses an OpenAI-style vLLM HTTP endpoint URL."
         ),
     )
     parser.add_argument(
@@ -509,6 +520,157 @@ def _get_hf_endpoint_client(base_url: str) -> Any:
     return _Wrapper(client)
 
 
+def _get_vllm_endpoint_client(*, base_url: str, model_name: str) -> Any:
+    """Create a minimal OpenAI-style client for a vLLM HTTP endpoint.
+
+    Exposes the interface used by `_predict_abstain_strict`:
+    - `llm_client.chat.completions.create(...)` returning `choices[0].message.content`.
+    - Also provides `.generate(...)` (OpenAI `/v1/completions`) for completeness.
+
+    Auth: Bearer token from HF_TOKEN / HUGGINGFACE_TOKEN.
+    """
+
+    token = os.getenv("HF_TOKEN", "") or os.getenv("HUGGINGFACE_TOKEN", "")
+    if not token:
+        raise RuntimeError(
+            "HF_TOKEN not set. Export HF_TOKEN='hf_...' before running vLLM endpoint mode."
+        )
+
+    try:
+        import requests  # type: ignore
+    except ImportError as exc:
+        raise RuntimeError(
+            "requests is required for --model-api-mode=hf_vllm. Install with: pip install requests"
+        ) from exc
+
+    if not base_url.strip():
+        raise RuntimeError("--model-endpoint-url is required when --model-api-mode=hf_vllm")
+
+    base_url = base_url.strip().rstrip("/")
+    model_name = (model_name or "").strip()
+    if not model_name:
+        raise RuntimeError("model_name is required for vLLM endpoint client")
+
+    # Accept either:
+    # - https://host               (we will call https://host/v1/...)
+    # - https://host/v1            (we will call https://host/v1/...)
+    api_base_url = base_url
+    if not api_base_url.endswith("/v1"):
+        api_base_url = f"{api_base_url}/v1"
+
+    session = requests.Session()
+    session.headers.update(
+        {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+    )
+
+    def _raise_for_http(resp, *, endpoint_desc: str) -> None:
+        if resp.status_code >= 400:
+            text = ""
+            try:
+                text = resp.text
+            except Exception:
+                text = "<unreadable response body>"
+            raise RuntimeError(
+                f"vLLM HTTP error calling {endpoint_desc}: {resp.status_code} {text.strip()[:2000]}"
+            )
+
+    def _post_json(path: str, payload: dict[str, Any]) -> dict[str, Any]:
+        url = f"{api_base_url}{path}"
+        resp = session.post(url, json=payload, timeout=120)
+        _raise_for_http(resp, endpoint_desc=url)
+        try:
+            return resp.json()
+        except Exception as exc:
+            raise RuntimeError(
+                f"vLLM response was not valid JSON from {url}: {str(exc)} | body={resp.text[:2000]}"
+            ) from exc
+
+    def _messages_to_prompt(messages: list[dict[str, Any]]) -> str:
+        parts: list[str] = []
+        for msg in messages:
+            role = str(msg.get("role", "user") or "user")
+            content = str(msg.get("content", "") or "")
+            parts.append(f"{role.upper()}:\n{content}")
+        parts.append("ASSISTANT:\n")
+        return "\n\n".join(parts)
+
+    class _ChatCompletions:
+        def create(self, model: str, messages, temperature=0.0, max_tokens=1500, **kw):
+            # Preferred: OpenAI-style chat completions.
+            chat_payload = {
+                "model": model_name,
+                "messages": list(messages),
+                "max_tokens": int(max_tokens),
+                "temperature": float(temperature),
+            }
+            try:
+                data = _post_json("/chat/completions", chat_payload)
+                content = (((data.get("choices") or [{}])[0]).get("message") or {}).get(
+                    "content", ""
+                )
+                return SimpleNamespace(
+                    choices=[SimpleNamespace(message=SimpleNamespace(content=str(content)))],
+                )
+            except RuntimeError as exc:
+                # Fallback only if the *endpoint* is absent.
+                # Do NOT fall back for model-not-found (param=model) or other request errors.
+                msg = str(exc)
+                status_match = re.search(r":\s*(\d{3})\b", msg)
+                status = int(status_match.group(1)) if status_match else None
+                body_lower = msg.lower()
+                model_missing = (
+                    '"param":"model"' in body_lower
+                    or "param\":\"model\"" in body_lower
+                    or (("model `" in body_lower or "model \"" in body_lower) and "does not exist" in body_lower)
+                    or "unknown model" in body_lower
+                )
+                endpoint_missing = bool(
+                    status in {404, 405, 501}
+                    and ("/chat/completions" in body_lower or "chat/completions" in body_lower)
+                    and ("not found" in body_lower or "404" in body_lower or "405" in body_lower)
+                )
+                if model_missing or not endpoint_missing:
+                    raise
+
+            prompt = _messages_to_prompt(list(messages))
+            completion_payload = {
+                "model": model_name,
+                "prompt": str(prompt),
+                "max_tokens": int(max_tokens),
+                "temperature": float(temperature),
+            }
+            data = _post_json("/completions", completion_payload)
+            choice0 = (data.get("choices") or [{}])[0]
+            text = str(choice0.get("text", ""))
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(content=str(text)))],
+            )
+
+    class _Chat:
+        def __init__(self):
+            self.completions = _ChatCompletions()
+
+    class _VLLMWrapper:
+        def __init__(self):
+            self.chat = _Chat()
+
+        def generate(self, prompt, temperature=0.0, max_tokens=1500, **kw):
+            payload = {
+                "model": model_name,
+                "prompt": str(prompt),
+                "max_tokens": int(max_tokens),
+                "temperature": float(temperature),
+            }
+            data = _post_json("/completions", payload)
+            choice0 = (data.get("choices") or [{}])[0]
+            return str(choice0.get("text", ""))
+
+    return _VLLMWrapper()
+
+
 def _reason_type(record: dict[str, Any]) -> str:
     generation_type = str(record.get("generation_type", "")).lower()
     reason = str(record.get("reason", "")).lower()
@@ -760,6 +922,12 @@ def main() -> None:
         if args.model_api_mode == "hf_endpoint":
             llm_client = _get_hf_endpoint_client(args.model_endpoint_url)
             model_for_call = args.model_endpoint_model.strip() or args.model
+        elif args.model_api_mode == "hf_vllm":
+            model_for_call = args.model_endpoint_model.strip() or args.model
+            llm_client = _get_vllm_endpoint_client(
+                base_url=args.model_endpoint_url,
+                model_name=model_for_call,
+            )
         else:
             llm_client = _get_hf_client(args.model)
         if not llm_client:
@@ -1006,7 +1174,7 @@ def main() -> None:
     print(f"Model:                {args.model}")
     print(f"Model API mode:       {args.model_api_mode}")
     print(f"Retrieval depth:      {args.retrieval_depth}")
-    if args.model_api_mode == "hf_endpoint":
+    if args.model_api_mode in {"hf_endpoint", "hf_vllm"}:
         print(f"Endpoint URL:         {args.model_endpoint_url}")
         print(f"Endpoint model arg:   {model_for_call}")
     print(f"Total examples:       {len(all_rows)}")

@@ -1,0 +1,363 @@
+{
+  "n_queries_attempted": 5,
+  "n_queries_succeeded": 4,
+  "n_queries_failed": 1,
+  "failed_queries_preview": [
+    {
+      "query_id": "q_1",
+      "question": "In the paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\" (2024), what is the relationship between prenatal alcohol exposure and early education outcomes?",
+      "error": "Generated answer is empty after cleanup. raw_preview='...'"
+    }
+  ],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/BioMistral-7B-DARE",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/BioMistral-7B-DARE",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": false,
+    "max_queries": 5,
+    "evaluated_at": "2026-05-01T16:47:08"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 5,
+      "succeeded_queries": 4,
+      "failed_queries": 1,
+      "failure_rate": 0.2
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.25,
+      "query_faithfulness_rate_lenient": 0.25,
+      "query_faithfulness_rate_strict": 0.25,
+      "claim_support_rate": 1.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 4,
+      "total_claims": 1,
+      "supported_claims": 1,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 1.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.25,
+      "query_faithfulness_rate_lenient": 0.25,
+      "query_faithfulness_rate_strict": 0.25,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.25,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 4,
+      "total_claims": 3,
+      "supported_claims": 3,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 1.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.5,
+      "query_faithfulness_rate_lenient": 0.5,
+      "query_faithfulness_rate_strict": 0.5,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "avg_claims_per_answer": 0.75,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 4,
+      "faithful_label_agreement": 0.75,
+      "faithful_label_agreement_lenient": 0.75,
+      "faithful_label_agreement_strict": 0.75,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 4,
+      "answer_relevance": 0.48551587301587307,
+      "completeness": 0.08333333333333333,
+      "conciseness": 0.07834766655200093,
+      "answer_correctness_token_f1": 0.007711038961038961,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 24230.39549999521,
+      "latency_total_p95_ms": 58252.71787401289,
+      "latency_retrieval_avg_ms": 316.5876874991227,
+      "latency_answer_avg_ms": 24987.78132275038,
+      "avg_retrieved_tokens": 1077.25,
+      "avg_answer_tokens": 219.25,
+      "answer_tokens_per_retrieved_token": 0.20352750058018101
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "reference_answer": "0.93 (95% CI 0.89 to 0.97, p=0.001)",
+      "source_chunk_id": "pdf_seroprevalence_of_cytomegalovirus_epstein_barr_virus_and_var_chunk_16",
+      "rag_answer": "I apologize, but I cannot provide the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women. The relevant data is not available in the Born in Bradford cohort. The seroprevalence of cytomegalovirus, Epstein Barr virus, and varicella zoster virus among pregnant women in Bradford was reported in the following paper:<|im_sep|>\n<|im_start|>Pembrey Lucy, Raynor Pauline, Griffiths Paul, Chaytor Shelley, Wright John et al. Seroprevalence of cytomegalovirus, Epstein Barr virus and varicella zoster virus among pregnant women in Bradford: a cohort study. BMJ Open. 2013;3(12):e004239.",
+      "answer_relevance": 0.95,
+      "completeness": 0.08333333333333333,
+      "conciseness": 0.12000000000000001,
+      "answer_correctness_token_f1": 0.017857142857142856,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1201,
+      "answer_tokens": 100,
+      "latency_retrieval_ms": 293.72487499495037,
+      "latency_answer_ms": 10407.915916992351,
+      "latency_external_judge_ms": 1910.8939580037259,
+      "latency_qwen_judge_ms": 11617.860750004184,
+      "latency_total_ms": 24230.39549999521,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The seroprevalence of cytomegalovirus, Epstein Barr virus, and varicella zoster virus among pregnant women in Bradford was reported in the paper.",
+              "verdict": "supported",
+              "evidence": "Pembrey Lucy, Raynor Pauline, Griffiths Paul, Chaytor Shelley, Wright John et al."
+            }
+          ],
+          "counts": {
+            "total": 1,
+            "supported": 1,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "faithful_lenient": true,
+            "faithful_strict": true,
+            "notes": "No adjusted risk ratio for VZV seroprevalence is provided."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe relevant data is not available in the Born in Bradford cohort.\tnot_found\t\nCLAIM\tThe seroprevalence of cytomegalovirus, Epstein Barr virus, and varicella zoster virus among pregnant women in Bradford was reported in the paper.\tsupported\tPembrey Lucy, Raynor Pauline, Griffiths Paul, Chaytor Shelley, Wright John et al.\nOVERALL\tfalse\tNo adjusted risk ratio for VZV seroprevalence is provided.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The seroprevalence of cytomegalovirus, Epstein Barr virus, and varicella zoster virus among pregnant women in Bradford was reported in the following paper.",
+              "verdict": "supported",
+              "evidence": "Pembrey Lucy, Raynor Pauline, Griffiths Paul, Chaytor Shelley, Wright John et al. Seroprevalence of cytomegalovirus, Epstein Barr virus and varicella zoster virus among pregnant women in Bradford: a cohort study. BMJ Open. 2013;3(12):e004239."
+            }
+          ],
+          "counts": {
+            "total": 1,
+            "supported": 1,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "faithful_lenient": true,
+            "faithful_strict": true,
+            "notes": "The answer contains claims that are not found in the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tI cannot provide the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women.\tnot_found\t\nCLAIM\tThe relevant data is not available in the Born in Bradford cohort.\tnot_found\t\nCLAIM\tThe seroprevalence of cytomegalovirus, Epstein Barr virus, and varicella zoster virus among pregnant women in Bradford was reported in the following paper.\tsupported\tPembrey Lucy, Raynor Pauline, Griffiths Paul, Chaytor Shelley, Wright John et al. Seroprevalence of cytomegalovirus, Epstein Barr virus and varicella zoster virus among pregnant women in Bradford: a cohort study. BMJ Open. 2013;3(12):e004239.\nOVERALL\tfalse\tThe answer contains claims that are not found in the context.\nEND_JUDGE"
+        }
+      }
+    },
+    {
+      "query_id": "q_3",
+      "question": "What is the odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women?",
+      "reference_answer": "1.36 (1.27, 1.45)",
+      "source_chunk_id": "pdf_a_comparison_of_south_asian_specific_and_established_bmi_thr_chunk_29",
+      "rag_answer": "I recommend the following variables for your analysis:\n\n* `mes1_bmi` (BMI calculated) from `BiBBS_Baseline.pregnancy_survey` (BMI calculated using mother's height and weight)\n* `mes1_bmicat5` (BMI 5 categories) from `BiBBS_Baseline.pregnancy_survey` (BMI 5 categories: Underweight, Normal Weight, Overweight, Obese, Severe Obese)\n* `mes1_bmicalc` (Whether BMI could be calculated) from `BiBBS_Baseline.pregnancy_survey` (Whether BMI could be calculated)\n* `mes1_qweight` (Weight (kg)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight` (Weight (kg)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_kg` (Weight (kg)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_lb` (Weight (lb)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone` (Weight (stone)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_4` (Weight (stone 4)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_7` (Weight (stone 7)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_14` (Weight (stone 14)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_28` (Weight (stone 28)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_42` (Weight (stone 42)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_56` (Weight (stone 56)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_70` (Weight (stone 70)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_84` (Weight (stone 84)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_112` (Weight (stone 112)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_140` (Weight (stone 140)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_weight_stone_168` (Weight (stone 168)) from `BiBBS_Baseline.pregnancy_survey` (Mother's weight at questionnaire)\n* `mes1_",
+      "answer_relevance": 0.2777777777777778,
+      "completeness": 0.0,
+      "conciseness": 0.018575851393188857,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1034,
+      "answer_tokens": 323,
+      "latency_retrieval_ms": 288.4865000087302,
+      "latency_answer_ms": 44519.40116600599,
+      "latency_external_judge_ms": 801.456249988405,
+      "latency_qwen_judge_ms": 12643.37395800976,
+      "latency_total_ms": 58252.71787401289,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "No factual claims found in the answer."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nOVERALL\tfalse\tNo factual claims found in the answer.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "The retrieved context does not provide evidence for any of the claims made in the answer."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tI recommend the following variables for your analysis: not_found\t\nCLAIM\tmes1_bmi (BMI calculated) from BiBBS_Baseline.pregnancy_survey not_found\t\nCLAIM\tmes1_bmicat5 (BMI 5 categories) from BiBBS_Baseline.pregnancy_survey not_found\t\nCLAIM\tmes1_bmicalc (Whether BMI could be calculated) from BiBBS_Baseline.pregnancy_survey not_found\t\nCLAIM\tmes1_qweight (Weight (kg)) from BiBBS_Baseline.pregnancy_survey not_found\t\nCLAIM\tmes1_weight (Weight (kg)) from BiBBS_Baseline.pregnancy_survey not_found\t\nCLAIM\tmes1_weight_kg (Weight (kg)) from BiBBS_Baseline.pregnancy_survey not_found\t\nCLAIM\tmes1_weight_lb (Weight (lb)) from BiBBS_Baseline.pregnancy_survey not_found\t\nOVERALL\tfalse\tThe retrieved context does not provide evidence for any of the claims made in the answer.\nEND_JUDGE"
+        }
+      }
+    },
+    {
+      "query_id": "q_4",
+      "question": "In the paper \"Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\" (2020), what factors were not included in the study due to lack of information?",
+      "reference_answer": "Parental substance misuse, parental physical ill health, and out-of-home placements.",
+      "source_chunk_id": "pdf_child_mental_health_and_resilience_in_the_context_of_socioec_chunk_27",
+      "rag_answer": "Retrieved knowledge base context:\n\n## Exact Registry Matches\n\n[PAPER TITLE FOUND: 'Child mental health and resilience in the context of socioeconomic disadvantage ']\nYear: 2020\nDOI: \nHas full-text PDF chunks in index: yes\n\n\n## Relevant Published Papers\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nugging, kissing and holding \nthis child?’ rated on a scale from 1 (‘Never/Almost never’) \nto 5 (‘Always/Almost always’). Questions were completed by \nmothers when children were 24 months old. Higher scores \nindicated increasing efficacy a\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nugging, kissing and holding \nthis child?’ rated on a scale from 1 (‘Never/Almost never’) \nto 5 (‘Always/Almost always’). Questions were completed by \nmothers when children were 24 months old. Higher scores \nindicated increasing efficacy a\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nugging, kissing and holding \nthis child?’ rated on a scale from 1 (‘Never/Almost never’) \nto 5 (‘Always/Almost always’). Questions were completed by \nmothers when children were 24 months old. Higher scores \nindicated increasing efficacy a\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nugging, kissing and holding \nthis child?’ rated on a scale from 1 (‘Never/Almost never’) \nto 5 (‘Always/Almost always’). Questions were completed by \nmothers when children were 24 months old. Higher scores \nindicated increasing efficacy a\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nugging, kissing and holding \nthis child?’ rated on a scale from 1 (‘Never/Almost never’) \nto 5 (‘Always/Almost always’). Questions were completed by \nmothers when children were 24 months old. Higher scores \nindicated increasing efficacy a\n\n**Child mental health and resilience in the context of soc",
+      "answer_relevance": 0.7142857142857143,
+      "completeness": 0.25,
+      "conciseness": 0.026666666666666665,
+      "answer_correctness_token_f1": 0.012987012987012988,
+      "answer_exact_match": false,
+      "retrieved_tokens": 922,
+      "answer_tokens": 450,
+      "latency_retrieval_ms": 350.90645801392384,
+      "latency_answer_ms": 43357.6052080025,
+      "latency_external_judge_ms": 847.8604580159299,
+      "latency_qwen_judge_ms": 6328.185000020312,
+      "latency_total_ms": 50884.55712405266,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "No factual claims found in the answer."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nOVERALL\tfalse\tNo factual claims found in the answer.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The study did not include information regarding mental health diagnoses or treatments.",
+              "verdict": "supported",
+              "evidence": "We also did not have information regarding mental health diagnoses or treatments, instead relying on screening measures."
+            },
+            {
+              "claim": "The study did not include out-of-home placements.",
+              "verdict": "supported",
+              "evidence": "ical ill health and out-of-home placements. We also did not have information regarding mental health diagnoses or treatments"
+            }
+          ],
+          "counts": {
+            "total": 2,
+            "supported": 2,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "faithful_lenient": true,
+            "faithful_strict": true,
+            "notes": "The answer is fully supported by the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe study did not include information regarding mental health diagnoses or treatments.\tsupported\tWe also did not have information regarding mental health diagnoses or treatments, instead relying on screening measures.\nCLAIM\tThe study did not include out-of-home placements.\tsupported\tical ill health and out-of-home placements. We also did not have information regarding mental health diagnoses or treatments\nOVERALL\ttrue\tThe answer is fully supported by the context.\nEND_JUDGE"
+        }
+      }
+    },
+    {
+      "query_id": "q_5",
+      "question": "What is the recommended mean sleep duration for infants and toddlers according to the systematic review by Galland et al.?",
+      "reference_answer": "The parent-reported mean sleep duration for infants (0-23 months) was 12.8 hours and 11.9 hours for toddlers and preschoolers (2-5 years old).",
+      "source_chunk_id": "pdf_sociodemographic_temporal_and_bedtime_routine_correlates_of__chunk_2",
+      "rag_answer": "Retrieved knowledge base context:",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.14814814814814814,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1152,
+      "answer_tokens": 4,
+      "latency_retrieval_ms": 333.23291697888635,
+      "latency_answer_ms": 1666.203000000678,
+      "latency_external_judge_ms": 1032.788165990496,
+      "latency_qwen_judge_ms": 3008.6287499871105,
+      "latency_total_ms": 6040.852832957171,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "No claims to evaluate."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nOVERALL\tfalse\tNo claims to evaluate.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": false,
+            "faithful_lenient": false,
+            "faithful_strict": false,
+            "notes": "The answer is empty and contains no factual claims."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe answer is empty.\tnot_found\t\nOVERALL\tfalse\tThe answer is empty and contains no factual claims.\nEND_JUDGE"
+        }
+      }
+    }
+  ]
+}

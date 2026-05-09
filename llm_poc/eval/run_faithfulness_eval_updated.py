@@ -15,53 +15,57 @@ Usage
     # Evaluate with the Qwen base model (public API)_get_hf_client
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
-        --answer-model Qwen/Qwen2.5-72B-Instruct \
+        --answer-model meta-llama/Llama-3.1-70B-Instruct \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --run-name faithfulness_Qwen2.5-72B-Instruct
+        --include-context \
+        --run-name faithfulness_Llama-3.1-70B-Instruct
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
-        --answer-model Qwen/Qwen2.5-32B-Instruct \
+        --answer-model Qwen/Qwen2.5-7B-Instruct \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --run-name faithfulness_Qwen2.5-32B-Instruct
+        --include-context \
+        --run-name faithfulness_Qwen2.5-7B-Instruct
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
         --answer-model meta-llama/Llama-3.1-8B-Instruct \
         --external-judge-model Qwen/Qwen2.5-72B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-7B-Instruct \
+        --include-context \
         --run-name faithfulness_Llama-3.1-8B-Instruct
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
-        --answer-model google/gemma-2-9b-it \
+        --answer-model Qwen/Qwen2.5-72B-Instruct \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --run-name faithfulness_gemma-2-9b-it
+        --include-context \
+        --run-name faithfulness_Qwen2.5-72B-Instruct
 
     # Evaluate with your merged model using a Hugging Face Inference Endpoint
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
-        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
         --answer-model dizza01/qwen2.5-7b-finetunerag-merged \
         --answer-api-mode hf_endpoint \
         --answer-endpoint-url https://eyicswzutfjqodxe.us-east-1.aws.endpoints.huggingface.cloud \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
-        --run-name faithfulness_qwen_finetuned_endpoint_step_4 \
-        --max-queries 100
+        --run-name faithfulness_qwen_finetuned__pdf_endpoint 
 
     # Evaluate with your merged model using a Hugging Face Inference Endpoint
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
-        --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
         --answer-model dizza01/BioMistral-7B-DARE \
         --answer-api-mode hf_endpoint \
         --answer-endpoint-url https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud \
+        --answer-endpoint-mode text_generation \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --judge-retries 2 \
+        --include-context \
         --run-name faithfulness_biomistral-7b-dare_endpoint
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
@@ -69,6 +73,7 @@ Usage
         --answer-model dizza01/medalpaca-13b \
         --answer-api-mode hf_endpoint \
         --answer-endpoint-url https://h46ed7c31gh0orh6.us-east-1.aws.endpoints.huggingface.cloud \
+        --answer-endpoint-mode text_generation \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
@@ -234,9 +239,23 @@ Formatting requirements:
 
 Fallback allowed only if explicitly asked: valid JSON with keys `claims` and `overall`.
 
-Definition of overall.faithful:
-- true only if there are no contradicted/not_found claims and at least one claim was evaluated.
-- false otherwise.
+Special case: abstaining answers
+
+- If the answer explicitly says that the context does not contain the requested information
+  (e.g. "the context does not specify...", "not enough information in the context",
+  "cannot answer from the context", "cannot answer from the provided context"),
+  and you confirm that the context indeed does NOT contain that information,
+  then this is a faithful abstention.
+
+- In that case:
+  - You may extract zero CLAIM lines, or
+  - Extract a single CLAIM such as "The answer abstains because the context does not
+    specify the requested value" and mark it as supported.
+
+- Do NOT mark such answers as contradicted or not_found just because they fail to
+  provide a numeric or specific value. Only use contradicted/not_found when the
+  answer asserts a specific fact that is not supported by the context.
+
 """
 
 
@@ -466,27 +485,89 @@ def _parse_tsv_judge_response(text: str) -> dict[str, Any]:
     if start == -1 or end == -1 or end <= start:
         raise ValueError("Missing BEGIN_JUDGE/END_JUDGE markers")
 
-    block = cleaned[start + len(BEGIN_MARKER):end].strip()
-    lines = [line.strip() for line in block.splitlines() if line.strip()]
+    # Strip only spaces/newlines; do NOT strip tabs, as they can encode empty TSV columns.
+    block = cleaned[start + len(BEGIN_MARKER):end].strip(" \r\n")
+    # IMPORTANT: do not call `strip()` on full lines here because it removes `\t`.
+    # Some judge rows end with a trailing tab to represent an empty final column (e.g. empty
+    # evidence). If we strip tabs, we can collapse columns and accidentally shift the verdict
+    # (e.g. "supported") into the evidence field, leaving verdict="" which then normalizes
+    # to verdict="unclear" downstream.
+    lines = [line.strip(" \r\n") for line in block.splitlines() if line.strip(" \r\n")]
 
     claims: list[dict[str, str]] = []
     overall_faithful = False
     overall_notes = ""
 
+    verdict_set = {"supported", "contradicted", "not_found", "unclear"}
+
     for line in lines:
-        parts = [part.strip() for part in line.split("\t")]
+        # Be tolerant to minor formatting deviations from the judge.
+        # We strongly prefer literal tabs, but some models occasionally emit:
+        # - "CLAIM <claim>\t<verdict>\t<evidence>"  (space after CLAIM)
+        # - "OVERALL <true|false>\t<notes>"        (space after OVERALL)
+        # - "CLAIM\t<claim>\t<verdict> <evidence>" (verdict + evidence collapsed)
+        line_norm = line
+        if line_norm.upper().startswith("CLAIM "):
+            line_norm = "CLAIM\t" + line_norm[len("CLAIM ") :]
+        elif line_norm.upper().startswith("OVERALL "):
+            line_norm = "OVERALL\t" + line_norm[len("OVERALL ") :]
+
+        parts = [part.strip() for part in line_norm.split("\t")]
         if not parts:
             continue
 
         row_type = parts[0].upper()
         if row_type == "CLAIM":
+            if len(parts) < 2:
+                continue
+
+            # Some models collapse verdict+evidence into a single cell:
+            # CLAIM\t<claim>\t"supported <evidence>"
+            if len(parts) == 3:
+                candidate = parts[2].strip()
+                token = candidate.split(" ", 1)[0].lower() if candidate else ""
+                if token in verdict_set:
+                    verdict = token
+                    evidence = candidate[len(token) :].strip()
+                    parts = [parts[0], parts[1], verdict, evidence]
+                else:
+                    # Also tolerate glued punctuation, e.g. "supported.<evidence>" or "supported:<evidence>".
+                    m = re.match(r"^(supported|contradicted|not_found|unclear)([\.:,;\-]+)(.*)$", candidate, flags=re.IGNORECASE)
+                    if m:
+                        verdict = m.group(1).lower()
+                        evidence = (m.group(3) or "").strip()
+                        parts = [parts[0], parts[1], verdict, evidence]
+
+            # Evidence is optional; tolerate CLAIM\t<claim>\t<verdict>\t
+            if len(parts) == 3:
+                parts = parts + [""]
             if len(parts) < 4:
                 continue
+
+            # Handle misaligned TSV rows where the verdict cell is empty and the verdict
+            # string (e.g. "supported") appears in the next column.
+            #
+            # This happens when the judge emits an empty verdict column followed by the verdict,
+            # e.g. because of an extra tab or an intentionally empty "evidence" field:
+            # - CLAIM\t<claim>\t\tsupported\t<evidence>
+            # - CLAIM\t<claim>\t\tsupported\t
+            #
+            # If we don't recover this, we parse verdict="" and later normalize it to "unclear",
+            # which incorrectly penalizes faithful abstentions.
+            if (not parts[2]) and (parts[3].lower() in verdict_set):
+                claim_text = parts[1]
+                verdict = parts[3].lower()
+                evidence = parts[4] if len(parts) >= 5 else ""
+            else:
+                claim_text = parts[1]
+                verdict = parts[2].lower()
+                evidence = parts[3]
+
             claims.append(
                 {
-                    "claim": parts[1],
-                    "verdict": parts[2].lower(),
-                    "evidence": parts[3],
+                    "claim": claim_text,
+                    "verdict": verdict,
+                    "evidence": evidence,
                 }
             )
         elif row_type == "OVERALL":
@@ -563,13 +644,18 @@ def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
             self._hf = hf_client
             self.endpoint_mode = mode
 
+        
         def generate(self, prompt, temperature=0.2, max_tokens=1500, **kw):
-            # Standard HF Inference Endpoint API
+            # Wrap flat prompt into a single-user chat message so custom handlers
+            # expecting chat-style `inputs` can process it.
+            inputs = [
+                {"role": "user", "content": str(prompt)},
+            ]
             return self._hf.text_generation(
-                prompt=prompt,
+                prompt=inputs,
                 max_new_tokens=max_tokens,
                 temperature=temperature,
-                **kw
+                **kw,
             )
 
         def chat_generate(self, messages, model="", temperature=0.2, max_tokens=1500):
@@ -882,8 +968,24 @@ def _judge_faithfulness(
             }
         )
 
+    # Faithfulness definition:
+    # - faithful = pure abstain (0 claims) OR at least one supported claim and no contradicted/not_found.
+    # - unclear claims do not alone make an answer unfaithful, but they contribute to "risky=True".
+    # Empty model outputs are handled upstream and never reach this point.
     total_claims = len(normalized_claims)
-    faithful = bool(total_claims > 0 and contradicted == 0 and not_found == 0)
+    has_supported = supported > 0
+    has_bad = (contradicted + not_found) > 0
+
+    if total_claims == 0:
+        # Zero claims, but we know the answer was non-empty (empty answers are handled upstream).
+        # Interpret this as a pure abstention with no hallucinated claims.
+        faithful = True
+    else:
+        # At least one supported claim, and no contradicted/not_found claims.
+        faithful = bool(has_supported and not has_bad)
+
+    # Define a "risky" flag: any contradicted / not_found / unclear claims.
+    risky = bool((contradicted + not_found + unclear) > 0)
 
     return {
         "claims": normalized_claims,
@@ -896,6 +998,7 @@ def _judge_faithfulness(
         },
         "overall": {
             "faithful": faithful,
+            "risky": risky,
             "notes": str((parsed.get("overall") or {}).get("notes", "")).strip(),
         },
         "raw_judge_response": raw,
@@ -1041,6 +1144,12 @@ def _summarize(judgments: list[dict[str, Any]]) -> dict[str, Any]:
         for j in judgments
         if (j["counts"]["contradicted"] + j["counts"]["not_found"]) > 0
     )
+    # Risk is orthogonal to faithfulness: "unclear" (and any unfaithful) claims mark the answer as risky.
+    risky_queries = sum(
+        1
+        for j in judgments
+        if bool((j.get("overall") or {}).get("risky", False))
+    )
 
     contradiction_weighted_hallucination = _safe_div(
         (2.0 * total_contradicted) + total_not_found,
@@ -1064,6 +1173,8 @@ def _summarize(judgments: list[dict[str, Any]]) -> dict[str, Any]:
         "contradicted_query_rate": _safe_div(contradicted_queries, n_queries),
         "not_found_query_rate": _safe_div(not_found_queries, n_queries),
         "unfaithful_query_rate": _safe_div(unfaithful_queries, n_queries),
+        "risky_queries": risky_queries,
+        "risky_query_rate": _safe_div(risky_queries, n_queries),
         "avg_claims_per_answer": _safe_div(total_claims, n_queries),
         "avg_unfaithful_claims_per_answer": _safe_div(total_unfaithful, n_queries),
     }
@@ -1297,6 +1408,7 @@ def main() -> None:
         if not question:
             continue
 
+        is_empty_answer = False
         try:
             t_retrieval_start = time.perf_counter()
             context = _retrieve_context_for_eval(
@@ -1317,34 +1429,66 @@ def main() -> None:
                 allow_endpoint_chat_fallback=args.allow_endpoint_chat_fallback,
             )
             answer_ms = (time.perf_counter() - t_answer_start) * 1000.0
+            # Treat truly empty model outputs as explicit failures.
+            # These are NOT judged (to avoid being mis-scored as "faithful abstentions").
+            is_empty_answer = (not answer or not str(answer).strip())
 
-            t_ext_start = time.perf_counter()
-            ext = _judge_faithfulness(
-                question=question,
-                context=context,
-                answer=answer,
-                judge_client=ext_judge_client,
-                judge_model=args.external_judge_model,
-                max_tokens=args.judge_max_tokens,
-                retries=args.judge_retries,
-                retry_delay=args.judge_retry_delay,
-            )
-            ext_judge_ms = (time.perf_counter() - t_ext_start) * 1000.0
-            time.sleep(args.sleep_seconds)
+            ext_judge_ms = 0.0
+            qwen_judge_ms = 0.0
 
-            t_qwn_start = time.perf_counter()
-            qwn = _judge_faithfulness(
-                question=question,
-                context=context,
-                answer=answer,
-                judge_client=qwen_judge_client,
-                judge_model=args.qwen_judge_model,
-                max_tokens=args.judge_max_tokens,
-                retries=args.judge_retries,
-                retry_delay=args.judge_retry_delay,
-            )
-            qwen_judge_ms = (time.perf_counter() - t_qwn_start) * 1000.0
-            time.sleep(args.sleep_seconds)
+            if is_empty_answer:
+                # Minimal judgment payload (keeps downstream JSON structure compatible).
+                ext = {
+                    "claims": [],
+                    "counts": {
+                        "total": 0,
+                        "supported": 0,
+                        "contradicted": 0,
+                        "not_found": 0,
+                        "unclear": 0,
+                    },
+                    "overall": {
+                        "faithful": False,
+                        "risky": True,
+                        "notes": "failed_empty_output",
+                    },
+                    "raw_judge_response": "",
+                }
+                # Mirror the same semantics for the Qwen judge output.
+                qwn = {
+                    **ext,
+                    "claims": list(ext["claims"]),
+                    "counts": dict(ext["counts"]),
+                    "overall": dict(ext["overall"]),
+                }
+            else:
+                t_ext_start = time.perf_counter()
+                ext = _judge_faithfulness(
+                    question=question,
+                    context=context,
+                    answer=answer,
+                    judge_client=ext_judge_client,
+                    judge_model=args.external_judge_model,
+                    max_tokens=args.judge_max_tokens,
+                    retries=args.judge_retries,
+                    retry_delay=args.judge_retry_delay,
+                )
+                ext_judge_ms = (time.perf_counter() - t_ext_start) * 1000.0
+                time.sleep(args.sleep_seconds)
+
+                t_qwn_start = time.perf_counter()
+                qwn = _judge_faithfulness(
+                    question=question,
+                    context=context,
+                    answer=answer,
+                    judge_client=qwen_judge_client,
+                    judge_model=args.qwen_judge_model,
+                    max_tokens=args.judge_max_tokens,
+                    retries=args.judge_retries,
+                    retry_delay=args.judge_retry_delay,
+                )
+                qwen_judge_ms = (time.perf_counter() - t_qwn_start) * 1000.0
+                time.sleep(args.sleep_seconds)
 
         except Exception as exc:
             err_msg = str(exc)
@@ -1400,6 +1544,10 @@ def main() -> None:
                 "qwen": qwn,
             },
         }
+        if is_empty_answer:
+            # Per-query provenance: indicates the "decision" came from empty-output handling.
+            result["classifier_decision_source_external"] = "empty_answer"
+            result["classifier_decision_source_qwen"] = "empty_answer"
         if args.include_context:
             result["retrieved_context"] = context
 
