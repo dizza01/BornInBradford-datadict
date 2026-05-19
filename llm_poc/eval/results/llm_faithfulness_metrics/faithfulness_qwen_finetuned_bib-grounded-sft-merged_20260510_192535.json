@@ -1,0 +1,302 @@
+{
+  "n_queries_attempted": 2,
+  "n_queries_succeeded": 2,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "dizza01/qwen2.5-7b-bib-grounded-sft-merged",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://nmmfmc3zqmknlks4.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "dizza01/qwen2.5-7b-bib-grounded-sft-merged",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": true,
+    "max_queries": 2,
+    "evaluated_at": "2026-05-10T19:25:35"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 2,
+      "succeeded_queries": 2,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.14285714285714285,
+      "contradicted_claim_rate": 0.14285714285714285,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.5,
+      "claim_support_rate": 0.42857142857142855,
+      "contradiction_weighted_hallucination": 0.2857142857142857
+    },
+    "external_judge": {
+      "n_queries": 2,
+      "total_claims": 7,
+      "supported_claims": 3,
+      "contradicted_claims": 1,
+      "not_found_claims": 0,
+      "unfaithful_claims": 1,
+      "unclear_claims": 3,
+      "claim_support_rate": 0.42857142857142855,
+      "contradicted_claim_rate": 0.14285714285714285,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.14285714285714285,
+      "contradiction_weighted_hallucination": 0.2857142857142857,
+      "query_faithfulness_rate": 0.5,
+      "contradicted_query_rate": 0.5,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.5,
+      "risky_queries": 2,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 3.5,
+      "avg_unfaithful_claims_per_answer": 0.5
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 2,
+      "total_claims": 9,
+      "supported_claims": 7,
+      "contradicted_claims": 0,
+      "not_found_claims": 1,
+      "unfaithful_claims": 1,
+      "unclear_claims": 1,
+      "claim_support_rate": 0.7777777777777778,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.1111111111111111,
+      "unfaithful_claim_rate": 0.1111111111111111,
+      "contradiction_weighted_hallucination": 0.1111111111111111,
+      "query_faithfulness_rate": 0.5,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.5,
+      "unfaithful_query_rate": 0.5,
+      "risky_queries": 1,
+      "risky_query_rate": 0.5,
+      "avg_claims_per_answer": 4.5,
+      "avg_unfaithful_claims_per_answer": 0.5
+    },
+    "judge_agreement": {
+      "n_queries": 2,
+      "faithful_label_agreement": 1.0,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 2,
+      "answer_relevance": 0.8416666666666667,
+      "completeness": 0.42543859649122806,
+      "conciseness": 0.1432307296578925,
+      "answer_correctness_token_f1": 0.11055672268907563,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 21501.77141703898,
+      "latency_total_p95_ms": 23407.730292005,
+      "latency_retrieval_avg_ms": 1026.8418334890157,
+      "latency_answer_avg_ms": 11202.139458502643,
+      "avg_retrieved_tokens": 1119.5,
+      "avg_answer_tokens": 108.0,
+      "answer_tokens_per_retrieved_token": 0.0964716391246092
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "q_1",
+      "question": "In the paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in Bradford dataset\" (2024), what is the relationship between prenatal alcohol exposure and early education outcomes?",
+      "reference_answer": "The study shows a significant association between prenatal alcohol exposure and adverse outcomes in a child’s early education.",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+      "rag_answer": "In the paper \"associations between prenatal Alcohol Exposure and Early Education Outcomes: A Matched Controls Study Using the Born in Brad ford Dataset\" (24), the authors investigate the relationship between maternal alcohol consumption during pregnancy and early education achievements.\n\nKey findings include:\n- Prenatal Alcohol Exposure (PAE): The study identifies various levels of PAE, ranging from no exposure to frequent exposure.\n- Early Education Outcomess: The research examines several indicators of early academic performance, including reading skills, math abilities, and overall academic achievement.\n\nOverall, the study suggests that prenatal alcohol exposure may have negative impacts on early education outcomes. However, the exact nature and extent of these effects require further investigation.",
+      "answer_relevance": 0.8333333333333334,
+      "completeness": 0.6842105263157895,
+      "conciseness": 0.1743119266055046,
+      "answer_correctness_token_f1": 0.1875,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1038,
+      "answer_tokens": 109,
+      "latency_retrieval_ms": 1703.9778329781257,
+      "latency_answer_ms": 11252.635959011968,
+      "latency_external_judge_ms": 3578.9065419812687,
+      "latency_qwen_judge_ms": 6872.209958033636,
+      "latency_total_ms": 23407.730292005,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The study investigates the relationship between maternal alcohol consumption during pregnancy and early education achievements.",
+              "verdict": "supported",
+              "evidence": "Prenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments"
+            },
+            {
+              "claim": "Prenatal Alcohol Exposure (PAE) is associated with various levels of exposure.",
+              "verdict": "unclear",
+              "evidence": "No explicit information on levels of PAE in the context"
+            },
+            {
+              "claim": "The research examines several indicators of early academic performance.",
+              "verdict": "unclear",
+              "evidence": "No explicit information on specific indicators in the context"
+            },
+            {
+              "claim": "The study suggests that prenatal alcohol exposure may have negative impacts on early education outcomes.",
+              "verdict": "supported",
+              "evidence": "PAE is associated with cognitive, behavioural, and developmental impairments"
+            }
+          ],
+          "counts": {
+            "total": 4,
+            "supported": 2,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 2
+          },
+          "overall": {
+            "faithful": true,
+            "risky": true,
+            "notes": "The answer is generally supported by the context, but some claims are unclear due to lack of specific information."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe study investigates the relationship between maternal alcohol consumption during pregnancy and early education achievements.\tsupported\tPrenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments \nCLAIM\tPrenatal Alcohol Exposure (PAE) is associated with various levels of exposure.\tunclear\tNo explicit information on levels of PAE in the context\nCLAIM\tThe research examines several indicators of early academic performance.\tunclear\tNo explicit information on specific indicators in the context\nCLAIM\tThe study suggests that prenatal alcohol exposure may have negative impacts on early education outcomes.\tsupported\tPAE is associated with cognitive, behavioural, and developmental impairments \nOVERALL\ttrue\tThe answer is generally supported by the context, but some claims are unclear due to lack of specific information.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The study identifies various levels of PAE, ranging from no exposure to frequent exposure.",
+              "verdict": "supported",
+              "evidence": "Prenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments throughout the lifespan of affected individuals"
+            },
+            {
+              "claim": "The research examines several indicators of early academic performance, including reading skills, math abilities, and overall academic achievement.",
+              "verdict": "supported",
+              "evidence": "The Early Years Foundation Stage Profile (EYFSP), a statutory teacher-based summative assessment of early development in relation to learning goals"
+            },
+            {
+              "claim": "The study suggests that prenatal alcohol exposure may have negative impacts on early education outcomes.",
+              "verdict": "supported",
+              "evidence": "Prenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments throughout the lifespan of affected individuals"
+            },
+            {
+              "claim": "The exact nature and extent of these effects require further investigation.",
+              "verdict": "supported",
+              "evidence": "there is limited evidence on how early this impact can be identified through routinely collected childhood data"
+            }
+          ],
+          "counts": {
+            "total": 4,
+            "supported": 4,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0
+          },
+          "overall": {
+            "faithful": true,
+            "risky": false,
+            "notes": "The answer accurately reflects the key findings and conclusions of the study as described in the context."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe study identifies various levels of PAE, ranging from no exposure to frequent exposure.\tsupported\tPrenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments throughout the lifespan of affected individuals\nCLAIM\tThe research examines several indicators of early academic performance, including reading skills, math abilities, and overall academic achievement.\tsupported\tThe Early Years Foundation Stage Profile (EYFSP), a statutory teacher-based summative assessment of early development in relation to learning goals\nCLAIM\tThe study suggests that prenatal alcohol exposure may have negative impacts on early education outcomes.\tsupported\tPrenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments throughout the lifespan of affected individuals\nCLAIM\tThe exact nature and extent of these effects require further investigation.\tsupported\tthere is limited evidence on how early this impact can be identified through routinely collected childhood data\nOVERALL\ttrue\tThe answer accurately reflects the key findings and conclusions of the study as described in the context.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Exact Registry Matches\n\n[PAPER TITLE NOT IN REGISTRY: 'Associations between prenatal alcohol exposure and early education outcomes a ma' not found in BiB paper index]\n\n## Relevant Published Papers\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nic Health, University of Salford, Salford, UK; 2Psychology\nDepartment Bradford University, Bradford, UK and 3Centre for Applied Education Research, Bradford, UK\nAbstract\nPrenatal alcohol exposure (PAE) is associated with cognitive, behavi\n\n**Associations between prenatal alcohol exposure and early education outcomes: a matched controls study using the born in ** (2024) — McCarthy Robyn, Cook Penny A, Pink Joshua, Eddy Lucy H\nAbstract: Prenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments throughout the lifespan of affected individuals, but there is limited evidence on how early this impact can be identified through routinely collected childhood data. This paper explores the relationship between PAE and the Early Years Foundation Stage Profile (EYFSP), a statutory teacher-based summative assessment of early development in relation to learning goals. This analysis uses the Born in Bradford dataset, a UK based cohort (n = 13,959; full dataset), which collected self-r\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nlation in Bradford, with a higher proportion\nof younger people.\nReported South Asian ethnicity is associated in the UK with\nabstinence from alcohol.24,40 In our dataset, for each drinking\npattern, more than 80% of mothers who report that \n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nPublic Health.\n2016; 16(1), 683.\n21. Paul SE, Hatoum AS, Fine JD, et al. Associations between prenatal cannabis\nexposure and childhood outcomes: results from the ABCD study. JAMA\nPsychiat. 2021; 78(1), 64–76.\n22. Long X, Lebel C. Evaluati\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\ne EYFSP has also been used to study the relationship between early\ndevelopment and long-term educational attainment,12 as well as to explore the influence of\nfactors such as socio-economic status, parental involvement, and the quality of \n\n\n## Relevant Variables\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0drpreg\nLabel: Mother drank alcohol during pregnancy or 3 months before\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't remember]\nNon-missing records: 11369\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcinpreg\nLabel: Do you drink any alcohol during this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 NT]\nNon-missing records: 2553\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcbeforepreg\nLabel: Did you drink any alcohol during the three months before this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 Don't know] [5 NT]\nNon-missing records: 2548\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0drfr3m\nLabel: Mother drank alcohol in the first 3 months of pregnancy\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes, once a week] [2 Yes, occasionally] [3 Yes, not specified] [4 No] [5 Don't remember]\nNon-missing records: 3480\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamx3b\nLabel: Maximum units of other alcohol at one time in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 608\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamxf3\nLabel: Maximum units of other alcohol at one time in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 185\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0dr3mb4\nLabel: Mother drank alcohol 3 months before pregnancy\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes, once a week] [2 Yes, occasionally] [3 Yes, not specified] [4 No] [5 Don't remember]\nNon-missing records: 3472\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaav3b\nLabel: Average units of other alcohol per week in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 613\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaavf3\nLabel: Average units of other alcohol per week in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 186\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod03_dr23\nVariable: awb5_2y_alcohol_lctn___1\nLabel: I got alcohol from parents to drink with them in past week\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: I got my alcohol from my parents to drink with them]\nNon-missing records: 2026\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_CohortInfo.preg_info\nDisplay name: Pregnancy information\nProject: BiB_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 10 | Rows: 13776 | Entities: 12453\nLast updated: 2024-05-14 09:12:26\n```\n\n```\nTable: BiB_Pregnancy.eclipse_preg\nDisplay name: Eclipse pregnancy record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 35 | Rows: 13361 | Entities: 12075\nLast updated: 2024-05-14 09:13:56\n```\n\n```\nTable: BiB_Pregnancy.eclipse_baby\nDisplay name: Eclipse neonatal record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 29 | Rows: 13525 | Entities: 13525\nLast updated: 2024-05-14 09:13:55\n```\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nDisplay name: Maternity records pre-BiB pregnancy\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 13 | Rows: 10642 | Entities: 5611\nLast updated: 2024-05-14 09:14:05\n```\n\n```\nTable: BiBBS_CohortInfo.pregnancy\nDisplay name: Recruited pregnancy information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 15 | Rows: 2626 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n"
+    },
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "reference_answer": "0.93 (95% CI 0.89 to 0.97, p=0.001).",
+      "source_chunk_id": "pdf_seroprevalence_of_cytomegalovirus_epstein_barr_virus_and_var_chunk_16",
+      "rag_answer": "Based on the information provided in the published paper, there is no direct mention of an adjusted risk ratio specifically comparing VZV (Varicella Zoster Virus) seroprevaluance among South Asian-born women to White British-born women.\n\nHowever, the paper does state that VZV serum prevalence was significantly lower (98%) among South Asian (born in South Asia) women compared to White UK-born women (95%).\n\nTo summarize, while the exact adjusted risk ratio is not provided in the text, we can infer that the VZV prevalence among South Asian, born in SouthAsia, women was notably higher than among White British women, indicating a significant difference in risk ratios.",
+      "answer_relevance": 0.85,
+      "completeness": 0.16666666666666666,
+      "conciseness": 0.11214953271028037,
+      "answer_correctness_token_f1": 0.03361344537815126,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1201,
+      "answer_tokens": 107,
+      "latency_retrieval_ms": 349.70583399990574,
+      "latency_answer_ms": 11151.642957993317,
+      "latency_external_judge_ms": 2618.006750009954,
+      "latency_qwen_judge_ms": 7382.415875035804,
+      "latency_total_ms": 21501.77141703898,
+      "judgments": {
+        "external": {
+          "claims": [
+            {
+              "claim": "The answer abstains because the context does not specify the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women.",
+              "verdict": "supported",
+              "evidence": ""
+            },
+            {
+              "claim": "VZV seroprevalence was significantly lower among South Asian women born in South Asia.",
+              "verdict": "contradicted",
+              "evidence": "VZV seroprevalence was significantly lower among the South Asian women"
+            },
+            {
+              "claim": "VZV serum prevalence was 98% among South Asian women born in South Asia and 95% among White UK-born women.",
+              "verdict": "unclear",
+              "evidence": "VZV seroprevalence was 95% among women born in the UK but significantly lower among South Asian women born in South Asia"
+            }
+          ],
+          "counts": {
+            "total": 3,
+            "supported": 1,
+            "contradicted": 1,
+            "not_found": 0,
+            "unclear": 1
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "The answer does not provide a direct adjusted risk ratio and the provided information is incomplete or unclear."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe answer abstains because the context does not specify the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women.\tsupported\t\nCLAIM\tVZV seroprevalence was significantly lower among South Asian women born in South Asia.\tcontradicted\tVZV seroprevalence was significantly lower among the South Asian women\nCLAIM\tVZV serum prevalence was 98% among South Asian women born in South Asia and 95% among White UK-born women.\tunclear\tVZV seroprevalence was 95% among women born in the UK but significantly lower among South Asian women born in South Asia\nOVERALL\tfalse\tThe answer does not provide a direct adjusted risk ratio and the provided information is incomplete or unclear.\nEND_JUDGE"
+        },
+        "qwen": {
+          "claims": [
+            {
+              "claim": "The exact adjusted risk ratio for VZV seroprevalence is not provided in the context.",
+              "verdict": "not_found",
+              "evidence": ""
+            },
+            {
+              "claim": "VZV seroprevalence was significantly lower among South Asian women born in South Asia compared to White British women.",
+              "verdict": "supported",
+              "evidence": "VZV seroprevalence was significantly lower among the South Asian women"
+            },
+            {
+              "claim": "The VZV seroprevalence among South Asian women born in South Asia was 98%.",
+              "verdict": "supported",
+              "evidence": "VZV seroprevalence was 95% among women born in the UK but significantly lo"
+            },
+            {
+              "claim": "The VZV seroprevalence among White British women was 95%.",
+              "verdict": "supported",
+              "evidence": "VZV seroprevalence was 95% among women born in the UK but significantly lo"
+            },
+            {
+              "claim": "The context provides enough information to infer the adjusted risk ratio.",
+              "verdict": "unclear",
+              "evidence": "The context does not provide the exact adjusted risk ratio"
+            }
+          ],
+          "counts": {
+            "total": 5,
+            "supported": 3,
+            "contradicted": 0,
+            "not_found": 1,
+            "unclear": 1
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "The context does not provide the exact adjusted risk ratio needed to fully support the answer."
+          },
+          "raw_judge_response": "BEGIN_JUDGE\nCLAIM\tThe exact adjusted risk ratio for VZV seroprevalence is not provided in the context.\tnot_found\t\nCLAIM\tVZV seroprevalence was significantly lower among South Asian women born in South Asia compared to White British women.\tsupported\tVZV seroprevalence was significantly lower among the South Asian women\nCLAIM\tThe VZV seroprevalence among South Asian women born in South Asia was 98%.\tsupported\tVZV seroprevalence was 95% among women born in the UK but significantly lo\nCLAIM\tThe VZV seroprevalence among White British women was 95%.\tsupported\tVZV seroprevalence was 95% among women born in the UK but significantly lo\nCLAIM\tThe context provides enough information to infer the adjusted risk ratio.\tunclear\tThe context does not provide the exact adjusted risk ratio\nOVERALL\tfalse\tThe context does not provide the exact adjusted risk ratio needed to fully support the answer.\nEND_JUDGE"
+        }
+      },
+      "retrieved_context": "## Relevant Published Papers\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\n. 95% or 98%\nin the other groups, p=0.01).\nEthnic group/country of birth category and CMV\nThe association between ethnic group/country of birth\ncategory and CMV seropositivity remained after adjustment for\nparity and household size (Table\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\n(7%) in India, 6 (2%) in Bangladesh, 9 (3%) elsewhere (Kenya\n7, Uganda 1, Burma 1) and only 10 (3%) in England or Wales.\nEthnic group/country of birth category and VZV\nVZV seroprevalence was significantly lower among the\nSouth Asian women\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\nCommittee (ref: 08/H1302/21) and\nthe London School of Hygiene and Tropical Medicine Ethics\nCommittee (ref: 2008/5320). Women gave written informed\nconsent before taking part.\nStatistical methods\nData were analysed using Stata version 12.1\n\n**Seroprevalence of cytomegalovirus, Epstein Barr virus and varicella zoster virus among pregnant women in Bradford: a coh** (2013) — Pembrey Lucy, Raynor Pauline, Griffiths Paul, Chaytor Shelley, Wright John et al\nAbstract: To estimate the seroprevalence of cytomegalovirus (CMV), Epstein Barr virus (EBV) and varicella zoster virus (VZV) among pregnant women in Bradford by ethnic group and country of birth. A stratified random sample of 949 pregnant women enrolled in the Born in Bradford birth cohort was selected to ensure sufficient numbers of White UK born women, Asian UK born women and Asian women born in Asia. Serum samples taken at 24-28 weeks' gestation were tested for CMV IgG, EBV IgG and VZV IgG. Each woman completed a questionnaire which included socio-demographic information. CMV seroprevalence\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\nuth Asian UK born women\nand 98% among South Asian women born in South Asia. These differences remained after adjusting for socio-\ndemographic factors. In contrast, VZV seroprevalence was 95% among women born in the UK but significantly lo\n\n\n## Relevant Variables\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eth_ethnic\nLabel: Mother ethnicity all categories\nTopic: ethnic_group\nType: categorical\nCategories/Values: [1 White British] [2 White Irish] [3 Pakistani] [4 Indian] [5 Bangladeshi] [6 White Polish] [7 White Slovakian] [8 White Romanian] [9 White Czech] [10 Other White] [11 White Gypsy/Roma/Irish traveller] [12 Chinese] [13 African] [14 Caribbean] [15 Mixed White/ Black Caribbean] [16 Mixed White/ Black African] [17 Mixed White/ Asian] [18 Do not wish to answer] [19 Other]\nNon-missing records: 2554\n```\n\n```\nTable: COVID19_Survey.adult_phase1\nVariable: ethnicity\nLabel: Ethnic group combined from different cohort data sources\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White British] [2 Pakistani] [3 Other]\nNon-missing records: 1973\n```\n\n```\nTable: COVID19_Survey.adult_bibplus_phase3\nVariable: ethnicity\nLabel: Ethnicity - 16 categories\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 English, Welsh, Scottish, Northern Irish or British] [2 Irish] [3 Any other White background] [4 White and Black Caribbean] [5 White and Black African] [6 White and Asian] [7 Any other Mixed background] [8 Indian] [9 Pakistani] [10 Bangladeshi] [11 Chinese] [12 Any other Asian background] [13 African] [14 Caribbean] [15 Other Black, African or Caribbean background] [16 Any other ethnic group]\nNon-missing records: 1104\n```\n\n```\nTable: COVID19_Survey.child_phase2_covid\nVariable: edcont_ethnic_origin\nLabel: Child Ethnic Origin Code\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 Bangladeshi] [2 Indian] [3 Pakistani] [4 Chinese/ Other Asian] [5 African] [6 Black Carribbean/ Black Other] [7 Mixed] [8 White British] [9 White Other] [10 Other Ethnic Groups]\nNon-missing records: 600\n```\n\n```\nTable: COVID19_Survey.child_phase1_covid\nVariable: edcont_ethnic_origin\nLabel: Child Ethnic Origin Code - From Child Education Record\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 Bangladeshi] [2 Indian] [3 Pakistani] [4 Chinese/ Other Asian] [5 African] [6 Black Carribbean/ Black Other] [7 Mixed] [8 White British] [9 White Other] [10 Other Ethnic Groups]\nNon-missing records: 910\n```\n\n```\nTable: COVID19_Survey.adult_bib_phase2\nVariable: ethnicity_father\nLabel: Ethnic group (father)\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White] [2 Mixed] [3 Black/Black British] [4 Asian/Asian British] [5 Chinese] [6 Other]\nNon-missing records: 34\n```\n\n```\nTable: COVID19_Survey.child_phase1_covid\nVariable: ethnicity_mother\nLabel: Ethnic group (mother)\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White British] [2 Pakistani] [3 Other]\nNon-missing records: 951\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: eth0ethall\nLabel: Mother's ethnic group - all categories\nTopic: ethnic_group\nType: categorical\nCategories/Values: [1 White - British] [2 White - Irish] [3 White - Other] [4 White & Black Caribbean] [5 White & Black African] [6 White & Indian] [7 White & Pakistani] [8 White & Bangladeshi] [9 White & Indian Caribbean] [10 White & African-Indian] [11 Mixed - Other] [12 Black - Caribbean] [13 Black - African] [14 Black - Other] [15 Asian - Indian] [16 Asian - Pakistani] [17 Asian - Bangladeshi] [18 Asian - Indian\nNon-missing records: 11371\n```\n\n```\nTable: COVID19_Survey.child_phase2_covid\nVariable: ethnicity_mother\nLabel: Ethnic group (mother)\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White British] [2 Pakistani] [3 Other]\nNon-missing records: 618\n```\n\n```\nTable: COVID19_Survey.adult_bib_phase2\nVariable: c19a2_fh_ch_brsh_oft\nLabel: 37) Compared to before the pandemic, is this\nTopic: health_behaviour_cv19\nType: categorical\nCategories/Values: [1 Less] [2 About the same] [3 More]\nNon-missing records: 623\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_SDQs.COVID_phase1_sdq\nDisplay name: Strength and Difficulties questionnaire from the COVID phase 1 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 71 | Rows: 913 | Entities: 913\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_SDQs.COVID_phase2_sdq\nDisplay name: Strength and Difficulties questionnaire from the COVID phase 2 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 71 | Rows: 631 | Entities: 631\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_SDQs.COVID_phase3_sdq\nDisplay name: Strength and Difficulties questionnaire from the COVID phase 3 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 69 | Rows: 582 | Entities: 582\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nDisplay name: Maternity records pregnancy blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 117578 | Entities: 10005\nLast updated: 2024-05-14 09:14:04\n```\n\n```\nTable: BiB_Biosamples.pregnancy_gtt\nDisplay name: Maternal baseline GTT\nProject: BiB_Biosamples\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 12331 | Entities: 11231\nLast updated: 2024-05-14 09:12:09\n```\n"
+    }
+  ]
+}

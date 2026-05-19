@@ -1,0 +1,120 @@
+{
+  "n_queries_attempted": 2,
+  "n_queries_succeeded": 0,
+  "n_queries_failed": 2,
+  "failed_queries_preview": [
+    {
+      "query_id": "q_1",
+      "question": "In the paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in Bradford dataset\" (2024), what is the relationship between prenatal alcohol exposure and early education outcomes?",
+      "error": "Client error '404 Not Found' for url 'https://alwnpkl8c63hv4fs.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: IMeNC9)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    },
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "error": "Client error '404 Not Found' for url 'https://alwnpkl8c63hv4fs.us-east-1.aws.endpoints.huggingface.cloud' (Request ID: 6JQy-y)\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+    }
+  ],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "meta-llama/Llama-3.1-8B-Instruct",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://alwnpkl8c63hv4fs.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "meta-llama/Llama-3.1-8B-Instruct",
+    "answer_endpoint_mode": "text_generation",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": true,
+    "max_queries": 2,
+    "evaluated_at": "2026-05-11T23:58:03"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 2,
+      "succeeded_queries": 0,
+      "failed_queries": 2,
+      "failure_rate": 1.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 0,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 0,
+      "risky_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 0,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 0,
+      "risky_query_rate": 0.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 0,
+      "faithful_label_agreement": 0.0,
+      "unfaithful_presence_agreement": 0.0
+    },
+    "generation_quality": {
+      "n_queries": 0,
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.0,
+      "answer_correctness_token_f1": 0.0,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 0.0,
+      "latency_total_p95_ms": 0.0,
+      "latency_retrieval_avg_ms": 0.0,
+      "latency_answer_avg_ms": 0.0,
+      "avg_retrieved_tokens": 0.0,
+      "avg_answer_tokens": 0.0,
+      "answer_tokens_per_retrieved_token": 0.0
+    }
+  },
+  "per_query": []
+}

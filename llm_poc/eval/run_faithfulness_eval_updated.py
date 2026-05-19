@@ -21,6 +21,15 @@ Usage
         --include-context \
         --run-name faithfulness_Llama-3.1-70B-Instruct
 
+    # Non llama judges    
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model meta-llama/Llama-3.1-70B-Instruct \
+        --external-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-7B-Instruct \
+        --include-context \
+        --run-name faithfulness_Llama-3.1-70B-Instruct
+
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
         --answer-model Qwen/Qwen2.5-7B-Instruct \
@@ -43,7 +52,7 @@ Usage
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --include-context \
-        --run-name faithfulness_Qwen2.5-72B-Instruct
+        --run-name faithfulness_Qwen2.5-72B-Instruct_answers_expanded
 
     # Evaluate with your merged model using a Hugging Face Inference Endpoint
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
@@ -54,7 +63,139 @@ Usage
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
+        --include-context \
         --run-name faithfulness_qwen_finetuned__pdf_endpoint 
+
+
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model dizza01/qwen2.5-7b-pdf-cpt-merged \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://x2d701zzpue6cgrj.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --max-queries 2 \
+        --run-name faithfulness_qwen_finetuned_cpt_pdf_endpoint 
+
+     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model dizza01/qwen2.5-7b-pdf-bib-grounded-sft-merged-no-stage1 \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://xs7rg2mmqpq7fgic.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --run-name faithfulness_qwen_finetuned_bib-grounded-sft-merged-no-stage1     
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model dizza01/qwen2.5-7b-pdf-bib-grounded-sft-merged-no-stage1 \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://xs7rg2mmqpq7fgic.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --run-name faithfulness_qwen_finetuned_bib-grounded-sft-merged-no-stage1 
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model qwen3-6-27b-pks \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://cfnnphkb5rmchz80.us-east-2.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --run-name faithfulness_qwen3-6-27b-pks
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model llama-3-1-8b-instruct-endpoint \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://alwnpkl8c63hv4fs.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --answer-endpoint-mode chat_completions \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --max-queries 2 \
+        --run-name faithfulness_llama-3-1-8b-instruct-endpoint
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model biomistral-7b \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://wbcwkb0aisyc9zvb.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --max-queries 2 \
+        --run-name faithfulness_biomistral-7b
+    
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model llama-3-2-8b-instruct-endpoint \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://vy5d8fteu9g1hl90.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --answer-endpoint-mode chat_completions \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --run-name faithfulness_llama-3-2-8b-instruct-endpoint
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model llama-3-1-8b-bib-grounded-sf-tfx \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://riu8fhweetx0zk2a.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --max-queries 10 \
+        --include-context \
+        --run-name faithfulness_llama-3-1-8b-bib-grounded-sf-tfx
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model llama-3-2-3b-bib-grounded-sf \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://bc0ttw1d0v95zxkt.eu-west-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --run-name faithfulness_llama-3-2-3b-bib-grounded-sf
+
+    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model dizza01/qwen2.5-7b-endpoint \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://aenmimm5jiamnh6j.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --answer-endpoint-mode chat_completions \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --run-name faithfulness_qwen_endpoint
+
+     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model dizza01/qwen2.5-7b-bib-grounded-sft-merged \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://nmmfmc3zqmknlks4.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --judge-retries 2 \
+        --include-context \
+        --max-queries 2 \
+        --run-name faithfulness_qwen_finetuned_bib-grounded-sft-merged  
 
     # Evaluate with your merged model using a Hugging Face Inference Endpoint
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
@@ -66,6 +207,7 @@ Usage
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --include-context \
+        --max-queries 2 \
         --run-name faithfulness_biomistral-7b-dare_endpoint
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
@@ -87,6 +229,7 @@ Usage
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
+        --max-queries 2 \
         --run-name faithfulness_Qwen2.5-14B-Instruct_endpoint
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
@@ -98,16 +241,6 @@ Usage
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
         --run-name faithfulness_biomistral-7b-dare-triples-lora-merged_endpoint
-
-    ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
-        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
-        --answer-model dizza01/BioMistral-7B-DARE \
-        --answer-api-mode hf_endpoint \
-        --answer-endpoint-url https://ylquc2d9j0a43ghh.us-east-1.aws.endpoints.huggingface.cloud \
-        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
-        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
-        --judge-retries 2 \
-        --run-name faithfulness_biomistral-7b-dare_endpoint_test
 
         
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
@@ -209,6 +342,12 @@ Task:
 - You are given (a) a question, (b) retrieved context, and (c) the model answer.
 - Break the answer into atomic factual claims.
 - For each claim, decide whether it is fully supported by the retrieved context.
+
+Critical requirement (prevents false positives):
+- Every extracted claim MUST be a verbatim quote copied from the Answer text.
+    Do NOT paraphrase, infer, or introduce claims that are not literally present in the Answer.
+    If the Answer is nonsensical, repetitive, or does not contain any interpretable factual claims,
+    output zero CLAIM lines and mark OVERALL as false (failed generation / unfaithful).
 
 Scoring rules:
 - supported: explicitly supported by context.
@@ -643,14 +782,15 @@ def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
         def __init__(self, hf_client, mode: str):
             self._hf = hf_client
             self.endpoint_mode = mode
+            self.base_url = base_url.strip().rstrip("/")
+            self.token = token
 
         
         def generate(self, prompt, temperature=0.2, max_tokens=1500, **kw):
-            # Wrap flat prompt into a single-user chat message so custom handlers
-            # expecting chat-style `inputs` can process it.
-            inputs = [
-                {"role": "user", "content": str(prompt)},
-            ]
+            # Hugging Face Inference Endpoints text-generation expects a flat prompt string.
+            # (Some older custom handlers accepted chat-style inputs; those should use
+            # endpoint_mode=chat_completions instead.)
+            inputs = str(prompt)
             return self._hf.text_generation(
                 prompt=inputs,
                 max_new_tokens=max_tokens,
@@ -659,16 +799,84 @@ def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
             )
 
         def chat_generate(self, messages, model="", temperature=0.2, max_tokens=1500):
-            request = {
+            # Use a direct OpenAI-compatible HTTP call to the endpoint.
+            # This matches the working pattern:
+            #   POST <endpoint-url>/v1/chat/completions {model, messages, ...}
+            # and avoids library-specific URL composition differences.
+            import urllib.request
+            import urllib.error
+
+            # Different gateways/tools treat the endpoint base URL differently:
+            # - Some expect base_url="..." and path "/v1/chat/completions"
+            # - Others expect base_url=".../v1" and path "/chat/completions"
+            # Try both so users don't have to guess.
+            base = self.base_url
+            candidate_urls: list[str] = []
+            if base.endswith("/v1"):
+                candidate_urls.append(f"{base}/chat/completions")
+                candidate_urls.append(f"{base[:-3]}/v1/chat/completions")
+            else:
+                candidate_urls.append(f"{base}/v1/chat/completions")
+                candidate_urls.append(f"{base}/chat/completions")
+
+            payload = {
                 "messages": messages,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
+                "temperature": float(temperature),
+                "max_tokens": int(max_tokens),
             }
             if model:
-                request["model"] = model
+                payload["model"] = model
 
-            response = self._hf.chat.completions.create(**request)
-            return (response.choices[0].message.content or "").strip()
+            body = json.dumps(payload).encode("utf-8")
+            last_http_error: Exception | None = None
+            raw = ""
+            url = candidate_urls[0]
+            for candidate in candidate_urls:
+                url = candidate
+                req = urllib.request.Request(
+                    url=url,
+                    data=body,
+                    headers={
+                        "Authorization": f"Bearer {self.token}",
+                        "Content-Type": "application/json",
+                    },
+                    method="POST",
+                )
+
+                try:
+                    with urllib.request.urlopen(req, timeout=120) as resp:
+                        raw = resp.read().decode("utf-8", errors="replace")
+                    break
+                except urllib.error.HTTPError as exc:
+                    err_body = (
+                        exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else ""
+                    )
+                    last_http_error = RuntimeError(
+                        f"Client error '{exc.code} {exc.reason}' for url '{url}': {err_body}"
+                    )
+                    # If the route doesn't exist (404), try alternate chat route.
+                    # For other HTTP errors (401/403/5xx), fail fast.
+                    if int(getattr(exc, "code", 0) or 0) == 404:
+                        continue
+                    raise last_http_error from exc
+                except urllib.error.URLError as exc:
+                    raise RuntimeError(f"Endpoint request failed for url '{url}': {exc}") from exc
+
+            if not raw and last_http_error is not None:
+                tried = ", ".join(candidate_urls)
+                raise RuntimeError(f"All chat routes failed (tried: {tried}). Last error: {last_http_error}")
+
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(f"Invalid JSON from endpoint: {raw[:500]}") from exc
+
+            choices = data.get("choices") or []
+            if not choices:
+                raise RuntimeError(f"No choices in endpoint response: {data}")
+            msg = (choices[0].get("message") or {})
+            content = (msg.get("content") or "")
+            return str(content).strip()
 
     return _Wrapper(client, endpoint_mode)
 
@@ -691,6 +899,20 @@ def _generate_rag_answer(
                 "404" in msg
                 and "chat/completions" in msg
                 and "Not Found" in msg
+            )
+
+        def _is_model_not_found_404(exc: Exception) -> bool:
+            # OpenAI-compatible servers often return a 404 for an unknown model name.
+            # Those errors should not be reported as a missing route.
+            msg = str(exc).lower()
+            return (
+                "404" in msg
+                and "model" in msg
+                and (
+                    "does not exist" in msg
+                    or "not found" in msg
+                    or "model_not_found" in msg
+                )
             )
 
         if endpoint_mode == "chat_completions":
@@ -718,12 +940,23 @@ def _generate_rag_answer(
                     return _strip_filler(answer).strip()
                 except Exception as exc:
                     msg = str(exc)
+                    if _is_model_not_found_404(exc):
+                        raise RuntimeError(
+                            "Endpoint returned 404 for the requested model name. "
+                            "Fix: query the endpoint's served model id (try GET <endpoint>/v1/models) and pass it via "
+                            "--answer-endpoint-model. If your endpoint does not require a model field, set --answer-model to a "
+                            "run label without a '/', so the script omits the model parameter. "
+                            f"Raw error: {exc}"
+                        ) from exc
                     if _is_chat_404(exc):
                         if not allow_endpoint_chat_fallback:
                             raise RuntimeError(
-                                "Endpoint does not support /v1/chat/completions (404). "
-                                "For strict chat-vs-chat comparison, use a chat-capable endpoint. "
-                                "Or rerun with --allow-endpoint-chat-fallback to permit text_generation fallback."
+                                "Endpoint chat routes returned 404 (Not Found). "
+                                "This script tries both '/v1/chat/completions' and '/chat/completions' automatically. "
+                                "If you're using a vLLM OpenAI server, a 404 can also mean the *model name* was not found; "
+                                "in that case, pass the served id via --answer-endpoint-model (discover with GET <endpoint>/v1/models). "
+                                "Otherwise, use --allow-endpoint-chat-fallback to permit text_generation fallback. "
+                                f"Raw error: {exc}"
                             ) from exc
 
                         print(
@@ -740,6 +973,17 @@ def _generate_rag_answer(
                             time.sleep(wait)
                             continue
                     raise
+
+        def _is_not_found_404(exc: Exception) -> bool:
+            msg = str(exc)
+            return (
+                "404" in msg
+                and (
+                    "Not Found" in msg
+                    or "404 Not Found" in msg
+                    or "Client error '404" in msg
+                )
+            )
 
         # Standard HF endpoint: build a single prompt string
         prompt = f"{SYSTEM_PROMPT}\n\nRetrieved knowledge base context:\n\n{context}\n\n---\n\nResearcher question: {question}"
@@ -758,6 +1002,37 @@ def _generate_rag_answer(
                     answer = answer[len(prompt):].strip()
                 return _strip_filler(answer).strip()
             except Exception as exc:
+                # Some endpoints are OpenAI-compatible and only implement /v1/chat/completions.
+                # In that case, text_generation calls can 404 at the base URL.
+                if _is_not_found_404(exc):
+                    print(
+                        "[WARN] Endpoint returned 404 for text_generation; "
+                        "retrying via /v1/chat/completions (OpenAI-compatible endpoint detected)."
+                    )
+                    # Switch the client to chat mode for the remainder of the run.
+                    # This avoids a 404 round-trip per query on chat-only endpoints.
+                    try:
+                        llm_client.endpoint_mode = "chat_completions"
+                    except Exception:
+                        pass
+                    messages = [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {
+                            "role": "user",
+                            "content": (
+                                f"Retrieved knowledge base context:\n\n{context}\n\n"
+                                f"---\n\nResearcher question: {question}"
+                            ),
+                        },
+                    ]
+                    answer = llm_client.chat_generate(
+                        messages=messages,
+                        model=model,
+                        temperature=0.2,
+                        max_tokens=max_tokens,
+                    )
+                    return _strip_filler(answer).strip()
+
                 # Retry on 503 errors (cold start)
                 msg = str(exc)
                 if "503" in msg or "Service Unavailable" in msg:
@@ -934,6 +1209,11 @@ def _judge_faithfulness(
     if not isinstance(claims, list):
         claims = []
 
+    # Defensive check: some judge models will "answer from context" even when the Answer is gibberish.
+    # We require that extracted claims be literal substrings of the Answer (whitespace/case-normalized).
+    answer_norm = _normalize_text(answer)
+    invalid_claims = 0
+
     normalized_claims: list[dict[str, str]] = []
     supported = 0
     contradicted = 0
@@ -948,6 +1228,15 @@ def _judge_faithfulness(
         evidence = str(claim.get("evidence", "")).strip()
         if not claim_text:
             continue
+
+        # Enforce that the claim is literally present in the answer.
+        claim_norm = _normalize_text(claim_text)
+        if claim_norm and answer_norm and claim_norm not in answer_norm:
+            invalid_claims += 1
+            # Treat as unclear and omit evidence to avoid leaking context-derived content.
+            verdict = "unclear"
+            evidence = ""
+
         if verdict not in {"supported", "contradicted", "not_found", "unclear"}:
             verdict = "unclear"
 
@@ -969,23 +1258,26 @@ def _judge_faithfulness(
         )
 
     # Faithfulness definition:
-    # - faithful = pure abstain (0 claims) OR at least one supported claim and no contradicted/not_found.
+    # - faithful = explicit abstention with 0 claims OR at least one supported claim and no contradicted/not_found.
     # - unclear claims do not alone make an answer unfaithful, but they contribute to "risky=True".
     # Empty model outputs are handled upstream and never reach this point.
     total_claims = len(normalized_claims)
     has_supported = supported > 0
     has_bad = (contradicted + not_found) > 0
 
+    is_abstention = _is_explicit_abstention(answer)
+
     if total_claims == 0:
         # Zero claims, but we know the answer was non-empty (empty answers are handled upstream).
-        # Interpret this as a pure abstention with no hallucinated claims.
-        faithful = True
+        # Only treat this as faithful if the answer explicitly abstains.
+        faithful = bool(is_abstention)
     else:
         # At least one supported claim, and no contradicted/not_found claims.
         faithful = bool(has_supported and not has_bad)
 
     # Define a "risky" flag: any contradicted / not_found / unclear claims.
-    risky = bool((contradicted + not_found + unclear) > 0)
+    # If we detected judge-invented claims, also mark as risky.
+    risky = bool((contradicted + not_found + unclear) > 0 or invalid_claims > 0)
 
     return {
         "claims": normalized_claims,
@@ -995,6 +1287,7 @@ def _judge_faithfulness(
             "contradicted": contradicted,
             "not_found": not_found,
             "unclear": unclear,
+            "invalid_claims": invalid_claims,
         },
         "overall": {
             "faithful": faithful,
@@ -1011,6 +1304,88 @@ def _safe_div(num: float, den: float) -> float:
 
 def _normalize_text(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").strip().lower())
+
+
+_ABSTAIN_PATTERNS = [
+    r"\bnot enough information\b",
+    r"\binsufficient information\b",
+    r"\bcontext does not (?:contain|provide|include|specify)\b",
+    r"\bprovided context does not\b",
+    r"\bcannot answer\b",
+    r"\bcan\s*'?t answer\b",
+    r"\bunable to answer\b",
+    r"\bunknown from the context\b",
+    r"\bnot specified in the context\b",
+]
+
+
+def _is_explicit_abstention(answer: str) -> bool:
+    text = _normalize_text(answer)
+    if not text:
+        return False
+    return any(re.search(pat, text) for pat in _ABSTAIN_PATTERNS)
+
+
+def _looks_like_gibberish(answer: str) -> bool:
+    """Heuristic detector for degenerate/failed generations.
+
+    Intentionally conservative: avoids flagging short answers, numeric-only answers,
+    or normal prose. Designed to catch repetitive junk like '###\nRetD\nD\n1...'.
+    """
+    raw = (answer or "").strip()
+    if not raw:
+        return False
+
+    # If the model is explicitly abstaining, that's not gibberish.
+    if _is_explicit_abstention(raw):
+        return False
+
+    # Very short outputs are handled elsewhere (empty) or treated as low-quality but not gibberish.
+    if len(raw) < 24:
+        return False
+
+    # If it's mostly hashes/markup lines, it's likely a failed decode.
+    lines = [ln.strip() for ln in raw.splitlines() if ln.strip()]
+    if lines:
+        hashy = sum(1 for ln in lines if ln.startswith("###") or ln == "###")
+        if (hashy / max(1, len(lines))) > 0.60 and len(lines) >= 6:
+            return True
+
+        # Repeated identical short lines (e.g. lots of 'RetD' or 'D')
+        short_lines = [ln for ln in lines if len(ln) <= 6]
+        if len(short_lines) >= 12:
+            most_common = max((short_lines.count(ln) for ln in set(short_lines)), default=0)
+            if _safe_div(most_common, len(short_lines)) >= 0.50:
+                return True
+
+    chars = raw
+    alnum = sum(1 for c in chars if c.isalnum())
+    letters = sum(1 for c in chars if c.isalpha())
+    non_ws = sum(1 for c in chars if not c.isspace())
+
+    # Extremely low alphabetic content is suspect unless the answer is a clear numeric table.
+    alpha_ratio = _safe_div(letters, max(1, non_ws))
+    if alpha_ratio < 0.10 and len(raw) > 80:
+        return True
+
+    # Token repetition / low diversity.
+    toks = _simple_tokens(raw)
+    if len(toks) >= 30:
+        uniq_ratio = _safe_div(len(set(toks)), len(toks))
+        if uniq_ratio < 0.25:
+            return True
+        from collections import Counter
+
+        top_freq = Counter(toks).most_common(1)[0][1]
+        if _safe_div(top_freq, len(toks)) > 0.40:
+            return True
+
+    # Mostly non-alphanumeric noise.
+    alnum_ratio = _safe_div(alnum, max(1, non_ws))
+    if alnum_ratio < 0.35 and len(raw) > 120:
+        return True
+
+    return False
 
 
 def _simple_tokens(text: str) -> list[str]:
@@ -1367,11 +1742,24 @@ def main() -> None:
     if args.max_queries and args.max_queries > 0:
         triples = triples[: args.max_queries]
 
+    def _looks_like_repo_id(name: str) -> bool:
+        return "/" in (name or "")
+
     rag_client = None
     answer_model_for_call = args.answer_model
     if args.answer_api_mode == "hf_endpoint":
         rag_client = _get_hf_endpoint_client(args.answer_endpoint_url, args.answer_endpoint_mode)
-        answer_model_for_call = args.answer_endpoint_model.strip() or args.answer_model
+        endpoint_model = args.answer_endpoint_model.strip()
+        # For OpenAI-compatible endpoints (/v1/chat/completions), the `model` field is often optional,
+        # and passing a local run label like "qwen3-6-27b-pks" will cause a 404 "model does not exist".
+        # Only send a model name if the user explicitly provided --answer-endpoint-model, or if the
+        # --answer-model looks like a real hub ID (org/name).
+        if endpoint_model:
+            answer_model_for_call = endpoint_model
+        elif _looks_like_repo_id(args.answer_model):
+            answer_model_for_call = args.answer_model
+        else:
+            answer_model_for_call = ""
     else:
         rag_client = _get_hf_client(args.answer_model)
 
@@ -1409,6 +1797,7 @@ def main() -> None:
             continue
 
         is_empty_answer = False
+        is_gibberish_answer = False
         try:
             t_retrieval_start = time.perf_counter()
             context = _retrieve_context_for_eval(
@@ -1432,12 +1821,14 @@ def main() -> None:
             # Treat truly empty model outputs as explicit failures.
             # These are NOT judged (to avoid being mis-scored as "faithful abstentions").
             is_empty_answer = (not answer or not str(answer).strip())
+            is_gibberish_answer = (not is_empty_answer) and _looks_like_gibberish(str(answer))
 
             ext_judge_ms = 0.0
             qwen_judge_ms = 0.0
 
-            if is_empty_answer:
+            if is_empty_answer or is_gibberish_answer:
                 # Minimal judgment payload (keeps downstream JSON structure compatible).
+                failure_note = "failed_empty_output" if is_empty_answer else "failed_gibberish_output"
                 ext = {
                     "claims": [],
                     "counts": {
@@ -1446,11 +1837,12 @@ def main() -> None:
                         "contradicted": 0,
                         "not_found": 0,
                         "unclear": 0,
+                        "invalid_claims": 0,
                     },
                     "overall": {
                         "faithful": False,
                         "risky": True,
-                        "notes": "failed_empty_output",
+                        "notes": failure_note,
                     },
                     "raw_judge_response": "",
                 }
@@ -1548,6 +1940,10 @@ def main() -> None:
             # Per-query provenance: indicates the "decision" came from empty-output handling.
             result["classifier_decision_source_external"] = "empty_answer"
             result["classifier_decision_source_qwen"] = "empty_answer"
+        elif is_gibberish_answer:
+            # Per-query provenance: indicates the "decision" came from degenerate-output handling.
+            result["classifier_decision_source_external"] = "gibberish_answer"
+            result["classifier_decision_source_qwen"] = "gibberish_answer"
         if args.include_context:
             result["retrieved_context"] = context
 

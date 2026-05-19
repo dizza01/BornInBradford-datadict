@@ -11,7 +11,7 @@ Usage:
     ../../.venv/bin/python eval/dataset_generator/generate_sft_splits_from_triples.py
 
     ../../.venv/bin/python eval/dataset_generator/generate_sft_splits_from_triples.py \
-        --input eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
+        --input eval/evaluation_datasets/triples/pdf_retrieval_triples_expanded.jsonl \
         --output-dir eval/evaluation_datasets/triples/train_dev_val \
         --train-ratio 0.30
 """

@@ -68,9 +68,9 @@ Usage
  ../../.venv/bin/python eval/run_abstention_eval_updated.py \
         --prediction-mode model_strict \
         --model-api-mode hf_vllm \
-        --model-endpoint-url https://fsjtjeq9afi5ktrh.us-east-1.aws.endpoints.huggingface.cloud/v1 \
+        --model-endpoint-url https://cfnnphkb5rmchz80.us-east-2.aws.endpoints.huggingface.cloud/v1 \
         --model-endpoint-model dizza01/Qwen2.5-14B-Instruct \
-        --max-queries-per-slice 50 \
+        --max-queries-per-slice 1 \
         --run-name abstention_dizza01_qwen25_14b_vllm
  
                

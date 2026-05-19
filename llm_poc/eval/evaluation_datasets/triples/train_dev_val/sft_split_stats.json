@@ -1,5 +1,5 @@
 {
-  "input_path": "eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl",
+  "input_path": "eval/evaluation_datasets/triples/pdf_retrieval_triples_expanded.jsonl",
   "output_dir": "eval/evaluation_datasets/triples/train_dev_val",
   "raw_rows": 300,
   "deduped_rows": 300,

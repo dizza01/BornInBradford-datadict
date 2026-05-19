@@ -28,6 +28,7 @@ Usage:
   python bib_research_assistant.py --model "microsoft/Phi-3-mini-4k-instruct" --query "What is BiB1000?"
 
   # Recommended models (all free via HF Inference API):
+  #   meta-llama/Llama-3.1-70B-Instruct    best in metrics so far
   #   Qwen/Qwen2.5-72B-Instruct            (default — best free quality)
   #   meta-llama/Llama-3.1-8B-Instruct     (good — accept licence on HF first)
   #   HuggingFaceH4/zephyr-7b-beta         (reliable, no sign-up needed)
@@ -81,7 +82,7 @@ VARIABLES_CSV = CSV_DIR / "all_variables_meta.csv"
 PDFS_DIR      = DATADICT_DIR / "papers"
 
 # ── LLM model default ─────────────────────────────────────────────────────────
-DEFAULT_MODEL = "Qwen/Qwen2.5-72B-Instruct"
+DEFAULT_MODEL = "meta-llama/Llama-3.1-70B-Instruct"
 
 # ── ChromaDB setup ─────────────────────────────────────────────────────────────
 def get_chroma_client():
@@ -1082,7 +1083,7 @@ def _check_index(client: chromadb.ClientAPI) -> bool:
         return False
 
 
-def _get_hf_client(model: str) -> Optional[Any]:
+def _get_hf_client(model: str, endpoint_url: str = "") -> Optional[Any]:
     try:
         from huggingface_hub import InferenceClient
     except ImportError:
@@ -1094,12 +1095,86 @@ def _get_hf_client(model: str) -> Optional[Any]:
         print("   export HF_TOKEN='hf_...'  or add it to .env")
         print("   Get a free token at: https://huggingface.co/settings/tokens")
         return None
+    from types import SimpleNamespace
+    import urllib.request
+    import urllib.error
+
+    endpoint_url = (endpoint_url or "").strip().rstrip("/")
+    # When endpoint_url is set, we talk to an OpenAI-compatible HF Inference Endpoint.
+    # For public Inference API (no endpoint_url), we use HF's chat_completion.
     client = InferenceClient(token=token)
+
+    def _endpoint_chat_completions(
+        endpoint: str,
+        model_name: str,
+        messages: list,
+        temperature: float,
+        max_tokens: int,
+    ):
+        url = f"{endpoint}/v1/chat/completions"
+        payload: dict[str, Any] = {
+            "messages": messages,
+            "temperature": float(temperature),
+            "max_tokens": int(max_tokens),
+        }
+        if model_name:
+            payload["model"] = model_name
+
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url=url,
+            data=body,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                raw = resp.read().decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as exc:
+            err_body = exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else ""
+            raise RuntimeError(
+                f"Client error '{exc.code} {exc.reason}' for url '{url}': {err_body}"
+            ) from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Endpoint request failed for url '{url}': {exc}") from exc
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON from endpoint: {raw[:500]}") from exc
+
+        choices = data.get("choices") or []
+        if not choices:
+            raise RuntimeError(f"No choices in endpoint response: {data}")
+        msg = (choices[0].get("message") or {})
+        content = (msg.get("content") or "")
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=SimpleNamespace(content=str(content)))],
+        )
+
     # Wrap in a namespace so the call site (client.chat.completions.create)
-    # stays identical to the OpenAI SDK
+    # stays identical to the OpenAI SDK.
     class _ChatCompletions:
-        def __init__(self, hf): self._hf = hf
+        def __init__(self, hf, endpoint: str):
+            self._hf = hf
+            self._endpoint = endpoint
+
         def create(self, model, messages, temperature=0.2, max_tokens=1500, **kw):
+            # For endpoints, use the OpenAI-compatible route.
+            if self._endpoint:
+                return _endpoint_chat_completions(
+                    endpoint=self._endpoint,
+                    model_name=model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+
+            # For the public HF Inference API, use chat_completion.
             return self._hf.chat_completion(
                 model=model,
                 messages=messages,
@@ -1107,12 +1182,15 @@ def _get_hf_client(model: str) -> Optional[Any]:
                 max_tokens=max_tokens,
             )
     class _Chat:
-        def __init__(self, hf): self.completions = _ChatCompletions(hf)
+        def __init__(self, hf, endpoint: str):
+            self.completions = _ChatCompletions(hf, endpoint)
     class _Wrapper:
-        def __init__(self, hf):
-            self.chat = _Chat(hf)
-            self._hf_raw = hf  # exposed for streaming via query_stream()
-    return _Wrapper(client)
+        def __init__(self, hf, endpoint: str):
+            self.chat = _Chat(hf, endpoint)
+            # Exposed for streaming via query_stream(). Endpoints are treated as non-streaming
+            # in this script (query_stream() will fall back to non-streamed completion).
+            self._hf_raw = None if endpoint else hf
+    return _Wrapper(client, endpoint_url)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1176,6 +1254,15 @@ def main():
         default=DEFAULT_MODEL,
         help=f"HuggingFace model name (default: {DEFAULT_MODEL})",
     )
+    parser.add_argument(
+        "--endpoint-url",
+        type=str,
+        default="",
+        help=(
+            "Optional Hugging Face Inference Endpoint base URL (OpenAI-compatible). "
+            "If set, requests are sent to <endpoint-url>/v1/chat/completions instead of the public Inference API."
+        ),
+    )
     args = parser.parse_args()
 
     if args.build:
@@ -1187,7 +1274,7 @@ def main():
         if not _check_index(client):
             return
 
-        llm_client = _get_hf_client(args.model)
+        llm_client = _get_hf_client(args.model, endpoint_url=args.endpoint_url)
 
         if not llm_client:
             return
