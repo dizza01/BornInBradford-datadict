@@ -1045,6 +1045,36 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
         },
     ]
 
+    # Custom handler mode: endpoint expects inputs={system, context, question} at the root.
+    #
+    # How to use:
+    #   python bib_research_assistant.py \
+    #     --endpoint-url https://...endpoints.huggingface.cloud \
+    #     --endpoint-mode handler_structured \
+    #     --endpoint-temperature 0.0 \
+    #     --endpoint-max-new-tokens 900 \
+    #     --query "..."
+    #
+    # Payload shape:
+    #   POST <endpoint-url>
+    #   {
+    #     "inputs": {"system": "...", "context": "...", "question": "..."},
+    #     "parameters": {...}
+    #   }
+    #   -> expects JSON with `generated_text`.
+    #
+    # Note: history is not included in this structured payload.
+    if getattr(llm_client, "endpoint_mode", "") == "handler_structured" and hasattr(
+        llm_client, "handler_structured_generate"
+    ):
+        answer = llm_client.handler_structured_generate(
+            system=SYSTEM_PROMPT,
+            context=context,
+            question=question,
+        )
+        answer = _strip_filler(str(answer or ""))
+        return answer
+
     response = llm_client.chat.completions.create(
         model=model,
         messages=messages,
@@ -1083,12 +1113,12 @@ def _check_index(client: chromadb.ClientAPI) -> bool:
         return False
 
 
-def _get_hf_client(model: str, endpoint_url: str = "") -> Optional[Any]:
-    try:
-        from huggingface_hub import InferenceClient
-    except ImportError:
-        print("❌ huggingface_hub not installed. Run: pip install huggingface_hub")
-        return None
+def _get_hf_client(
+    model: str,
+    endpoint_url: str = "",
+    endpoint_mode: str = "chat_completions",
+    handler_parameters: Optional[dict[str, Any]] = None,
+) -> Optional[Any]:
     token = os.getenv("HF_TOKEN", "") or os.getenv("HUGGINGFACE_TOKEN", "")
     if not token:
         print("⚠️  HF_TOKEN not set.")
@@ -1100,9 +1130,22 @@ def _get_hf_client(model: str, endpoint_url: str = "") -> Optional[Any]:
     import urllib.error
 
     endpoint_url = (endpoint_url or "").strip().rstrip("/")
-    # When endpoint_url is set, we talk to an OpenAI-compatible HF Inference Endpoint.
+    endpoint_mode = (endpoint_mode or "").strip() or "chat_completions"
+    handler_parameters = dict(handler_parameters or {})
+    # When endpoint_url is set:
+    # - endpoint_mode=chat_completions: call <endpoint_url>/v1/chat/completions (OpenAI-compatible)
+    # - endpoint_mode=handler_structured: POST to <endpoint_url> with inputs={system,context,question}
     # For public Inference API (no endpoint_url), we use HF's chat_completion.
-    client = InferenceClient(token=token)
+    #
+    # NOTE: handler_structured does not require huggingface_hub because it posts directly using urllib.
+    client = None
+    if not endpoint_url or endpoint_mode == "chat_completions":
+        try:
+            from huggingface_hub import InferenceClient
+        except ImportError:
+            print("❌ huggingface_hub not installed. Run: pip install huggingface_hub")
+            return None
+        client = InferenceClient(token=token)
 
     def _endpoint_chat_completions(
         endpoint: str,
@@ -1156,6 +1199,66 @@ def _get_hf_client(model: str, endpoint_url: str = "") -> Optional[Any]:
             choices=[SimpleNamespace(message=SimpleNamespace(content=str(content)))],
         )
 
+    def _endpoint_handler_structured(
+        endpoint: str,
+        system: str,
+        context: str,
+        question: str,
+        parameters: dict[str, Any],
+    ) -> str:
+        # This matches common HF custom handler schemas that accept a structured `inputs` dict
+        # and return `generated_text`.
+        url = endpoint
+        payload: dict[str, Any] = {
+            "inputs": {
+                "system": str(system),
+                "context": str(context),
+                "question": str(question),
+            },
+            "parameters": dict(parameters or {}),
+        }
+
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url=url,
+            data=body,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                raw = resp.read().decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as exc:
+            err_body = exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else ""
+            raise RuntimeError(
+                f"Client error '{exc.code} {exc.reason}' for url '{url}': {err_body}"
+            ) from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Endpoint request failed for url '{url}': {exc}") from exc
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON from endpoint: {raw[:500]}") from exc
+
+        if isinstance(data, dict) and isinstance(data.get("generated_text"), str):
+            return str(data["generated_text"]).strip()
+        if (
+            isinstance(data, list)
+            and data
+            and isinstance(data[0], dict)
+            and isinstance(data[0].get("generated_text"), str)
+        ):
+            return str(data[0]["generated_text"]).strip()
+
+        raise RuntimeError(
+            f"Unexpected handler response shape (no generated_text): {type(data).__name__}"
+        )
+
     # Wrap in a namespace so the call site (client.chat.completions.create)
     # stays identical to the OpenAI SDK.
     class _ChatCompletions:
@@ -1174,6 +1277,11 @@ def _get_hf_client(model: str, endpoint_url: str = "") -> Optional[Any]:
                     max_tokens=max_tokens,
                 )
 
+            if not self._hf:
+                raise RuntimeError(
+                    "huggingface_hub is required for public Inference API calls (no --endpoint-url)."
+                )
+
             # For the public HF Inference API, use chat_completion.
             return self._hf.chat_completion(
                 model=model,
@@ -1185,12 +1293,40 @@ def _get_hf_client(model: str, endpoint_url: str = "") -> Optional[Any]:
         def __init__(self, hf, endpoint: str):
             self.completions = _ChatCompletions(hf, endpoint)
     class _Wrapper:
-        def __init__(self, hf, endpoint: str):
+        def __init__(self, hf, endpoint: str, endpoint_mode: str, handler_parameters: dict[str, Any]):
             self.chat = _Chat(hf, endpoint)
             # Exposed for streaming via query_stream(). Endpoints are treated as non-streaming
             # in this script (query_stream() will fall back to non-streamed completion).
             self._hf_raw = None if endpoint else hf
-    return _Wrapper(client, endpoint_url)
+            self.endpoint_mode = endpoint_mode
+            self._endpoint = endpoint
+            self._handler_parameters = dict(handler_parameters or {})
+
+        def handler_structured_generate(self, system: str, context: str, question: str) -> str:
+            if not self._endpoint:
+                raise RuntimeError("handler_structured_generate requires --endpoint-url")
+
+            # `params` become the handler payload's `parameters` dict.
+            # Defaults are aligned with the script's usual generation settings.
+            params = {
+                "use_system_role": bool(self._handler_parameters.get("use_system_role", False)),
+                "do_sample": bool(self._handler_parameters.get("do_sample", False)),
+                "temperature": float(self._handler_parameters.get("temperature", 0.2)),
+                "top_p": float(self._handler_parameters.get("top_p", 1.0)),
+                "repetition_penalty": float(self._handler_parameters.get("repetition_penalty", 1.05)),
+                "no_repeat_ngram_size": int(self._handler_parameters.get("no_repeat_ngram_size", 0)),
+                "max_new_tokens": int(self._handler_parameters.get("max_new_tokens", 900)),
+                "max_input_tokens": int(self._handler_parameters.get("max_input_tokens", 4096)),
+                "debug": bool(self._handler_parameters.get("debug", False)),
+            }
+            return _endpoint_handler_structured(
+                endpoint=self._endpoint,
+                system=system,
+                context=context,
+                question=question,
+                parameters=params,
+            )
+    return _Wrapper(client, endpoint_url, endpoint_mode=endpoint_mode, handler_parameters=handler_parameters)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1263,6 +1399,28 @@ def main():
             "If set, requests are sent to <endpoint-url>/v1/chat/completions instead of the public Inference API."
         ),
     )
+
+    parser.add_argument(
+        "--endpoint-mode",
+        type=str,
+        choices=["chat_completions", "handler_structured"],
+        default="chat_completions",
+        help=(
+            "How to call the endpoint when --endpoint-url is set. "
+            "chat_completions uses /v1/chat/completions; handler_structured POSTs to the endpoint root with inputs={system,context,question}."
+        ),
+    )
+    # Handler parameter passthrough (only used for --endpoint-mode handler_structured).
+    # These map directly into the JSON payload under the `parameters` key.
+    parser.add_argument("--endpoint-max-new-tokens", type=int, default=900)
+    parser.add_argument("--endpoint-temperature", type=float, default=0.2)
+    parser.add_argument("--endpoint-top-p", type=float, default=1.0)
+    parser.add_argument("--endpoint-do-sample", action="store_true")
+    parser.add_argument("--endpoint-repetition-penalty", type=float, default=1.05)
+    parser.add_argument("--endpoint-no-repeat-ngram-size", type=int, default=0)
+    parser.add_argument("--endpoint-max-input-tokens", type=int, default=4096)
+    parser.add_argument("--endpoint-use-system-role", action="store_true")
+    parser.add_argument("--endpoint-debug", action="store_true")
     args = parser.parse_args()
 
     if args.build:
@@ -1274,7 +1432,24 @@ def main():
         if not _check_index(client):
             return
 
-        llm_client = _get_hf_client(args.model, endpoint_url=args.endpoint_url)
+        endpoint_handler_parameters: dict[str, Any] = {
+            "max_new_tokens": int(args.endpoint_max_new_tokens),
+            "temperature": float(args.endpoint_temperature),
+            "top_p": float(args.endpoint_top_p),
+            "do_sample": bool(args.endpoint_do_sample),
+            "repetition_penalty": float(args.endpoint_repetition_penalty),
+            "no_repeat_ngram_size": int(args.endpoint_no_repeat_ngram_size),
+            "max_input_tokens": int(args.endpoint_max_input_tokens),
+            "use_system_role": bool(args.endpoint_use_system_role),
+            "debug": bool(args.endpoint_debug),
+        }
+
+        llm_client = _get_hf_client(
+            args.model,
+            endpoint_url=args.endpoint_url,
+            endpoint_mode=args.endpoint_mode,
+            handler_parameters=endpoint_handler_parameters,
+        )
 
         if not llm_client:
             return

@@ -4,7 +4,7 @@
 #
 # Run this script whenever source data changes:
 #   • New data release (CSVs updated)
-#   • New papers added to bib_papers_metadata.json
+#   • New papers added to papers/ or bib_papers_metadata.json
 #   • New data dictionary HTML pages added to docs/
 #
 # Usage:
@@ -31,9 +31,10 @@ echo "Using Python: $PYTHON"
 echo ""
 
 # ── Check required packages ───────────────────────────────────────────────────
-if ! "$PYTHON" -c "import chromadb, pandas, openai" 2>/dev/null; then
+# PyMuPDF (fitz) is required for full-text PDF indexing.
+if ! "$PYTHON" -c "import chromadb, pandas, dotenv, fitz" 2>/dev/null; then
     echo "📦 Installing required packages..."
-    "$PYTHON" -m pip install chromadb openai pandas python-dotenv
+    "$PYTHON" -m pip install chromadb pandas python-dotenv pymupdf
     echo ""
 fi
 
@@ -51,5 +52,5 @@ cd "$SCRIPT_DIR"
 
 echo ""
 echo "✅ Done. To query the index run:"
-echo "   export OPENAI_API_KEY='sk-...'"
+echo "   export HF_TOKEN='hf_...'"
 echo "   $PYTHON bib_research_assistant.py --chat"

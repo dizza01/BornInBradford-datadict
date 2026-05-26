@@ -1,0 +1,178 @@
+{
+  "n_queries_attempted": 1,
+  "n_queries_succeeded": 1,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "llama-3-1-8b-bib-grounded-sf-tfx",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://riu8fhweetx0zk2a.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "",
+    "answer_endpoint_mode": "handler_messages",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "answer_temperature": 0.0,
+    "answer_top_p": 0.9,
+    "answer_repetition_penalty": 1.1,
+    "answer_no_repeat_ngram_size": 6,
+    "answer_max_input_tokens": 1800,
+    "answer_endpoint_extra_parameters_json": "",
+    "answer_system_prompt": "",
+    "answer_user_message_mode": "rag",
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": true,
+    "max_queries": 1,
+    "evaluated_at": "2026-05-21T02:33:10"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 1,
+      "succeeded_queries": 1,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 1,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 1,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 1,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 1,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 1,
+      "faithful_label_agreement": 1.0,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 1,
+      "answer_relevance": 0.08333333333333333,
+      "completeness": 0.15789473684210525,
+      "conciseness": 0.1310344827586207,
+      "answer_correctness_token_f1": 0.036585365853658534,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 43340.754124801606,
+      "latency_total_p95_ms": 43340.754124801606,
+      "latency_retrieval_avg_ms": 1985.8478328678757,
+      "latency_answer_avg_ms": 41354.90629193373,
+      "avg_retrieved_tokens": 1038.0,
+      "avg_answer_tokens": 145.0,
+      "answer_tokens_per_retrieved_token": 0.1396917148362235
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "q_1",
+      "question": "In the paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in Bradford dataset\" (2024), what is the relationship between prenatal alcohol exposure and early education outcomes?",
+      "reference_answer": "The study shows a significant association between prenatal alcohol exposure and adverse outcomes in a child’s early education.",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+      "rag_answer": "###  202- 3**\n###  3- 202**\n###  202—\n###  202— (202)\n### 3— (202)**\n###  (202—)\n### 3—  (202—)\n   ...\n###  202—  \n###\n###  (202): 3—\n(D) 202—\n###\n###  202**\n###\n###  3—\n###   202—\n```  202—\n``”\n###  202—”\n### 3—\n###\n###\n  3—\n  202— 3**\n  202—\n3—\n###\n—\n  3— 202\n###\n###\n- 1**\n- 202**\n- 1\n- 202**\n- ```\n\n- 1**\n(3)\n- 1\n- (3) - 1\n- 3—\n- 202\n (N)\n- Ret 1\n- 2\n- 1\n- The N- 1**\n  202— 1\n- Ret\n- 1—\n- Ret** (2—” “ ”— 1” (2—)\n- 1\n  (2)—\n- Ret” 1” (2) [1](2—Ret**1—(2)** (1) [N]\n- 1\n- Ret** (1) [N]—\n- Ret**—\n-1\n-2\n-1\n- 2—\n-1\n-D\n-1\n- Ret\n  - 1\n-2—Ret\n-1\n-1—Ret</2—Ret—1—(2) )\n-1—S\n###\n-1—Ret—(1) and the S\n-1\n-3\n-1\n-9\n-1\n-4\n-1\n-5\n-1\n- S\n-1\nRet—S\n-1\n- The\n-2\n-3— 1—(ret)\n-1—(the—\n-1—\n-1—(1—S—(1—2—S—(1) [S—-2—(1—S-202—S—Ret—S—S—1—S—\n[ technologies—(1—S\n[Un—S—(",
+      "answer_relevance": 0.08333333333333333,
+      "completeness": 0.15789473684210525,
+      "conciseness": 0.1310344827586207,
+      "answer_correctness_token_f1": 0.036585365853658534,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1038,
+      "retrieved_tokens_original": 1038,
+      "retrieved_context_truncated": false,
+      "answer_tokens": 145,
+      "latency_retrieval_ms": 1985.8478328678757,
+      "latency_answer_ms": 41354.90629193373,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 43340.754124801606,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Exact Registry Matches\n\n[PAPER TITLE NOT IN REGISTRY: 'Associations between prenatal alcohol exposure and early education outcomes a ma' not found in BiB paper index]\n\n## Relevant Published Papers\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nic Health, University of Salford, Salford, UK; 2Psychology\nDepartment Bradford University, Bradford, UK and 3Centre for Applied Education Research, Bradford, UK\nAbstract\nPrenatal alcohol exposure (PAE) is associated with cognitive, behavi\n\n**Associations between prenatal alcohol exposure and early education outcomes: a matched controls study using the born in ** (2024) — McCarthy Robyn, Cook Penny A, Pink Joshua, Eddy Lucy H\nAbstract: Prenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments throughout the lifespan of affected individuals, but there is limited evidence on how early this impact can be identified through routinely collected childhood data. This paper explores the relationship between PAE and the Early Years Foundation Stage Profile (EYFSP), a statutory teacher-based summative assessment of early development in relation to learning goals. This analysis uses the Born in Bradford dataset, a UK based cohort (n = 13,959; full dataset), which collected self-r\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nlation in Bradford, with a higher proportion\nof younger people.\nReported South Asian ethnicity is associated in the UK with\nabstinence from alcohol.24,40 In our dataset, for each drinking\npattern, more than 80% of mothers who report that \n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nPublic Health.\n2016; 16(1), 683.\n21. Paul SE, Hatoum AS, Fine JD, et al. Associations between prenatal cannabis\nexposure and childhood outcomes: results from the ABCD study. JAMA\nPsychiat. 2021; 78(1), 64–76.\n22. Long X, Lebel C. Evaluati\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\ne EYFSP has also been used to study the relationship between early\ndevelopment and long-term educational attainment,12 as well as to explore the influence of\nfactors such as socio-economic status, parental involvement, and the quality of \n\n\n## Relevant Variables\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0drpreg\nLabel: Mother drank alcohol during pregnancy or 3 months before\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't remember]\nNon-missing records: 11369\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcinpreg\nLabel: Do you drink any alcohol during this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 NT]\nNon-missing records: 2553\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcbeforepreg\nLabel: Did you drink any alcohol during the three months before this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 Don't know] [5 NT]\nNon-missing records: 2548\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0drfr3m\nLabel: Mother drank alcohol in the first 3 months of pregnancy\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes, once a week] [2 Yes, occasionally] [3 Yes, not specified] [4 No] [5 Don't remember]\nNon-missing records: 3480\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamx3b\nLabel: Maximum units of other alcohol at one time in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 608\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamxf3\nLabel: Maximum units of other alcohol at one time in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 185\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0dr3mb4\nLabel: Mother drank alcohol 3 months before pregnancy\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes, once a week] [2 Yes, occasionally] [3 Yes, not specified] [4 No] [5 Don't remember]\nNon-missing records: 3472\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaav3b\nLabel: Average units of other alcohol per week in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 613\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaavf3\nLabel: Average units of other alcohol per week in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 186\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod03_dr23\nVariable: awb5_2y_alcohol_lctn___1\nLabel: I got alcohol from parents to drink with them in past week\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: I got my alcohol from my parents to drink with them]\nNon-missing records: 2026\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_CohortInfo.preg_info\nDisplay name: Pregnancy information\nProject: BiB_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 10 | Rows: 13776 | Entities: 12453\nLast updated: 2024-05-14 09:12:26\n```\n\n```\nTable: BiB_Pregnancy.eclipse_preg\nDisplay name: Eclipse pregnancy record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 35 | Rows: 13361 | Entities: 12075\nLast updated: 2024-05-14 09:13:56\n```\n\n```\nTable: BiB_Pregnancy.eclipse_baby\nDisplay name: Eclipse neonatal record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 29 | Rows: 13525 | Entities: 13525\nLast updated: 2024-05-14 09:13:55\n```\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nDisplay name: Maternity records pre-BiB pregnancy\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 13 | Rows: 10642 | Entities: 5611\nLast updated: 2024-05-14 09:14:05\n```\n\n```\nTable: BiBBS_CohortInfo.pregnancy\nDisplay name: Recruited pregnancy information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 15 | Rows: 2626 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n"
+    }
+  ]
+}

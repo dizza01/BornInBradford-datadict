@@ -158,9 +158,20 @@ Usage
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
         --judge-retries 2 \
-        --max-queries 10 \
         --include-context \
-        --run-name faithfulness_llama-3-1-8b-bib-grounded-sf-tfx
+        --run-name faithfulness_llama-3-1-8b-bib-grounded-sf-tfx-endpointmode-nots
+
+     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
+        --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
+        --answer-model llama-3-1-8b-bib-grounded-sf-tfx \
+        --answer-api-mode hf_endpoint \
+        --answer-endpoint-url https://riu8fhweetx0zk2a.us-east-1.aws.endpoints.huggingface.cloud \
+        --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
+        --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --answer-endpoint-mode chat_completions \
+        --judge-retries 2 \
+        --include-context \
+        --run-name faithfulness_llama-3-1-8b-bib-grounded-sf-tfx-chatcompletions-endpointmode
 
     ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
@@ -452,11 +463,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--answer-endpoint-mode",
         type=str,
-        choices=["text_generation", "chat_completions"],
+        choices=["text_generation", "chat_completions", "handler_messages", "handler_structured"],
         default="text_generation",
         help=(
             "How to call a Hugging Face endpoint when --answer-api-mode=hf_endpoint. "
-            "text_generation sends a flat prompt; chat_completions sends system/user messages."
+            "text_generation sends a flat prompt; chat_completions sends system/user messages to /v1/chat/completions; "
+            "handler_messages POSTs messages to the endpoint root using the custom handler schema and reads generated_text; "
+            "handler_structured POSTs to the endpoint root using inputs={system,context,question} and reads generated_text."
         ),
     )
     parser.add_argument(
@@ -506,6 +519,64 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=900,
         help="Maximum tokens for generated RAG answers.",
+    )
+
+    # Optional generation controls for Hugging Face endpoints with custom handlers.
+    #
+    # Usage (structured handler payload):
+    #   --answer-api-mode hf_endpoint
+    #   --answer-endpoint-url https://...endpoints.huggingface.cloud
+    #   --answer-endpoint-mode handler_structured
+    #
+    # These flags are forwarded to the handler request payload's `parameters` dict.
+    # Your handler may ignore/cap some of them depending on how it's implemented.
+    parser.add_argument(
+        "--answer-temperature",
+        type=float,
+        default=0.2,
+        help="Answer generation temperature (used by chat_completions and handler_* endpoint modes).",
+    )
+    parser.add_argument(
+        "--answer-top-p",
+        type=float,
+        default=1.0,
+        help="Answer generation top_p (only relevant when sampling is enabled).",
+    )
+    parser.add_argument(
+        "--answer-do-sample",
+        action="store_true",
+        help="Enable sampling for handler-based endpoints (do_sample=true).",
+    )
+    parser.add_argument(
+        "--answer-repetition-penalty",
+        type=float,
+        default=1.05,
+        help="Repetition penalty for handler-based endpoints.",
+    )
+    parser.add_argument(
+        "--answer-no-repeat-ngram-size",
+        type=int,
+        default=0,
+        help="no_repeat_ngram_size for handler-based endpoints.",
+    )
+    parser.add_argument(
+        "--answer-max-input-tokens",
+        type=int,
+        default=4096,
+        help="Maximum input tokens for handler-based endpoints (max_input_tokens).",
+    )
+    parser.add_argument(
+        "--answer-endpoint-use-system-role",
+        action="store_true",
+        help=(
+            "For handler-based endpoints: keep an explicit system role instead of merging into the first user message. "
+            "Maps to parameters.use_system_role=true."
+        ),
+    )
+    parser.add_argument(
+        "--answer-endpoint-debug",
+        action="store_true",
+        help="For handler-based endpoints: request debug fields (prompt/messages/token counts).",
     )
     parser.add_argument(
         "--sleep-seconds",
@@ -760,13 +831,6 @@ def _validate_models(answer_model: str, external_judge_model: str, qwen_judge_mo
 
 
 def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
-    try:
-        from huggingface_hub import InferenceClient
-    except ImportError as exc:
-        raise RuntimeError(
-            "huggingface_hub is required for endpoint mode. Install with: pip install huggingface_hub"
-        ) from exc
-
     token = os.getenv("HF_TOKEN", "") or os.getenv("HUGGINGFACE_TOKEN", "")
     if not token:
         raise RuntimeError(
@@ -776,7 +840,17 @@ def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
     if not base_url.strip():
         raise RuntimeError("--answer-endpoint-url is required when --answer-api-mode=hf_endpoint")
 
-    client = InferenceClient(model=base_url.strip(), token=token)
+    # NOTE: handler_* modes do not use huggingface_hub at all; they POST directly to the endpoint.
+    hf_client = None
+    if (endpoint_mode or "").strip() not in {"handler_messages", "handler_structured"}:
+        try:
+            from huggingface_hub import InferenceClient
+        except ImportError as exc:
+            raise RuntimeError(
+                "huggingface_hub is required for --answer-endpoint-mode=text_generation or chat_completions. "
+                "Install with: pip install huggingface_hub"
+            ) from exc
+        hf_client = InferenceClient(model=base_url.strip(), token=token)
 
     class _Wrapper:
         def __init__(self, hf_client, mode: str):
@@ -787,6 +861,11 @@ def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
 
         
         def generate(self, prompt, temperature=0.2, max_tokens=1500, **kw):
+            if self._hf is None:
+                raise RuntimeError(
+                    "Endpoint client was created without huggingface_hub because --answer-endpoint-mode=handler_messages. "
+                    "Use handler_messages_generate() for this mode."
+                )
             # Hugging Face Inference Endpoints text-generation expects a flat prompt string.
             # (Some older custom handlers accepted chat-style inputs; those should use
             # endpoint_mode=chat_completions instead.)
@@ -878,7 +957,157 @@ def _get_hf_endpoint_client(base_url: str, endpoint_mode: str) -> Any:
             content = (msg.get("content") or "")
             return str(content).strip()
 
-    return _Wrapper(client, endpoint_mode)
+        def handler_messages_generate(
+            self,
+            messages: list[dict[str, str]],
+            temperature: float = 0.2,
+            max_tokens: int = 1500,
+            parameters: dict[str, Any] | None = None,
+        ) -> str:
+            """Call an endpoint root using the custom handler schema.
+
+            Expected schema (as used in Colab experiments):
+              POST <endpoint-base-url>
+              {
+                "inputs": [ {"role": "system", "content": "..."}, ... ],
+                "parameters": {"max_new_tokens": ..., "temperature": ...}
+              }
+
+            Returns the "generated_text" field from the JSON response.
+            """
+            try:
+                import requests
+            except ImportError as exc:
+                raise RuntimeError(
+                    "The 'requests' package is required for --answer-endpoint-mode=handler_messages. "
+                    "Install it with: pip install requests"
+                ) from exc
+
+            url = self.base_url
+            params: dict[str, Any] = {
+                "temperature": float(temperature),
+                "max_new_tokens": int(max_tokens),
+            }
+            if isinstance(parameters, dict):
+                # Allow caller overrides/additions.
+                params.update(parameters)
+
+            payload: dict[str, Any] = {
+                "inputs": messages,
+                "parameters": params,
+            }
+
+            resp = requests.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {self.token}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=120,
+            )
+            if resp.status_code >= 400:
+                raise RuntimeError(
+                    f"Endpoint handler request failed: {resp.status_code} {resp.reason}: {resp.text[:1000]}"
+                )
+
+            try:
+                data = resp.json()
+            except Exception as exc:
+                raise RuntimeError(f"Invalid JSON from endpoint handler: {resp.text[:1000]}") from exc
+
+            # Most handlers return a dict with generated_text.
+            if isinstance(data, dict) and isinstance(data.get("generated_text"), str):
+                return str(data["generated_text"]).strip()
+            # Some handlers return a list of {generated_text: ...}
+            if isinstance(data, list) and data and isinstance(data[0], dict) and isinstance(data[0].get("generated_text"), str):
+                return str(data[0]["generated_text"]).strip()
+
+            raise RuntimeError(
+                f"Unexpected handler response shape (no generated_text): {type(data).__name__}"
+            )
+
+        def handler_structured_generate(
+            self,
+            system: str,
+            context: str,
+            question: str,
+            temperature: float = 0.2,
+            max_tokens: int = 1500,
+            parameters: dict[str, Any] | None = None,
+        ) -> str:
+            """Call an endpoint root using a structured handler schema.
+
+                        Expected schema (matches custom handler.py patterns):
+              POST <endpoint-base-url>
+              {
+                "inputs": {"system": "...", "context": "...", "question": "..."},
+                "parameters": {"max_new_tokens": ..., "temperature": ...}
+              }
+
+            Returns the "generated_text" field from the JSON response.
+            """
+            try:
+                import requests
+            except ImportError as exc:
+                raise RuntimeError(
+                    "The 'requests' package is required for --answer-endpoint-mode=handler_structured. "
+                    "Install it with: pip install requests"
+                ) from exc
+
+            url = self.base_url
+            params: dict[str, Any] = {
+                "temperature": float(temperature),
+                "max_new_tokens": int(max_tokens),
+            }
+            if isinstance(parameters, dict):
+                params.update(parameters)
+
+            payload: dict[str, Any] = {
+                "inputs": {
+                    "system": str(system),
+                    "context": str(context),
+                    "question": str(question),
+                },
+                "parameters": params,
+            }
+
+            resp = requests.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {self.token}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=120,
+            )
+            if resp.status_code >= 400:
+                raise RuntimeError(
+                    f"Endpoint handler request failed: {resp.status_code} {resp.reason}: {resp.text[:1000]}"
+                )
+
+            try:
+                data = resp.json()
+            except Exception as exc:
+                raise RuntimeError(
+                    f"Invalid JSON from endpoint handler: {resp.text[:1000]}"
+                ) from exc
+
+            if isinstance(data, dict) and isinstance(data.get("generated_text"), str):
+                return str(data["generated_text"]).strip()
+            if (
+                isinstance(data, list)
+                and data
+                and isinstance(data[0], dict)
+                and isinstance(data[0].get("generated_text"), str)
+            ):
+                return str(data[0]["generated_text"]).strip()
+
+            raise RuntimeError(
+                f"Unexpected handler response shape (no generated_text): {type(data).__name__}"
+            )
+
+    return _Wrapper(hf_client, endpoint_mode)
 
 
 def _generate_rag_answer(
@@ -888,6 +1117,9 @@ def _generate_rag_answer(
     model: str,
     max_tokens: int,
     allow_endpoint_chat_fallback: bool = False,
+    # handler_parameters is forwarded verbatim into the handler payload's `parameters`.
+    handler_parameters: dict[str, Any] | None = None,
+    temperature: float = 0.2,
 ) -> str:
     # If llm_client has 'generate', use standard HF endpoint; else, use chat.completions.create
     if hasattr(llm_client, "generate"):
@@ -915,7 +1147,7 @@ def _generate_rag_answer(
                 )
             )
 
-        if endpoint_mode == "chat_completions":
+        if endpoint_mode in {"chat_completions", "handler_messages", "handler_structured"}:
             messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {
@@ -927,6 +1159,61 @@ def _generate_rag_answer(
                 },
             ]
 
+            # handler_structured is used when the endpoint handler requires a structured `inputs` dict
+            # rather than a chat messages list.
+            if endpoint_mode == "handler_structured":
+                max_attempts = 6
+                base_delay = 1.0
+                for attempt in range(1, max_attempts + 1):
+                    try:
+                        answer = llm_client.handler_structured_generate(
+                            system=SYSTEM_PROMPT,
+                            context=context,
+                            question=question,
+                            temperature=float(temperature),
+                            max_tokens=max_tokens,
+                            parameters=handler_parameters,
+                        )
+                        return _strip_filler(answer).strip()
+                    except Exception as exc:
+                        msg = str(exc)
+                        if "503" in msg or "Service Unavailable" in msg:
+                            if attempt < max_attempts:
+                                wait = base_delay * (2 ** (attempt - 1))
+                                print(
+                                    f"[WARN] 503 Service Unavailable, retrying in {wait:.1f}s (attempt {attempt}/{max_attempts})..."
+                                )
+                                time.sleep(wait)
+                                continue
+                        raise
+
+            if endpoint_mode == "handler_messages":
+                # The endpoint is expected to support a custom handler schema at the root.
+                # This is the only mode that matches the Colab payload:
+                #   POST <base_url> {"inputs": messages, "parameters": {...}}
+                max_attempts = 6
+                base_delay = 1.0
+                for attempt in range(1, max_attempts + 1):
+                    try:
+                        answer = llm_client.handler_messages_generate(
+                            messages=messages,
+                            temperature=float(temperature),
+                            max_tokens=max_tokens,
+                            parameters=handler_parameters,
+                        )
+                        return _strip_filler(answer).strip()
+                    except Exception as exc:
+                        msg = str(exc)
+                        if "503" in msg or "Service Unavailable" in msg:
+                            if attempt < max_attempts:
+                                wait = base_delay * (2 ** (attempt - 1))
+                                print(
+                                    f"[WARN] 503 Service Unavailable, retrying in {wait:.1f}s (attempt {attempt}/{max_attempts})..."
+                                )
+                                time.sleep(wait)
+                                continue
+                        raise
+
             max_attempts = 6
             base_delay = 1.0
             for attempt in range(1, max_attempts + 1):
@@ -934,7 +1221,7 @@ def _generate_rag_answer(
                     answer = llm_client.chat_generate(
                         messages=messages,
                         model=model,
-                        temperature=0.2,
+                        temperature=float(temperature),
                         max_tokens=max_tokens,
                     )
                     return _strip_filler(answer).strip()
@@ -993,7 +1280,7 @@ def _generate_rag_answer(
             try:
                 response = llm_client.generate(
                     prompt=prompt,
-                    temperature=0.2,
+                    temperature=float(temperature),
                     max_tokens=max_tokens,
                 )
                 answer = _normalize_endpoint_generation_response(response)
@@ -1028,7 +1315,7 @@ def _generate_rag_answer(
                     answer = llm_client.chat_generate(
                         messages=messages,
                         model=model,
-                        temperature=0.2,
+                        temperature=float(temperature),
                         max_tokens=max_tokens,
                     )
                     return _strip_filler(answer).strip()
@@ -1057,7 +1344,7 @@ def _generate_rag_answer(
         response = llm_client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=0.2,
+            temperature=float(temperature),
             max_tokens=max_tokens,
         )
         answer = response.choices[0].message.content or ""
@@ -1782,6 +2069,24 @@ def main() -> None:
     print(f"⚖️  Primary judge (external): {args.external_judge_model}")
     print(f"🧪 Sensitivity judge (Qwen): {args.qwen_judge_model}")
 
+    # Parameters forwarded to custom endpoint handlers (handler_* modes).
+    #
+    # If you run with:
+    #   --answer-endpoint-mode handler_messages
+    #   or
+    #   --answer-endpoint-mode handler_structured
+    # these values become the `parameters` dict in the POST body.
+    # Note: some handlers may ignore/cap certain values (e.g., max_new_tokens).
+    answer_handler_parameters: dict[str, Any] = {
+        "use_system_role": bool(args.answer_endpoint_use_system_role),
+        "do_sample": bool(args.answer_do_sample),
+        "top_p": float(args.answer_top_p),
+        "repetition_penalty": float(args.answer_repetition_penalty),
+        "no_repeat_ngram_size": int(args.answer_no_repeat_ngram_size),
+        "max_input_tokens": int(args.answer_max_input_tokens),
+        "debug": bool(args.answer_endpoint_debug),
+    }
+
     per_query: list[dict[str, Any]] = []
     external_judgments: list[dict[str, Any]] = []
     qwen_judgments: list[dict[str, Any]] = []
@@ -1816,6 +2121,8 @@ def main() -> None:
                 model=answer_model_for_call,
                 max_tokens=args.answer_max_tokens,
                 allow_endpoint_chat_fallback=args.allow_endpoint_chat_fallback,
+                handler_parameters=answer_handler_parameters,
+                temperature=float(args.answer_temperature),
             )
             answer_ms = (time.perf_counter() - t_answer_start) * 1000.0
             # Treat truly empty model outputs as explicit failures.

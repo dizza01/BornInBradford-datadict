@@ -1,6 +1,6 @@
 # BiB Research Assistant
 
-An AI-powered research assistant for the **Born in Bradford (BiB)** longitudinal cohort dataset. It combines a local vector database of 26,000+ variables, 289 tables, and 500 paper abstracts, 100+ BiB research papers with a HuggingFace language model to answer natural-language questions about the dataset.
+An AI-powered research assistant for the **Born in Bradford (BiB)** longitudinal cohort dataset. It combines a local vector database of 26,000+ variables, 289 tables, 500 paper abstracts, and 174 local research paper PDFs with a HuggingFace language model to answer natural-language questions about the dataset.
 
 ---
 
@@ -42,7 +42,7 @@ cd BornInBradford-datadict/llm_poc
 ../../.venv/bin/python bib_research_assistant.py --build
 ```
 
-This reads the CSVs and HTML files, embeds everything locally using `all-MiniLM-L6-v2`, and saves the index to `.chroma_db/`. To do a clean rebuild from scratch at any time run `bash build_index.sh` instead.
+This reads the BiB variable/table metadata from the CSVs, enriches variables from the HTML data-dictionary pages, indexes paper abstracts from `bib_papers_metadata.json`, and adds full-text chunks from local research paper PDFs in `papers/`. It embeds everything locally using `all-MiniLM-L6-v2` and saves the index to `.chroma_db/`. To do a clean rebuild from scratch at any time run `bash build_index.sh` instead.
 
 ---
 
@@ -64,7 +64,7 @@ cd BornInBradford-datadict/llm_poc
 You should see:
 
 ```
-✅ Index ready — 500 papers | 26104 variables | 289 tables
+✅ Index ready — 500 abstracts + 12345 PDF chunks | 26104 variables | 289 tables
 🌐 Server running at: http://127.0.0.1:5050
 ```
 
@@ -144,7 +144,8 @@ User question
 
 | Source | Content | Count |
 |--------|---------|-------|
-| `papers/bib_papers_metadata.json` | Title + abstract for BiB publications | 500 papers |
+| `papers/bib_papers_metadata.json` | Title + abstract metadata for BiB publications | 500 papers |
+| `papers/*.pdf` | Full-text local research paper PDFs, chunked into retrievable passages | 174 PDFs |
 | `docs/csv/all_variables_meta.csv` | Variable names, labels, types, topics, completeness | 26,104 variables |
 | `docs/csv/all_tables.csv` | Table IDs, projects, entity types, row counts | 289 tables |
 | `docs/*.html` | `closer_title` section groupings parsed from Reactable JSON | 326 HTML files |
@@ -153,7 +154,7 @@ User question
 
 1. **HTML parsing** — Each data dictionary HTML file contains an embedded Reactable JSON blob. The indexer extracts `variable → closer_title` (section heading) mappings to enrich variable records with human-readable context that isn't in the CSVs.
 
-2. **Embedding** — All text is embedded using ChromaDB's default model (`all-MiniLM-L6-v2`, runs locally, no API needed) and stored in three collections: `bib_papers`, `bib_variables`, `bib_tables`.
+2. **Embedding** — All text is embedded using ChromaDB's default model (`all-MiniLM-L6-v2`, runs locally, no API needed) and stored in three collections: `bib_papers`, `bib_variables`, `bib_tables`. The `bib_papers` collection contains both abstract records and chunked PDF full text.
 
 3. **Persistence** — The index is saved to `.chroma_db/` and reused on every subsequent query.
 
@@ -226,7 +227,7 @@ cd BornInBradford-datadict/llm_poc
 bash build_index.sh
 ```
 
-This wipes `.chroma_db/` and rebuilds all three collections from scratch.
+This wipes `.chroma_db/` and rebuilds all three collections from scratch, including the chunked full-text PDF paper index inside `bib_papers`.
 
 
 ## Retrieval Evaluation (PDF triples)
@@ -638,4 +639,3 @@ Status legend:
 | Separate failure modes | **Implemented** | Retrieval and generation metrics are reported separately. |
 | Chunk-level vs document-level bottleneck tracking | **Planned** | Not yet explicitly instrumented. |
 | Adversarial/no-answer cases | **Planned** | Pending abstention benchmark dataset. |
-

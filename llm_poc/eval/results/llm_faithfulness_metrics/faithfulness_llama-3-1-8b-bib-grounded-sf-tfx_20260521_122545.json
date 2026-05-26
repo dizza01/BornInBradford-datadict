@@ -1,0 +1,690 @@
+{
+  "n_queries_attempted": 10,
+  "n_queries_succeeded": 10,
+  "n_queries_failed": 0,
+  "failed_queries_preview": [],
+  "config": {
+    "triples": "eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl",
+    "retrieval_mode": "default",
+    "dense_top_k": 5,
+    "answer_model": "llama-3-1-8b-bib-grounded-sf-tfx",
+    "answer_api_mode": "hf_endpoint",
+    "answer_endpoint_url": "https://riu8fhweetx0zk2a.us-east-1.aws.endpoints.huggingface.cloud",
+    "answer_endpoint_model": "",
+    "answer_endpoint_mode": "handler_structured",
+    "allow_endpoint_chat_fallback": false,
+    "external_judge_model": "meta-llama/Llama-3.1-70B-Instruct",
+    "qwen_judge_model": "Qwen/Qwen2.5-72B-Instruct",
+    "judge_max_tokens": 700,
+    "answer_max_tokens": 900,
+    "sleep_seconds": 0.15,
+    "judge_retries": 2,
+    "judge_retry_delay": 0.5,
+    "include_context": true,
+    "max_queries": 10,
+    "evaluated_at": "2026-05-21T12:25:45"
+  },
+  "summary": {
+    "run_status": {
+      "attempted_queries": 10,
+      "succeeded_queries": 10,
+      "failed_queries": 0,
+      "failure_rate": 0.0
+    },
+    "primary_faithfulness_metric": {
+      "judge": "external",
+      "unfaithful_claim_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "claim_support_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0
+    },
+    "external_judge": {
+      "n_queries": 10,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 10,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "qwen_judge_sensitivity": {
+      "n_queries": 10,
+      "total_claims": 0,
+      "supported_claims": 0,
+      "contradicted_claims": 0,
+      "not_found_claims": 0,
+      "unfaithful_claims": 0,
+      "unclear_claims": 0,
+      "claim_support_rate": 0.0,
+      "contradicted_claim_rate": 0.0,
+      "not_found_claim_rate": 0.0,
+      "unfaithful_claim_rate": 0.0,
+      "contradiction_weighted_hallucination": 0.0,
+      "query_faithfulness_rate": 0.0,
+      "contradicted_query_rate": 0.0,
+      "not_found_query_rate": 0.0,
+      "unfaithful_query_rate": 0.0,
+      "risky_queries": 10,
+      "risky_query_rate": 1.0,
+      "avg_claims_per_answer": 0.0,
+      "avg_unfaithful_claims_per_answer": 0.0
+    },
+    "judge_agreement": {
+      "n_queries": 10,
+      "faithful_label_agreement": 1.0,
+      "unfaithful_presence_agreement": 1.0
+    },
+    "generation_quality": {
+      "n_queries": 10,
+      "answer_relevance": 0.0853921009420102,
+      "completeness": 0.09558211980408776,
+      "conciseness": 0.16355075130655486,
+      "answer_correctness_token_f1": 0.018086366480423978,
+      "answer_correctness_exact_match_rate": 0.0,
+      "latency_total_p50_ms": 40855.47754284926,
+      "latency_total_p95_ms": 42185.94325007871,
+      "latency_retrieval_avg_ms": 484.88263750914484,
+      "latency_answer_avg_ms": 40580.39765828289,
+      "avg_retrieved_tokens": 1037.8,
+      "avg_answer_tokens": 162.3,
+      "answer_tokens_per_retrieved_token": 0.15638851416457894
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "q_1",
+      "question": "In the paper \"Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in Bradford dataset\" (2024), what is the relationship between prenatal alcohol exposure and early education outcomes?",
+      "reference_answer": "The study shows a significant association between prenatal alcohol exposure and adverse outcomes in a child’s early education.",
+      "source_chunk_id": "pdf_associations_between_prenatal_alcohol_exposure_and_early_edu_chunk_36",
+      "rag_answer": "### In: S-12**\n###  2027**\n### 3— 202**\n###\n\n###\n\n  202—\n### 2—\n### S-202— (202—)\n### 3—\n### S-MA-2—(202—)\n### 3—\n### S\n###\n### A\n###\n### (202—)\n### 3—\n### S-MA**\n—\n###\n###\n###\n### S- 202—\n### S- 202—\n###\n### S- 2—**\n### S- 3—\n###\n### 3- 2—\n###\n### S-MA, 202-1, 3-202—\n###\n###\n###\n (N-)\n<!--**\n</\n###\n###\n###\n###\n###\n###\n###\n###\n###\n###\n###\n###\n###\n###\n  1\n- 3- 1**\n- 2\n- 3\n- 1\n- 2\n- 1\n- 2\n- 1**\n- 2\n- 1\n- 2\n- 3**\n- 2\n- 1**\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2 (1)\n- 2 (1)\n- 2 (Ret) (1)\n- 2 (2) - 2 (p)\n- 1\n- 2 (p-1-2-2-1-2-2-1-2-2-1-2-2-1-—S—2——S—S—1—2—S—Ret—2—(1-",
+      "answer_relevance": 0.08333333333333333,
+      "completeness": 0.21052631578947367,
+      "conciseness": 0.14285714285714288,
+      "answer_correctness_token_f1": 0.039473684210526314,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1038,
+      "answer_tokens": 133,
+      "latency_retrieval_ms": 1672.0151249319315,
+      "latency_answer_ms": 40177.50608315691,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 41849.521208088845,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Exact Registry Matches\n\n[PAPER TITLE NOT IN REGISTRY: 'Associations between prenatal alcohol exposure and early education outcomes a ma' not found in BiB paper index]\n\n## Relevant Published Papers\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nic Health, University of Salford, Salford, UK; 2Psychology\nDepartment Bradford University, Bradford, UK and 3Centre for Applied Education Research, Bradford, UK\nAbstract\nPrenatal alcohol exposure (PAE) is associated with cognitive, behavi\n\n**Associations between prenatal alcohol exposure and early education outcomes: a matched controls study using the born in ** (2024) — McCarthy Robyn, Cook Penny A, Pink Joshua, Eddy Lucy H\nAbstract: Prenatal alcohol exposure (PAE) is associated with cognitive, behavioural, and developmental impairments throughout the lifespan of affected individuals, but there is limited evidence on how early this impact can be identified through routinely collected childhood data. This paper explores the relationship between PAE and the Early Years Foundation Stage Profile (EYFSP), a statutory teacher-based summative assessment of early development in relation to learning goals. This analysis uses the Born in Bradford dataset, a UK based cohort (n = 13,959; full dataset), which collected self-r\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nlation in Bradford, with a higher proportion\nof younger people.\nReported South Asian ethnicity is associated in the UK with\nabstinence from alcohol.24,40 In our dataset, for each drinking\npattern, more than 80% of mothers who report that \n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\nPublic Health.\n2016; 16(1), 683.\n21. Paul SE, Hatoum AS, Fine JD, et al. Associations between prenatal cannabis\nexposure and childhood outcomes: results from the ABCD study. JAMA\nPsychiat. 2021; 78(1), 64–76.\n22. Long X, Lebel C. Evaluati\n\n**Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B** (2024) — \nTitle: Associations between prenatal alcohol exposure and early education outcomes a matched controls study using the born in B\nYear: 2024\nSource: full-text PDF\n\ne EYFSP has also been used to study the relationship between early\ndevelopment and long-term educational attainment,12 as well as to explore the influence of\nfactors such as socio-economic status, parental involvement, and the quality of \n\n\n## Relevant Variables\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0drpreg\nLabel: Mother drank alcohol during pregnancy or 3 months before\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't remember]\nNon-missing records: 11369\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcinpreg\nLabel: Do you drink any alcohol during this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 NT]\nNon-missing records: 2553\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: ght_2alcbeforepreg\nLabel: Did you drink any alcohol during the three months before this pregnancy?\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Do not wish to answer] [4 Don't know] [5 NT]\nNon-missing records: 2548\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0drfr3m\nLabel: Mother drank alcohol in the first 3 months of pregnancy\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes, once a week] [2 Yes, occasionally] [3 Yes, not specified] [4 No] [5 Don't remember]\nNon-missing records: 3480\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamx3b\nLabel: Maximum units of other alcohol at one time in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 608\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oamxf3\nLabel: Maximum units of other alcohol at one time in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 185\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0dr3mb4\nLabel: Mother drank alcohol 3 months before pregnancy\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [1 Yes, once a week] [2 Yes, occasionally] [3 Yes, not specified] [4 No] [5 Don't remember]\nNon-missing records: 3472\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaav3b\nLabel: Average units of other alcohol per week in 3 months before pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 613\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: alc0oaavf3\nLabel: Average units of other alcohol per week in first 3 months of pregnancy\nTopic: alcohol_consumption\nType: integer\nNon-missing records: 186\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod03_dr23\nVariable: awb5_2y_alcohol_lctn___1\nLabel: I got alcohol from parents to drink with them in past week\nTopic: alcohol_consumption\nType: categorical\nCategories/Values: [0 Unchecked] [1 Checked: I got my alcohol from my parents to drink with them]\nNon-missing records: 2026\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_CohortInfo.preg_info\nDisplay name: Pregnancy information\nProject: BiB_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 10 | Rows: 13776 | Entities: 12453\nLast updated: 2024-05-14 09:12:26\n```\n\n```\nTable: BiB_Pregnancy.eclipse_preg\nDisplay name: Eclipse pregnancy record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 35 | Rows: 13361 | Entities: 12075\nLast updated: 2024-05-14 09:13:56\n```\n\n```\nTable: BiB_Pregnancy.eclipse_baby\nDisplay name: Eclipse neonatal record\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 29 | Rows: 13525 | Entities: 13525\nLast updated: 2024-05-14 09:13:55\n```\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nDisplay name: Maternity records pre-BiB pregnancy\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 13 | Rows: 10642 | Entities: 5611\nLast updated: 2024-05-14 09:14:05\n```\n\n```\nTable: BiBBS_CohortInfo.pregnancy\nDisplay name: Recruited pregnancy information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 15 | Rows: 2626 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n"
+    },
+    {
+      "query_id": "q_2",
+      "question": "What was the adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia compared to White British women?",
+      "reference_answer": "The adjusted risk ratio for VZV seroprevalence among South Asian women born in South Asia, compared with White British women, was 0.93 (95% CI 0.89 to 0.97, p=0.001).",
+      "source_chunk_id": "pdf_seroprevalence_of_cytomegalovirus_epstein_barr_virus_and_var_chunk_16",
+      "rag_answer": "1\n    2\n    1\n   —\n    1—\n    2—\n   —</>\n</——</———;————2——1—2—Stat—2——1—</—</—2—1—2—(1—) and the (2—2—(1) and other (p)\n   —\n   —\n   —(1—stat-P-2-P\n(P)\nP\nP\n1.2\nStat\n       \nRet-1\n2003\n   —\n   —\n   —**\n   —\n   —\n   —\n   —\n   —\n2-1\n   —\n   —\n2-3-1-2-3-1-2-1-2-2-1-2-2-2-3-9-2-2-3-2-3-1\n-2-1\n###\n2-3-2-2-1-2-200-2-2-1-2-200-2-1-2-2-20-2-1-2-2-1-2-1-2-2-202-1-2-1-2-1-2-1-2-2-1-2-2-202-202-200-202-1-2-1-2-1-2-1-2-1-2-1-2-1-2-1-1-2- 201-1-2-1-202-1-2-1-2-1-2-1-2-1-2-1-2-1-2-1-2-1-1-2-1-2-1-2-1-2-1-2-1-2-1-2- 1-Other-1-Be-1-2-1-2-1-2-1-1-2-1-1-2-1-2-1-2-1-2-1-1-1-1-30-1-2-1-1-2-1-1-1-1-2-1-1-2-1-1-2-1-1-2-1-2-1-2-1-2-1-1-2-1",
+      "answer_relevance": 0.05,
+      "completeness": 0.06060606060606061,
+      "conciseness": 0.15348837209302324,
+      "answer_correctness_token_f1": 0.016129032258064516,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1201,
+      "answer_tokens": 215,
+      "latency_retrieval_ms": 407.50350011512637,
+      "latency_answer_ms": 41778.43974996358,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 42185.94325007871,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\n. 95% or 98%\nin the other groups, p=0.01).\nEthnic group/country of birth category and CMV\nThe association between ethnic group/country of birth\ncategory and CMV seropositivity remained after adjustment for\nparity and household size (Table\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\n(7%) in India, 6 (2%) in Bangladesh, 9 (3%) elsewhere (Kenya\n7, Uganda 1, Burma 1) and only 10 (3%) in England or Wales.\nEthnic group/country of birth category and VZV\nVZV seroprevalence was significantly lower among the\nSouth Asian women\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\nCommittee (ref: 08/H1302/21) and\nthe London School of Hygiene and Tropical Medicine Ethics\nCommittee (ref: 2008/5320). Women gave written informed\nconsent before taking part.\nStatistical methods\nData were analysed using Stata version 12.1\n\n**Seroprevalence of cytomegalovirus, Epstein Barr virus and varicella zoster virus among pregnant women in Bradford: a coh** (2013) — Pembrey Lucy, Raynor Pauline, Griffiths Paul, Chaytor Shelley, Wright John et al\nAbstract: To estimate the seroprevalence of cytomegalovirus (CMV), Epstein Barr virus (EBV) and varicella zoster virus (VZV) among pregnant women in Bradford by ethnic group and country of birth. A stratified random sample of 949 pregnant women enrolled in the Born in Bradford birth cohort was selected to ensure sufficient numbers of White UK born women, Asian UK born women and Asian women born in Asia. Serum samples taken at 24-28 weeks' gestation were tested for CMV IgG, EBV IgG and VZV IgG. Each woman completed a questionnaire which included socio-demographic information. CMV seroprevalence\n\n**Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor** (2013) — \nTitle: Seroprevalence of cytomegalovirus Epstein Barr virus and varicella zoster virus among pregnant women in Bradford a cohor\nYear: 2013\nSource: full-text PDF\n\nuth Asian UK born women\nand 98% among South Asian women born in South Asia. These differences remained after adjusting for socio-\ndemographic factors. In contrast, VZV seroprevalence was 95% among women born in the UK but significantly lo\n\n\n## Relevant Variables\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eth_ethnic\nLabel: Mother ethnicity all categories\nTopic: ethnic_group\nType: categorical\nCategories/Values: [1 White British] [2 White Irish] [3 Pakistani] [4 Indian] [5 Bangladeshi] [6 White Polish] [7 White Slovakian] [8 White Romanian] [9 White Czech] [10 Other White] [11 White Gypsy/Roma/Irish traveller] [12 Chinese] [13 African] [14 Caribbean] [15 Mixed White/ Black Caribbean] [16 Mixed White/ Black African] [17 Mixed White/ Asian] [18 Do not wish to answer] [19 Other]\nNon-missing records: 2554\n```\n\n```\nTable: COVID19_Survey.adult_phase1\nVariable: ethnicity\nLabel: Ethnic group combined from different cohort data sources\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White British] [2 Pakistani] [3 Other]\nNon-missing records: 1973\n```\n\n```\nTable: COVID19_Survey.adult_bibplus_phase3\nVariable: ethnicity\nLabel: Ethnicity - 16 categories\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 English, Welsh, Scottish, Northern Irish or British] [2 Irish] [3 Any other White background] [4 White and Black Caribbean] [5 White and Black African] [6 White and Asian] [7 Any other Mixed background] [8 Indian] [9 Pakistani] [10 Bangladeshi] [11 Chinese] [12 Any other Asian background] [13 African] [14 Caribbean] [15 Other Black, African or Caribbean background] [16 Any other ethnic group]\nNon-missing records: 1104\n```\n\n```\nTable: COVID19_Survey.child_phase2_covid\nVariable: edcont_ethnic_origin\nLabel: Child Ethnic Origin Code\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 Bangladeshi] [2 Indian] [3 Pakistani] [4 Chinese/ Other Asian] [5 African] [6 Black Carribbean/ Black Other] [7 Mixed] [8 White British] [9 White Other] [10 Other Ethnic Groups]\nNon-missing records: 600\n```\n\n```\nTable: COVID19_Survey.child_phase1_covid\nVariable: edcont_ethnic_origin\nLabel: Child Ethnic Origin Code - From Child Education Record\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 Bangladeshi] [2 Indian] [3 Pakistani] [4 Chinese/ Other Asian] [5 African] [6 Black Carribbean/ Black Other] [7 Mixed] [8 White British] [9 White Other] [10 Other Ethnic Groups]\nNon-missing records: 910\n```\n\n```\nTable: COVID19_Survey.adult_bib_phase2\nVariable: ethnicity_father\nLabel: Ethnic group (father)\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White] [2 Mixed] [3 Black/Black British] [4 Asian/Asian British] [5 Chinese] [6 Other]\nNon-missing records: 34\n```\n\n```\nTable: COVID19_Survey.child_phase1_covid\nVariable: ethnicity_mother\nLabel: Ethnic group (mother)\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White British] [2 Pakistani] [3 Other]\nNon-missing records: 951\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: eth0ethall\nLabel: Mother's ethnic group - all categories\nTopic: ethnic_group\nType: categorical\nCategories/Values: [1 White - British] [2 White - Irish] [3 White - Other] [4 White & Black Caribbean] [5 White & Black African] [6 White & Indian] [7 White & Pakistani] [8 White & Bangladeshi] [9 White & Indian Caribbean] [10 White & African-Indian] [11 Mixed - Other] [12 Black - Caribbean] [13 Black - African] [14 Black - Other] [15 Asian - Indian] [16 Asian - Pakistani] [17 Asian - Bangladeshi] [18 Asian - Indian\nNon-missing records: 11371\n```\n\n```\nTable: COVID19_Survey.child_phase2_covid\nVariable: ethnicity_mother\nLabel: Ethnic group (mother)\nTopic: demographics_cv19\nType: categorical\nCategories/Values: [1 White British] [2 Pakistani] [3 Other]\nNon-missing records: 618\n```\n\n```\nTable: COVID19_Survey.adult_bib_phase2\nVariable: c19a2_fh_ch_brsh_oft\nLabel: 37) Compared to before the pandemic, is this\nTopic: health_behaviour_cv19\nType: categorical\nCategories/Values: [1 Less] [2 About the same] [3 More]\nNon-missing records: 623\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_SDQs.COVID_phase1_sdq\nDisplay name: Strength and Difficulties questionnaire from the COVID phase 1 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 71 | Rows: 913 | Entities: 913\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_SDQs.COVID_phase2_sdq\nDisplay name: Strength and Difficulties questionnaire from the COVID phase 2 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 71 | Rows: 631 | Entities: 631\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_SDQs.COVID_phase3_sdq\nDisplay name: Strength and Difficulties questionnaire from the COVID phase 3 survey\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 69 | Rows: 582 | Entities: 582\nLast updated: 2024-05-14 09:15:36\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nDisplay name: Maternity records pregnancy blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 117578 | Entities: 10005\nLast updated: 2024-05-14 09:14:04\n```\n\n```\nTable: BiB_Biosamples.pregnancy_gtt\nDisplay name: Maternal baseline GTT\nProject: BiB_Biosamples\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 12331 | Entities: 11231\nLast updated: 2024-05-14 09:12:09\n```\n"
+    },
+    {
+      "query_id": "q_3",
+      "question": "What is the odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women?",
+      "reference_answer": "The odds ratio for caesarean section per 5 kg/m² increase in BMI among Pakistani women is 1.36 (1.27, 1.45).",
+      "source_chunk_id": "pdf_a_comparison_of_south_asian_specific_and_established_bmi_thr_chunk_29",
+      "rag_answer": "### S- 1, 202-8**\n\n---\n### 1\n***\n### 2\n**S****\n**S** (1)\n** *****\n** S** (in) 2-12-9-202- 1- 1- 2- 1- 2- 1\nS\n**S** (2) S- 1\n**S**\nD- 1\n**S** (201) – 2 (201-1)\n**S** (201-2-3)\n**S** (201-2)\n**S** (201-2**\n**S** (201-2) – S**(D)**\n**S** (D) –\nD**\n“\nD” “\nD” – S\nD** (D) – S** (D) – S” – 1” – S” (D) – 2” (D) – 2\nD- – 1\nD- – 2\nD- – 2\nD- – 2 ”\nD- – 2” (the) 1” “\nD”— 1\nD-2—\nD- 1— 2— 1—\nD-2—\nD-1—\nD-2—\nD-1—\nD-2—\nD-1—\nD-2—\nD-1—\nD-2—\nD-1—\nD-2—\nD-1—\nD-2—\nD-1—\nD-2—\nD-1—\nD-2——1—2—D-1—2—1—\nD- 1—\nD-1—D-2—D-2-1-2-2-1-2-1- D-what-1- 2-1-2-1- (D-2-1-2-1-2-1-1-2-200-1-2-1-1-2-1-2-1-2-1-2-1-2-1-2-2-1-2-1-2-1-2-2-1-2-1-2-1-2-1-2-20-2-2-2-3-2-2-2-1\nRet-2",
+      "answer_relevance": 0.16666666666666666,
+      "completeness": 0.21739130434782608,
+      "conciseness": 0.1155778894472362,
+      "answer_correctness_token_f1": 0.04504504504504504,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1034,
+      "answer_tokens": 199,
+      "latency_retrieval_ms": 343.12195889651775,
+      "latency_answer_ms": 40512.35558395274,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 40855.47754284926,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and** (2014) — Bryant M, Santorelli G, Lawlor D A, Farrar D, Tuffnell D et al.\nTitle: A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\nYear: 2014\nSource: full-text PDF\n\n/m2 in Pakistani women or at\n30.0kg/m2 in either ethnic group.\nTable 2 further illustrates the generally linear association of BMI with outcomes in both\nethnic groups, by highlighting the association of BMI as a linear exposure (per 5 kg/m\n\n**A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and** (2014) — Bryant M, Santorelli G, Lawlor D A, Farrar D, Tuffnell D et al.\nTitle: A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\nYear: 2014\nSource: full-text PDF\n\ntani women (N = 4547)\nWhite British women (N = 3931)\np-interactiona\nOdds ratio\n(95%CI) per\n5kg/m2\np-linearb\np-deviation from\nlinearc\nOdds ratio\n(95%CI) per\n5kg/m2\np-linearb\np-deviation from\nlinearc\nCaesarean section\n1.36 (1.27, 1.45)\n<0.00\n\n**Association between mode of delivery and body mass index at 4-5 years in White British and Pakistani children: the Born ** (2021) — Ralphs Eleanor, Pembrey Lucy, West Jane, Santorelli Gillian\nAbstract: Globally, it is becoming more common for pregnant women to deliver by caesarean section (CS). In 2020, 31% of births in England were CS, surpassing the recommended prevalence of CS. Concerns have been raised regarding potential unknown consequences of this mode of delivery. Childhood adiposity is also an increasing concern. Previous research provides inconsistent conclusions on the association between CS and childhood adiposity. More studies are needed to investigate the consequences of CS in different populations and ethnicities. Therefore, this study investigates the association be\n\n**Risk factor screening to identify women requiring oral glucose tolerance testing to diagnose gestational diabetes A syst** (2017) — Farrar Diane, Simmonds Mark, Bryant Maria, Lawlor Debbie A, Dunne Fidelma et al.\nTitle: Risk factor screening to identify women requiring oral glucose tolerance testing to diagnose gestational diabetes A syst\nYear: 2017\nSource: full-text PDF\n\n94.1\n22.7\n78.7\nAge\u001530, BMI\u001530, non-white ethnicity, prior GDM\n94.1\n22.7\n78.7\nAge\u001525, BMI\u001525\n95.9\n16.5\n84.5\nAge\u001525, BMI\u001525, prior GDM\n95.9\n16.5\n84.5\nNICE guideline recommended risk factors[12]\n78.2\n31.7\n67.2\nBMI = body mass index (kg/m2)\nF\n\n**Antenatal depression and anxiety and early pregnancy BMI among White British and South Asian women retrospective analysi** (2020) — Insan Nafisa, Slack Emma, Heslehurst Nicola, Rankin Judith\nTitle: Antenatal depression and anxiety and early pregnancy BMI among White British and South Asian women retrospective analysi\nYear: 2020\nSource: full-text PDF\n\n8)\n1.10 (0.75–1.62)\n–\nOR odds ratio\nAOR adjusted odds ratio\nCI Confidence Interval\nWB White British\n+White British BMI categories: Underweight, < 18.5 kg/m2; recommended weight, 18.5–24.9 kg/m2; overweight, 25–29.9 kg/m2; obese, ≥30 kg/m2\n\n\n## Relevant Variables\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_bmi\nLabel: BMI calculated\nTopic: anthropometry\nType: float\nNon-missing records: 977\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_bmicat5\nLabel: BMI 5 categories\nTopic: anthropometry\nType: categorical\nCategories/Values: [1 Underweight] [2 Normal Weight] [3 Overweight] [4 Obese] [5 Severe Obese]\nNon-missing records: 977\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_bmicalc\nLabel: Whether BMI could be calculated\nTopic: administration\nType: categorical\nCategories/Values: [0 No] [1 Yes]\nNon-missing records: 1452\n```\n\n```\nTable: BiB_AgeOfWonder.heightweight_dr23\nVariable: bmi\nLabel: BMI (kg/m2)\nTopic: anthropometry\nType: float\nNon-missing records: 2003\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_qweight\nLabel: Weight (kg)\nTopic: anthropometry\nType: float\nNon-missing records: 1180\n```\n\n```\nTable: BiB_Maternal_Measurements.maternal_measurements_research_data\nVariable: bmi\nLabel: BMI\nType: float\nNon-missing records: 39822\n```\n\n```\nTable: BiB_Pregnancy.pregnancy_ultrasound\nVariable: mussstomach\nLabel: Anatomy and position of stomach\nTopic: pregnancy\nType: categorical\nCategories/Values: [1 Abnormal] [2 Absent] [3 Abutting OS] [4 Anterior] [5 Breech] [6 Breech legs extended] [7 Breech maternal left] [8 Breech maternal right] [9 Bulky] [10 Cephalic] [11 Cephalic maternal left] [12 Cephalic maternal right] [13 Cervical] [14 Clear of OS] [15 Covering OS] [16 Ectopic] [17 Footling breech] [18 Fundal] [19 Head to mat. Left] [20 Head to mat. Right] [21 Irregular] [22 Left lateral] [23 L\nNon-missing records: 27867\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: mms0mbkbmi\nLabel: Mother's booking BMI (derived)\nTopic: anthropometry\nType: float\nNon-missing records: 10495\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: mms0weight\nLabel: Mother's weight (at questionnaire) (kg)\nTopic: anthropometry\nType: float\nNon-missing records: 10980\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: vit0pregca\nLabel: Pregnacare multivitamins during pregnancy\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Daily] [2 5-6 per week] [3 2-4 per week] [4 Once a week] [5 Less often]\nNon-missing records: 1671\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nDisplay name: Maternity records pregnancy blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 117578 | Entities: 10005\nLast updated: 2024-05-14 09:14:04\n```\n\n```\nTable: BiBBS_CohortInfo.pregnancy\nDisplay name: Recruited pregnancy information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 15 | Rows: 2626 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_postbp\nDisplay name: Maternity records post-partum blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 7 | Rows: 36379 | Entities: 9292\nLast updated: 2024-05-14 09:13:59\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_labbp\nDisplay name: Maternity records labour blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 8643 | Entities: 7995\nLast updated: 2024-05-14 09:13:58\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nDisplay name: Mother baseline pregnancy survey\nProject: BiBBS_Baseline\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 328 | Rows: 2564 | Entities: 2378\nLast updated: 2024-05-14 09:15:45\n```\n"
+    },
+    {
+      "query_id": "q_4",
+      "question": "In the paper \"Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\" (2020), what factors were not included in the study due to lack of information?",
+      "reference_answer": "Parental substance misuse, parental physical ill health, and out-of-home placements.",
+      "source_chunk_id": "pdf_child_mental_health_and_resilience_in_the_context_of_socioec_chunk_27",
+      "rag_answer": "In: 2025- 3- 202- 202**\nIn: 202-3-17**\n    202- 3- 202- 3- 202- 202**\nIn:  3**\n  202**\n 3**\n  202**\n 3**\n  202**\n 3**\n 202**\n 3**\n 202**\n 3**\n  202**\n 3-  202**\n 3-  3**\n  202**\n 3**\n  201**\n 3**\n 3—\n 201—\n 3—\n  201— 3—\n  202—\n 3—\n 3**\n 3—\n 3**\n  202—\n 3**\n— S-20 …—\n    …\n###\n### 3 …\n###  **(30)**\n###\n 3—\n  202—\n  3— )\n### 3—\n  3—\n  1—\n 3—\n 1)\n— S\n 3—\n### Out: S-202—\n###\n###\n 1—\n  3—\n 1)\n</\n1—\n**\n 1—\n### S\n###\n###\n###\n  \n    1—\n    S- 1—\n    S- 1—\n    S- 1—\n    S- 1—\n    1—\n    S- 1— 1—\n    1—\n    S-1— 1— 1— 1—\n    1—\n    1—\n    1—\n    1—\n    1—(202—)**\n    S-1—””\n    ”S—” 1”—\n    1—\n    S-1—\n    S-1—\n    S-1—\n    S-1—\n    1—\n    S-1—\n    S-1—\n    S-1— (P) 1— (P) 1— (P) (P) - 1—\n    1— (P) - 1— (P) 1— (the—(1) - 2— (the)\n- 1\n- 1\n- 1\n- 1— 1",
+      "answer_relevance": 0.07142857142857142,
+      "completeness": 0.08333333333333333,
+      "conciseness": 0.0875912408759124,
+      "answer_correctness_token_f1": 0.013422818791946307,
+      "answer_exact_match": false,
+      "retrieved_tokens": 922,
+      "answer_tokens": 137,
+      "latency_retrieval_ms": 412.31458308175206,
+      "latency_answer_ms": 39488.30187483691,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 39900.61645791866,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Exact Registry Matches\n\n[PAPER TITLE FOUND: 'Child mental health and resilience in the context of socioeconomic disadvantage ']\nYear: 2020\nDOI: \nHas full-text PDF chunks in index: yes\n\n\n## Relevant Published Papers\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nical ill health and \nout-of-home placements. We also did not have information \nregarding mental health diagnoses or treatments, instead \nrelying on screening measures.\nMaternal warmth was self-assessed by mothers which \nhave created bias \n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nugging, kissing and holding \nthis child?’ rated on a scale from 1 (‘Never/Almost never’) \nto 5 (‘Always/Almost always’). Questions were completed by \nmothers when children were 24 months old. Higher scores \nindicated increasing efficacy a\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\ny was identified (r > 0.8), individual highly correlated \nvariables were removed from the analysis.\nExploratory analyses using univariate linear regression \nwere used to identify variables demonstrating significant \nrelationships with Tot\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\n− 0.807 (0.374)*\nRisk factors\n Behind with bills\n− 0.636 (0.686)\n0.403 (0.800)\n0.226 (0.689)\nResource factors\n Warmth\n− .0.458 (0.443)\n− .0.886 (0.414)\n− 0 .887 (0.413)\n Literacy\n− 2.820 (0.446)***\n− 2.765 (0.462)***\n− 2.753 \n(0.449)***\n \n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\noth parents were not employed \nat baseline. 30% of mothers considered themselves to be \nsingle parents. 32.5% of the sample described some sub-\njective financial worries and 12.6% reported being behind \nwith their household bills. The mea\n\n\n## Relevant Variables\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: brs_total\nLabel: Brief Resilience Scale (higher = more resilient)\nTopic: mental_disorders\nType: integer\nNon-missing records: 3932\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: brs_missing\nLabel: Brief Resilience Scale missing\nTopic: mental_disorders\nType: integer\nNon-missing records: 3932\n```\n\n```\nTable: BiB4All_Geographic.bib4all_geog_lsoa\nVariable: IDACI_2019_decile\nLabel: Income Deprivation Affecting Children Index (IDACI) 2019 decile\nTopic: social_classification\nType: integer\nNon-missing records: 978\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: rcad_total\nLabel: Revised childrens anxiety and depression scale. Total\nTopic: mental_disorders\nType: float\nNon-missing records: 3845\n```\n\n```\nTable: BiB_AgeOfWonder.survey_mod02_dr23\nVariable: brs_cat\nLabel: Brief Resilience Scale category\nTopic: mental_disorders\nType: text\nNon-missing records: 3932\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtChildWhatChron_4\nLabel: Does your child have a chronic mental/behavioural condition\nTopic: mental_disorders\nType: categorical\nCategories/Values: [1 Yes]\nNon-missing records: 194\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtChildWhatChron_other\nLabel: Other chronic health condition your child has\nTopic: general_health\nType: text\nNon-missing records: 5304\n```\n\n```\nTable: BiBBS_Geographic.bibbs_geog_lsoa\nVariable: IDACI_2019_decile\nLabel: Income Deprivation Affecting Children Index (IDACI) 2019 decile\nTopic: social_classification\nType: integer\nNon-missing records: 716\n```\n\n```\nTable: BiB_PrimarySchoolYears.sdq_data_bib\nVariable: psysdqBDfficultDistr\nLabel: Do the difficulties upset or distress the child?\nTopic: personality_temperament\nType: categorical\nCategories/Values: [4 A great deal] [1 Not at all] [2 Only a little] [3 Quite a lot]\nNon-missing records: 335\n```\n\n```\nTable: BiB_PrimarySchoolYears.child_quiz\nVariable: psychdEillorunwell\nLabel: How often are you ill or unwell?\nTopic: wellbeing\nType: categorical\nCategories/Values: [1 Never] [2 Some of the time] [3 All of the time]\nNon-missing records: 15429\n```\n\n\n## Relevant Tables\n\n```\nTable: BiBBS_CohortInfo.child\nDisplay name: Child information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 13 | Rows: 2510 | Entities: 2510\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_PrimarySchoolYears.child_info\nDisplay name: Primary School Years child information\nProject: BiB_PrimarySchoolYears\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 23 | Rows: 18149 | Entities: 18149\nLast updated: 2024-05-14 09:14:09\n```\n\n```\nTable: BiB_SDQs.PrimarySchoolYears_sdq\nDisplay name: Strength and Difficulties questionnaire from the Primary School Years surve\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 58 | Rows: 3502 | Entities: 3234\nLast updated: 2024-05-14 09:15:37\n```\n\n```\nTable: BiBBS_CohortInfo.mother\nDisplay name: Recruited mother information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 10 | Rows: 2425 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_1000.bib1000_18m_b18qc4\nDisplay name: BiB 1000 18m Parent-reported child diagnoses\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 3 | Rows: 1307 | Entities: 1293\nLast updated: 2024-05-14 09:11:47\n```\n"
+    },
+    {
+      "query_id": "q_5",
+      "question": "What is the recommended mean sleep duration for infants and toddlers according to the systematic review by Galland et al.?",
+      "reference_answer": "The parent-reported mean sleep duration for infants (0-23 months) was 12.8 hours and 11.9 hours for toddlers and preschoolers (2-5 years old).",
+      "source_chunk_id": "pdf_sociodemographic_temporal_and_bedtime_routine_correlates_of__chunk_2",
+      "rag_answer": "-1\n-2-10**\n-1-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-1</\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-1\n-2\n-1\n-2\n-1\n-1\n-2\n-1\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n   -1\n-2\n-1\n-2\n-1\n-2\n 1\n-2\n-1\n 2\n-1\n-2 (202-Der-1-2-1 (the)\n    2-1-2 (202-1) (1-2-D-1-2-1-2-D-1-2-1 (2-1-2-1-2-1-1-2-1-2-1-1-2-1-2-1-2-1\n-2-1\n-3-1-2\n(D) -1-2-202-1-2-1-2-1-2-1-2-1-2-2-1-2-2-1-2-1-2-1-2-202-1-1-2-1-2-1-2-1-2-1-2-1-2\nRet\n   —\n   —-2-1\n   —Ret-1-2-1\n   2-2-1-2-2-2-202-3\n   ---2-202-2-202-2-2-2-2-2-1-2-202-2-2-2-2-2-2-2-2-202-202-202-202-2-202-202-202-2-2-202-2-2-202-1-202-2-202-202-2-202-202-202-2-202-1-2-202-2-2-202-202-202-202-1-202-2\n-1\n-2-202-1\n-2\n    -D-2-2\n   —\n    D\n-2-2-202-202-1",
+      "answer_relevance": 0.05263157894736842,
+      "completeness": 0.07407407407407407,
+      "conciseness": 0.1232876712328767,
+      "answer_correctness_token_f1": 0.016260162601626018,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1152,
+      "answer_tokens": 219,
+      "latency_retrieval_ms": 342.208500020206,
+      "latency_answer_ms": 41255.10579207912,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 41597.31429209933,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**Sociodemographic temporal and bedtime routine correlates of sleep timing and duration in South Asian and white children** (2023) — \nTitle: Sociodemographic temporal and bedtime routine correlates of sleep timing and duration in South Asian and white children\nYear: 2023\nSource: full-text PDF\n\no maintain both physical and\npsychological health. Inadequate sleep in children is associated\nwith poorer cognitive performance, health markers [1], psychoso-\ncial well-being and family relationships [2,3]. The amount of sleep\nrecommended \n\n**Investigating causal relations between sleep duration and risks of adverse pregnancy and perinatal outcomes linear and n** (2022) — Yang Qian, Magnus Maria C, Kilpi Fanny, Santorelli Gillian, Soares Ana Gonçalves\nTitle: Investigating causal relations between sleep duration and risks of adverse pregnancy and perinatal outcomes linear and n\nYear: 2022\nSource: full-text PDF\n\nA. Lawlor, Kate Tilling and Maria Carolina Borges \nare senior authors who equally supervised this work.\n*Correspondence:  qian.yang@bristol.ac.uk\n2 Population Health Sciences, Bristol Medical School, University of Bristol, \nBristol, UK\nFu\n\n**Investigating causal relations between sleep duration and risks of adverse pregnancy and perinatal outcomes linear and n** (2022) — Yang Qian, Magnus Maria C, Kilpi Fanny, Santorelli Gillian, Soares Ana Gonçalves\nTitle: Investigating causal relations between sleep duration and risks of adverse pregnancy and perinatal outcomes linear and n\nYear: 2022\nSource: full-text PDF\n\ngroups in UK Biobank women. We present MR \nestimates of a linear effect of increasing duration on the outcome across the length of residual duration (h/day) covered in each group. Further \ndetails about identifying the pattern of nonlinea\n\n**Sociodemographic temporal and bedtime routine correlates of sleep timing and duration in South Asian and white children** (2023) — \nTitle: Sociodemographic temporal and bedtime routine correlates of sleep timing and duration in South Asian and white children\nYear: 2023\nSource: full-text PDF\n\n274e80. https://doi.org/\n10.1016/j.sleep.2009.04.012.\n[10] Smith JP, Hardy ST, Hale LE, Gazmararian JA. Racial disparities and sleep\namong preschool aged children: a systematic review. Sleep Health 2019;5(1):\n49e57. https://doi.org/10.1016\n\n**Sleep Duration and Adiposity in Early Childhood Evidence for Bidirectional Associations from the Born in Bradford Study** (2017) — \nTitle: Sleep Duration and Adiposity in Early Childhood Evidence for Bidirectional Associations from the Born in Bradford Study\nYear: 2017\nSource: full-text PDF\n\nunity. Diabetologia. 2006; \n49(10): 2234–2246.\n29.\t Fernando E, Razak F, Lear SA, Anand SS. Cardiovascular Disease in \nSouth Asian Migrants. Can J Cardiol. 2015; 31(9): 1139–1150.\n30.\t Bryant M, Santorelli G, Fairley L, et al. Design and c\n\n\n## Relevant Variables\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtSleepDisturb\nLabel: In past 12 mths, how often has your child's sleep been disturbed due to wheeze\nTopic: respiratory_system\nType: categorical\nCategories/Values: [1 Never woken with wheezing] [2 Less than one night per week] [3 One or more nights per week]\nNon-missing records: 269\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_MeDALL_sample\nVariable: guadtSleepDisturb\nLabel: In past 12 mths, how often has your child's sleep been disturbed due to wheeze\nTopic: respiratory_system\nType: categorical\nCategories/Values: [1 Never woken with wheezing] [2 Less than one night per week] [3 One or more nights per week]\nNon-missing records: 242\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtWeekdaySleep\nLabel: What is your childâ€™s usual amount of sleep each night on week days?\nTopic: sleep\nType: categorical\nCategories/Values: [1 Less than five hours] [2 Five hours] [3 Six hours] [4 Seven hours] [5 Eight hours] [6 Nine hours] [7 Ten hours] [8 Eleven hours] [9 Twelve hours] [10 Thirteen hours] [11 More than thirteen hours]\nNon-missing records: 5133\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtWeekendSleep\nLabel: What is your childâ€™s usual amount of sleep each night at weekends?\nTopic: sleep\nType: categorical\nCategories/Values: [1 Less than five hours] [2 Five hours] [3 Six hours] [4 Seven hours] [5 Eight hours] [6 Nine hours] [7 Ten hours] [8 Eleven hours] [9 Twelve hours] [10 Thirteen hours] [11 More than thirteen hours]\nNon-missing records: 5197\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtWheezingSpeech\nLabel: In past 12 mths, has wheezing limited your child's sleep\nTopic: respiratory_system\nType: categorical\nCategories/Values: [1 No] [2 Yes]\nNon-missing records: 269\n```\n\n```\nTable: BiB_MeDALL.medall_quest\nVariable: meda13\nLabel: How often has childs sleep been disturbed by wheezing in past 12 months\nTopic: respiratory_system\nType: categorical\nCategories/Values: [1 Never] [2 Less than 1 night per week] [3 One or more nights per week]\nNon-missing records: 549\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_MeDALL_sample\nVariable: guadtWheezingSpeech\nLabel: In past 12 mths, has wheezing limited your child's sleep\nTopic: respiratory_system\nType: categorical\nCategories/Values: [1 No] [2 Yes]\nNon-missing records: 242\n```\n\n```\nTable: BiB_1000.bib1000_18m_main\nVariable: bib18d01a\nLabel: How many hours does child sleep during the day\nTopic: sleep\nType: float\nNon-missing records: 1283\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtRashKeptAwake\nLabel: In past 12 mths how often has child been kept awake by rash\nTopic: skin_diseases_dermatology\nType: categorical\nCategories/Values: [1 Never in the past 12 months] [2 Less than one night per week] [3 One or more nights per week]\nNon-missing records: 244\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtBedWetting\nLabel: Which of these best applies to your child:\nTopic: sleep\nType: categorical\nCategories/Values: [1 Never wets the bed at night] [2 Occasionally wets the bed at night] [3 Wets the bed at night once or twice a week] [4 Wets the bed at night three or more times a week] [5 Wears nappies or pull-ups at night] [6 Do not wish to answer]\nNon-missing records: 5106\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_ChildGrowth.anthropometry\nDisplay name: Child anthropometry\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 12 | Rows: 72386 | Entities: 13597\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiBBS_CohortInfo.child\nDisplay name: Child information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 13 | Rows: 2510 | Entities: 2510\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_GrowingUp.child_survey_child_comp\nDisplay name: BiB Growing Up child survey (child completed)\nProject: BiB_GrowingUp\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 263 | Rows: 4668 | Entities: 4668\nLast updated: 2024-05-14 09:12:47\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nDisplay name: BiB Growing Up child survey (adult completed)\nProject: BiB_GrowingUp\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 443 | Rows: 5304 | Entities: 5304\nLast updated: 2024-05-14 09:12:46\n```\n\n```\nTable: BiB_1000.bib1000_18m_b18qc4\nDisplay name: BiB 1000 18m Parent-reported child diagnoses\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 3 | Rows: 1307 | Entities: 1293\nLast updated: 2024-05-14 09:11:47\n```\n"
+    },
+    {
+      "query_id": "q_6",
+      "question": "What is the relationship between physical activity and mental health outcomes in children according to a 2011 meta-analysis?",
+      "reference_answer": "Increasing physical activity is associated with improved self-esteem and lower rates of depression, anxiety, psychological distress, and emotional difficulties in children aged between 3 and 18 years.",
+      "source_chunk_id": "pdf_child_mental_health_and_resilience_in_the_context_of_socioec_chunk_23",
+      "rag_answer": "###\nWhat: \n1\n2- 3 of 2- 202-1\n1-2\nRet\n- 2\n- 202-1-2-2-2-2-2-2\n-2\n-1\n-2\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-2\n-1\n-2\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\n-1\n-2\nRet\n   —\n2\n-1\nRet-2\n1\n-2\n2\n-1\n-2\nRet\n-1\n-2\n-2\nRet\n-2\n2\n-1\n2-2\n-1\n2-2-2\n-2\n-2\n2-2\n2-1\n-2-2-2-2-2-2-2-2-2-2-1-2-2\n-2-2-202-1-2-2-1-2-2-1-2-2\n-2-2-2-2-2-202-2-202-2-2-2-202-1-2-2-2-1-2-3\n-2\n-1\nThe\n-2\nThis\n-2\n1\nAbout\n2\n-1\n    -2\n    202\n-2\n    - 202\n    - 202-202\n   —\n   —\n   —\n    1\n   —\n    1-202\n   —\n    202\n   —\n    202\n    202\n-1\n    -2\n    202\n-1\n   -2\n-3\n-1\n-202-1-1-202-1",
+      "answer_relevance": 0.10526315789473684,
+      "completeness": 0.07142857142857142,
+      "conciseness": 0.1497326203208556,
+      "answer_correctness_token_f1": 0.018604651162790694,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1191,
+      "answer_tokens": 187,
+      "latency_retrieval_ms": 335.6286659836769,
+      "latency_answer_ms": 41580.08029102348,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 41915.708957007155,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\nt negatively upon children’s mental health, as \nsuggested by previous research linking literacy difficulties \nwith mental health symptoms in childhood [40]. There is \nless research looking at the effects of physical development \non childr\n\n**Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort** (2020) — \nTitle: Child mental health and resilience in the context of socioeconomic disadvantage results from the Born in Bradford cohort\nYear: 2020\nSource: full-text PDF\n\n(0.635)***\n3.081 \n(0.670)***\nInteractions\n Warmth × behind with bills\n3.361 (1.347)*\n–\n–\n Literacy × behind with bills\n–\n− 0.795 (1.271)\n–\n Physical development × behind \nwith bills\n–\n–\n0.050 (1.362)\n R2\n0.274\n0.265\n0.265\n F change\n6.227*\n\n**The relationship between early life modifiable risk factors for childhood obesity ethnicity and body mass index at age 3** (2015) — Fairley Lesley, Santorelli Gillian, Lawlor Debbie A, Bryant Maria, Bhopal Raj et\nTitle: The relationship between early life modifiable risk factors for childhood obesity ethnicity and body mass index at age 3\nYear: 2015\nSource: full-text PDF\n\nght? Am J Clin Nutr. 2011;94:1772S–5.\n41.\nBrion MJ, Lawlor DA, Matijasevich A, Horta B, Anselmi L, Araujo CL, et al.\nWhat are the causal effects of breastfeeding on IQ, obesity and blood\npressure? Evidence from comparing high-income with \n\n**Association of food security status with overweight and dietary intake exploration of White British and Pakistani-origin** (2018) — \nTitle: Association of food security status with overweight and dietary intake exploration of White British and Pakistani-origin\nYear: 2018\nSource: full-text PDF\n\nsity\nand energy costs. Am J Clin Nutr. 2004;79:6–16.\n9.\nSeligman HK, Schillinger D. Hunger and socioeconomic disparities in\nchronic disease. N Engl J Med. 2010;363:6–9. https://doi.org/10.1056/\nNEJMp1000072.\n10.\nPower M, Uphoff E, Kelly B\n\n**Exploring parental prenatal influences on child health  a multicohort study and data visualisation t** (2025) — \nTitle: Exploring parental prenatal influences on child health  a multicohort study and data visualisation t\nYear: 2025\nSource: full-text PDF\n\nanalysis. Hum Reprod Update. 2018 May 1;24(3):320–89.  \n . \nCC-BY 4.0 International license\nIt is made available under a \n is the author/funder, who has granted medRxiv a license to display the preprint in perpetuity. \n(which was not certified by peer review\n\n\n## Relevant Variables\n\n```\nTable: COVID19_Survey.adult_bib_phase2\nVariable: fl_physact_ch_outdr_c19a2\nLabel: 35) How often do your children do any kind of physical activity outside?\nTopic: physical_health_cv19\nType: categorical\nCategories/Values: [1 Never] [2 1 or 2 days a week] [3 Most days] [4 Every day]\nNon-missing records: 627\n```\n\n```\nTable: COVID19_Survey.adult_bib_phase2\nVariable: fl_physact_ch_c19a2\nLabel: 34) How often do your children do any kind of physical activity?\nTopic: physical_health_cv19\nType: categorical\nCategories/Values: [1 Never] [2 1 or 2 days a week] [3 Most days] [4 Every day]\nNon-missing records: 627\n```\n\n```\nTable: COVID19_Survey.adult_phase1\nVariable: fl_physact_ch_outdr\nLabel: How often do your children do any kind of physical activity outside?\nTopic: health_behaviour_cv19\nType: categorical\nCategories/Values: [1 Never] [2 1 or 2 days a week] [3 Most days] [4 Every day]\nNon-missing records: 2063\n```\n\n```\nTable: COVID19_Survey.adult_phase1\nVariable: fl_physact_ch\nLabel: How often do your children do any kind of physical activity?\nTopic: health_behaviour_cv19\nType: categorical\nCategories/Values: [1 Never] [2 1 or 2 days a week] [3 Most days] [4 Every day]\nNon-missing records: 2084\n```\n\n```\nTable: COVID19_Survey.adult_bibbs_phase2\nVariable: fl_physact_ch_out_c19b2\nLabel: 66) How often does your child do any kind of physical activity outside?\nTopic: health_behaviour_cv19\nType: categorical\nCategories/Values: [1 Never] [2 1 or 2 days a week] [3 Most days] [4 Every day]\nNon-missing records: 92\n```\n\n```\nTable: COVID19_Survey.adult_bibbs_phase2\nVariable: fl_physact_ch_c19b2_rev1\nLabel: 65) How often does your child do any kind of physical activity?\nTopic: health_behaviour_cv19\nType: categorical\nCategories/Values: [1 Never] [2 1 or 2 days a week] [3 Most days] [4 Every day]\nNon-missing records: 92\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtPEincr3Years\nLabel: Has the amount of PE/sports your child does increased since starting school\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 Totally disagree] [2 Disagree] [3 Neither agree nor disagree] [4 Agree] [5 Totally agree] [6 Donâ€™t know]\nNon-missing records: 373\n```\n\n```\nTable: BiB_GrowingUp.adult_survey_BiB1000_sample\nVariable: guadtPEincr3Years\nLabel: Has the amount of PE/sports your child does increased since starting school\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 Totally disagree] [2 Disagree] [3 Neither agree nor disagree] [4 Agree] [5 Totally agree] [6 Donâ€™t know]\nNon-missing records: 365\n```\n\n```\nTable: BiB_GrowingUp.child_survey_adult_comp\nVariable: guadtEncourageSB\nLabel: How much does your behaviour encourage your child to be sedentary?\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 Never] [2 Very rarely] [3 Rarely] [4 Sometimes] [5 Often] [6 Very often]\nNon-missing records: 367\n```\n\n```\nTable: BiB_GrowingUp.child_survey_child_comp\nVariable: guchdDescribeBest\nLabel: Whichoneof the following describes you best for the last 7 days? Listen toall fi\nTopic: physical_activity\nType: categorical\nCategories/Values: [1 All or most of my free time was spent doing things that involve little physical effort] [2 I sometimes (1 - 2 times last week) did physical things in my free time (e.g. played sports, went running, swimming, bike riding, did aerobics)] [3 I often (3 â€” 4 times last week) did physical things in my free time] [4 I quite often (5 - 6 times last week) did physical things in my free time] [5 I very\nNon-missing records: 2042\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_1000.bib1000_36m_b36qi9\nDisplay name: BiB 1000 36m Physical activity clubs (child)\nProject: BiB_1000\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 4 | Rows: 1238 | Entities: 1232\nLast updated: 2024-05-14 09:11:49\n```\n\n```\nTable: BiB_ChildGrowth.anthropometry\nDisplay name: Child anthropometry\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 12 | Rows: 72386 | Entities: 13597\nLast updated: 2024-05-14 09:12:18\n```\n\n```\nTable: BiB_PrimarySchoolYears.ef_task_inhibition\nDisplay name: Primary School Years EF Inhibition task data\nProject: BiB_PrimarySchoolYears\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 22 | Rows: 14538 | Entities: 14538\nLast updated: 2024-05-14 09:14:26\n```\n\n```\nTable: BiB_ChildGrowth.growth_ResearchData\nDisplay name: Child growth research data\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 14 | Rows: 42555 | Entities: 13658\nLast updated: 2024-06-04 12:22:55\n```\n\n```\nTable: BiB_ChildGrowth.bioimpedance\nDisplay name: Child bioimpedance\nProject: BiB_ChildGrowth\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 17 | Rows: 6424 | Entities: 5494\nLast updated: 2024-05-14 09:12:18\n```\n"
+    },
+    {
+      "query_id": "q_7",
+      "question": "What are the four core studies included in the MR-PREG collaboration?",
+      "reference_answer": "The four core studies are the Avon Longitudinal Study of Parents and Children (ALSPAC), Born in Bradford (BiB), the Norwegian Mother, Father and Child Cohort Study (MoBa), and UK Biobank (UKB).",
+      "source_chunk_id": "pdf_cohort_profile__the_mendelian_randomization_in_pregnancy__mr_chunk_16",
+      "rag_answer": "O**\n(202-10)**\nC- 202**\n(202-12)**\n```\n\n\n```  ``` ```\n``` ``` ```\n``` ***\n*** ***\n***\n*** ***\n***\n***\n*** ``` ***\n*** ``` ”\n*** ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ””\n\n### **.**\n\n** ” ” ”\n** ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” \n    ” ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ”\n    ” ” ”\n    ” ”\n    ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ”— ” ” ” \n### A Research-12**\n 202-17**\n### A\n###\n###\n###\n###\n###\n### A\n### 202-**\n. 1-**\n.  |\n    202-**\n. 202**\n### 1- 2- 202- 1- 2- 1- 2- 202-  A- 202- 202- 1- 202- 202- 1- 3-  (1)  |\n</ 2- 1- 2- 2- 1- 2- 1- 3-1\n1- 2- 3- 2- 3- 2-2- 2- 2- 1- 2- 2- 1- 2- 3- 2- 3- 2- 3-2- 3-2-3-2-2- 2- 2-2- 2- 3- 2- 1-2- 2- 2- 1-2-2-3-2-2-3-2- 1-2-3-2-1-2-3-2-1-2-3-2-2-1-2- (2-2-1-2- (1-2-2- (1-2- (2- (1-2- (2-1- (2-)",
+      "answer_relevance": 0.0,
+      "completeness": 0.0,
+      "conciseness": 0.2649572649572649,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 842,
+      "answer_tokens": 117,
+      "latency_retrieval_ms": 397.38904195837677,
+      "latency_answer_ms": 40075.49945800565,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 40472.88849996403,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc** (2025) — \nTitle: Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc\nYear: 2025\nSource: full-text PDF\n\n- \n \nGestational age* \n226,810 \n- \n* continuous traits\n . \nCC-BY 4.0 International license\nIt is made available under a \nperpetuity. \n is the author/funder, who has granted medRxiv a license to display the preprint in\n(which was not certified by peer review)\n\n**Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc** (2025) — \nTitle: Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc\nYear: 2025\nSource: full-text PDF\n\nhis\nthis version posted March 23, 2025. \n; \nhttps://doi.org/10.1101/2025.03.22.25324447\ndoi: \nmedRxiv preprint \n\nCohort description  \nAdverse pregnancy and perinatal outcomes (APPOs) \nA key focus of the MR-PREG collaboration is on assessing the causal effect\n\n**Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc** (2025) — \nTitle: Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc\nYear: 2025\nSource: full-text PDF\n\nin each study are presented in supplementary material.  \n \n \n . \nCC-BY 4.0 International license\nIt is made available under a \nperpetuity. \n is the author/funder, who has granted medRxiv a license to display the preprint in\n(which was not certified by peer r\n\n**Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc** (2025) — \nTitle: Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc\nYear: 2025\nSource: full-text PDF\n\nt in\n(which was not certified by peer review)\npreprint \nThe copyright holder for this\nthis version posted March 23, 2025. \n; \nhttps://doi.org/10.1101/2025.03.22.25324447\ndoi: \nmedRxiv preprint \n\n13 \n \nALSPAC: The Avon Longitudinal Study of Parents and Childr\n\n**Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc** (2025) — \nTitle: Cohort Profile  The Mendelian Randomization in Pregnancy  MR-PREG  collaboration - Improving evidenc\nYear: 2025\nSource: full-text PDF\n\nelated key sources of bias. If results are consistent, despite the different sources of bias, \nthis increases the credibility of that being the correct causal effect (whether it suggests a \nprotective, detrimental or no effect), as it would be unlikely for d\n\n\n## Relevant Variables\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nVariable: prnprebprgperineal\nLabel: Pre BiB preg perineal trauma\nTopic: childbirth\nType: categorical\nCategories/Values: [1 None] [2 1st degree] [3 2nd degree] [4 3rd degree] [5 4th degree] [6 Episiotomy] [7 Laceration] [8 Tear] [9 Graze] [10 Not documented]\nNon-missing records: 10570\n```\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nVariable: prnprebprgpregid\nLabel: Pre BiB preg ID - links to pre-BiB infant data\nTopic: administration\nType: integer\nNon-missing records: 10642\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnbpdruglab6\nLabel: Other drugs during labour (6)\nTopic: medications\nType: text\nNon-missing records: 10939\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnbpdruglab4\nLabel: Other drugs during labour (4)\nTopic: medications\nType: text\nNon-missing records: 10939\n```\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nVariable: prnprebprggdmt_notdoc\nLabel: Pre BiB preg GDM trt: not documented\nTopic: administration\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Not documented]\nNon-missing records: 268\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnbpdruglab5\nLabel: Other drugs during labour (5)\nTopic: medications\nType: text\nNon-missing records: 10939\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnbpdruglab8\nLabel: Other drugs during labour (8)\nTopic: medications\nType: text\nNon-missing records: 10939\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnbpdruglab7\nLabel: Other drugs during labour (7)\nTopic: medications\nType: text\nNon-missing records: 10939\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_preg\nVariable: prnbpdruglab3\nLabel: Other drugs during labour (3)\nTopic: medications\nType: text\nNon-missing records: 10939\n```\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nVariable: prnprebprggdmt_diet\nLabel: Pre BiB preg GDM trt: Diet\nTopic: endocrine_system\nType: categorical\nCategories/Values: [1 No] [2 Yes] [3 Not documented]\nNon-missing records: 84\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_Metabolomics.metms_pairc_h\nDisplay name: MS metabolomics paired child samples header\nProject: BiB_Metabolomics\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 6 | Rows: 1000 | Entities: 1000\nLast updated: 2024-05-14 09:13:29\n```\n\n```\nTable: BiB_Metabolomics.metms_pairm_h\nDisplay name: MS metabolomics paired mother samples header\nProject: BiB_Metabolomics\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 6 | Rows: 1000 | Entities: 999\nLast updated: 2024-05-14 09:13:37\n```\n\n```\nTable: BiB_Metabolomics.metnmr_gu_father_qc\nDisplay name: NMR metabolomics Growing Up father QC\nProject: BiB_Metabolomics\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 24 | Rows: 200 | Entities: 200\nLast updated: 2024-05-14 09:13:45\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nDisplay name: Maternity records pregnancy blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 117578 | Entities: 10005\nLast updated: 2024-05-14 09:14:04\n```\n\n```\nTable: BiB_Pregnancy.matrecs_prebib_preg\nDisplay name: Maternity records pre-BiB pregnancy\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 13 | Rows: 10642 | Entities: 5611\nLast updated: 2024-05-14 09:14:05\n```\n"
+    },
+    {
+      "query_id": "q_8",
+      "question": "In the paper \"A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\" (2014), what is the difference in the prevalence of gestational diabetes between Pakistani and White British women?",
+      "reference_answer": "Gestational diabetes prevalence was higher in women of Pakistani origin.",
+      "source_chunk_id": "pdf_a_comparison_of_south_asian_specific_and_established_bmi_thr_chunk_18",
+      "rag_answer": "In the Bio-Ding of the ADE-20**\nIn A-Of\n###  The A-Of D**D**\n###  The A-1 D**D**—\n###  The A-Of D\n### A\n###  The A-1 D**\n###  The A-1 D**\n### A\n###  The A-1**\n###  A\n### 201**\n###\n###\n### A\n###\n### A: \n###\n###\n###\n### A\n### 202-1**\n###\n### A: 1**\n###  A-**\n    **”\nA”**\n###\nA-1**\nD- 1-2**\n###\nA-**\n### 1-2- 1.D**\n### A- A- 1 )\n### A- 1\n### A- 1\n### A- 1\n- 1**\n### A-1**\n- 1\n- 1\n- 1**\n- 1-2-1)\n- 1- A- A- 1- A- A-1)\n- A- A- 1\n- A- A- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n- 1\n-1\n-1\n- 1\n- 1\n- 1\n- 1\n-1\n- 1\n- 1\n- 1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1\n-1-1",
+      "answer_relevance": 0.13793103448275862,
+      "completeness": 0.2,
+      "conciseness": 0.058139534883720936,
+      "answer_correctness_token_f1": 0.021978021978021976,
+      "answer_exact_match": false,
+      "retrieved_tokens": 978,
+      "answer_tokens": 172,
+      "latency_retrieval_ms": 324.2288329638541,
+      "latency_answer_ms": 40167.590791825205,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 40491.81962478906,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Exact Registry Matches\n\n[PAPER TITLE FOUND: 'A comparison of South Asian specific and established BMI thresholds for determin']\nYear: 2014\nDOI: 10.1038/ijo.2013.117\nHas full-text PDF chunks in index: yes\n\n\n## Relevant Published Papers\n\n**A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and** (2014) — Bryant M, Santorelli G, Lawlor D A, Farrar D, Tuffnell D et al.\nTitle: A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\nYear: 2014\nSource: full-text PDF\n\ntani women (N = 4547)\nWhite British women (N = 3931)\np-interactiona\nOdds ratio\n(95%CI) per\n5kg/m2\np-linearb\np-deviation from\nlinearc\nOdds ratio\n(95%CI) per\n5kg/m2\np-linearb\np-deviation from\nlinearc\nCaesarean section\n1.36 (1.27, 1.45)\n<0.00\n\n**A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and** (2014) — Bryant M, Santorelli G, Lawlor D A, Farrar D, Tuffnell D et al.\nTitle: A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\nYear: 2014\nSource: full-text PDF\n\ns higher in\nwomen of Pakistani origin, and macrosomia which was lower in Pakistani compared to\nWhite British women at all BMI levels. Again, these findings are consistent with previous\nstudies comparing prevalence rates for of gestational \n\n**A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and** (2014) — Bryant M, Santorelli G, Lawlor D A, Farrar D, Tuffnell D et al.\nTitle: A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\nYear: 2014\nSource: full-text PDF\n\n/m2 in Pakistani women or at\n30.0kg/m2 in either ethnic group.\nTable 2 further illustrates the generally linear association of BMI with outcomes in both\nethnic groups, by highlighting the association of BMI as a linear exposure (per 5 kg/m\n\n**A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and** (2014) — Bryant M, Santorelli G, Lawlor D A, Farrar D, Tuffnell D et al.\nTitle: A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\nYear: 2014\nSource: full-text PDF\n\nnd positive\n(PPV) and negative predictive values (NPV) together with 95% confidence intervals for\neach of these measurements. For all outcomes, except pre-term birth, there was a positive\nmonotonic association between BMI and prevalence of\n\n**A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and** (2014) — Bryant M, Santorelli G, Lawlor D A, Farrar D, Tuffnell D et al.\nTitle: A comparison of South Asian specific and established BMI thresholds for determining obesity prevalence in pregnancy and\nYear: 2014\nSource: full-text PDF\n\nign—Prospective bi-ethnic birth cohort study (The Born in Bradford Cohort).\nSetting—Bradford, a deprived city in the North of the UK.\nParticipants—8,478 South Asian and White British pregnant women participating in the Born in\nBradford coh\n\n\n## Relevant Variables\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_bmicat5\nLabel: BMI 5 categories\nTopic: anthropometry\nType: categorical\nCategories/Values: [1 Underweight] [2 Normal Weight] [3 Overweight] [4 Obese] [5 Severe Obese]\nNon-missing records: 977\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_bmi\nLabel: BMI calculated\nTopic: anthropometry\nType: float\nNon-missing records: 977\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: fat_cbirth\nLabel: Which country was the father of your baby born in\nTopic: place_of_birth\nType: categorical\nCategories/Values: [1 England] [2 Pakistan] [3 Bangladesh] [4 India] [5 Northern Ireland] [6 Scotland] [7 Wales] [8 Republic of Ireland] [9 Poland] [10 Czech Republic] [11 Slovakia] [12 Romania] [13 Hungary] [14 Other] [15 Don't know]\nNon-missing records: 2550\n```\n\n```\nTable: BiB_Maternal_Measurements.maternal_measurements_research_data\nVariable: bmi\nLabel: BMI\nType: float\nNon-missing records: 39822\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_bmicat3\nLabel: BMI 3 categories\nTopic: anthropometry\nType: categorical\nCategories/Values: [1 Underweight/ Normal Weight] [2 Overweight] [3 Obese/ Severe Obese]\nNon-missing records: 977\n```\n\n```\nTable: BiB_Maternal_Measurements.maternal_measurements_research_data\nVariable: weight\nLabel: Weight (kg)\nType: float\nNon-missing records: 39822\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: mes1_qweight\nLabel: Weight (kg)\nTopic: anthropometry\nType: float\nNon-missing records: 1180\n```\n\n```\nTable: BiB_Baseline.base_m_survey\nVariable: mms0weight\nLabel: Mother's weight (at questionnaire) (kg)\nTopic: anthropometry\nType: float\nNon-missing records: 10980\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: hsh_under16\nLabel: Number of children aged under 16 in household\nTopic: household_composition\nType: integer\nNon-missing records: 1960\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nVariable: eth_ethnicoth\nLabel: Mother ethnicity other category details\nTopic: ethnic_group\nType: text\nNon-missing records: 2564\n```\n\n\n## Relevant Tables\n\n```\nTable: BiBBS_CohortInfo.pregnancy\nDisplay name: Recruited pregnancy information\nProject: BiBBS_CohortInfo\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 15 | Rows: 2626 | Entities: 2425\nLast updated: 2024-05-14 09:15:46\n```\n\n```\nTable: BiB_Pregnancy.matrecs_bib_pregbp\nDisplay name: Maternity records pregnancy blood pressure\nProject: BiB_Pregnancy\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 117578 | Entities: 10005\nLast updated: 2024-05-14 09:14:04\n```\n\n```\nTable: BiB_Biosamples.pregnancy_gtt\nDisplay name: Maternal baseline GTT\nProject: BiB_Biosamples\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 8 | Rows: 12331 | Entities: 11231\nLast updated: 2024-05-14 09:12:09\n```\n\n```\nTable: BiB_Baseline.base_m1_consumptionoffats\nDisplay name: Mother consumption of fats survey questions phase 1\nProject: BiB_Baseline\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 21 | Rows: 104 | Entities: 104\nLast updated: 2024-05-14 09:12:03\n```\n\n```\nTable: BiBBS_Baseline.pregnancy_survey\nDisplay name: Mother baseline pregnancy survey\nProject: BiBBS_Baseline\nEntity type: participant\nData subjects: \nCohort: bibbs\nVariables: 328 | Rows: 2564 | Entities: 2378\nLast updated: 2024-05-14 09:15:45\n```\n"
+    },
+    {
+      "query_id": "q_9",
+      "question": "What is the multi-method approach used in the BiB age 7-11 years follow-up?",
+      "reference_answer": "The multi-method approach involves collecting data from children and parents through community and school settings, including face-to-face visits, school nurse teams, and teacher assessments.",
+      "source_chunk_id": "pdf_growing_up_in_bradford_protocol_for_the_age_7_11_follow_up_o_chunk_9",
+      "rag_answer": "### Important: 2027-12 ```\n### S or ###\n### Or ``` S */\n### 2028 ```\n### S )\n### 202**\n### S …</\n### Of …” ” ” ”\n### S … ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ” ””\n### S\n### **(30)**—\n**S** (201)**—\n**S** of **(7)**—\n**S**—\n**S**—\n**S** \n**S**\n** \n**”\n** ”\n—\n** (201)**\n**, 202-1** (202)**\n**S**\n    **”\n**”\n**S** (202-)**\n**S**.**\n**S**.**\n**S**.**\n**S** (202-1)**\n**S**.**\n**. \n**. S**\n. **S**. \n**.—\n**.**\n-**. \n**S**. \n**\n**. \n**S**.**\n**\r\n**S**\n**. \n###\n**.**\n**.**\n**.**\n**. \n**. \n. 201-20-202- 1- 202-1\n**\n###\n**\n**S**. 202- 202- 1\n**\n**\n**\n**S** (St) of\n**.**\n**. \n**.** (1) - 2 (1)**\n**S** (1)**\n**S** (1)**\n**\n**S** (1) - SBI of S- 1\n**\n**\n**\n**\n**\n**\n**\n**\n**",
+      "answer_relevance": 0.06666666666666667,
+      "completeness": 0.0,
+      "conciseness": 0.391304347826087,
+      "answer_correctness_token_f1": 0.0,
+      "answer_exact_match": false,
+      "retrieved_tokens": 923,
+      "answer_tokens": 69,
+      "latency_retrieval_ms": 316.5373750962317,
+      "latency_answer_ms": 39506.13012490794,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 39822.66750000417,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Relevant Published Papers\n\n**Growing up in Bradford: protocol for the age 7-11 follow up of the Born in Bradford birth cohort.** (2019) — Bird Philippa K, McEachan Rosemary R C, Mon-Williams Mark, Small Neil, West Jane\nAbstract: Born in Bradford (BiB) is a prospective multi-ethnic pregnancy and birth cohort study that was established to examine determinants of health and development during childhood and, subsequently, adult life in a deprived multi-ethnic population in the north of England. Between 2007 and 2010, the BiB cohort recruited 12,453 women who experienced 13,776 pregnancies and 13,858 births, along with 3353 of their partners. Forty five percent of the cohort are of Pakistani origin. Now that children are at primary school, the first full follow-up of the cohort is taking place. The aims of the fo\n\n**Growing up in Bradford protocol for the age 7-11 follow up of the Born in Bradford birth cohort** (2019) — \nTitle: Growing up in Bradford protocol for the age 7-11 follow up of the Born in Bradford birth cohort\nYear: 2019\nSource: full-text PDF\n\nre employing a multi-method approach across three data collection arms (community-based family\nvisits, school based physical assessment, and whole classroom cognitive, motor function and wellbeing measures)\nto follow-up over 9000 BiB children aged 7–11 years and \n\n**Role of foetal kidney size on kidney function in childhood the born in bradford cohort renal study** (2023) — \nTitle: Role of foetal kidney size on kidney function in childhood the born in bradford cohort renal study\nYear: 2023\nSource: full-text PDF\n\nacks \nthrough into early childhood [18] and lower foetal kidney \nsize was found to be independently associated with both \nreduced eGFR and kidney volume at age 6 years in the \nGeneration R cohort in the Netherlands [19].\nWe aimed to investigate the relationshi\n\n**Prediction of childhood overweight and obesity at age 10-11 findings from the Studying Lifecourse Obesity PrEdictors and** (2023) — \nTitle: Prediction of childhood overweight and obesity at age 10-11 findings from the Studying Lifecourse Obesity PrEdictors and\nYear: 2023\nSource: full-text PDF\n\niB children aged 7–11 years were followed up using\na multi-method approach between 2017 and 2020 (BiB Growing Up Study)\n[27] as part of which anthropometric measurements were collected by\ntrained researchers. Written informed consent was \n\n**Growing up in Bradford protocol for the age 7-11 follow up of the Born in Bradford birth cohort** (2019) — \nTitle: Growing up in Bradford protocol for the age 7-11 follow up of the Born in Bradford birth cohort\nYear: 2019\nSource: full-text PDF\n\nical samples on most participants (Fig. 1),\nprovide a unique opportunity for clinical and public health\ntranslational research on maternal and perinatal health\nand developmental origins of health and wellbeing.\nBiB age 7–11 years follow-up: a resource for future\n\n\n\n## Relevant Variables\n\n```\nTable: BiB_PrimarySchoolYears.ef_task_inhibition_bib\nVariable: AgeYears\nLabel: Child age in years at Inhibition completion\nTopic: age\nType: integer\nNon-missing records: 5741\n```\n\n```\nTable: BiB_PrimarySchoolYears.ef_task_inhibition_bib\nVariable: AgeMonths\nLabel: Child age in months at Inhibition completion\nTopic: age\nType: integer\nNon-missing records: 5741\n```\n\n```\nTable: BiB_GrowingUp.participant_pathway\nVariable: age_recruited\nLabel: Age recruited to Growing Up\nTopic: administration\nType: integer\nNon-missing records: 12213\n```\n\n```\nTable: BiB_1000.bib1000_6m_main\nVariable: agecy_b6mtab\nLabel: Child age (years) BiB1000 6m questionnaire\nTopic: age\nType: integer\nNon-missing records: 1336\n```\n\n```\nTable: BiB_PrimarySchoolYears.ef_task_inhibition\nVariable: AgeYears\nLabel: Child age in years at Inhibition completion\nTopic: age\nType: integer\nNon-missing records: 14538\n```\n\n```\nTable: BiB_StartingSchool.stschool_info\nVariable: agecm_ssclid\nLabel: Age in months at Letter ID\nTopic: age\nType: integer\nNon-missing records: 6582\n```\n\n```\nTable: BiB_PrimarySchoolYears.ef_task_inhibition\nVariable: AgeMonths\nLabel: Child age in months at Inhibition completion\nTopic: age\nType: integer\nNon-missing records: 14538\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_f\nVariable: tot_bmdage_am_adjust\nLabel: Total age-matched adjusted to normal BMD for age\nTopic: anthropometry\nType: integer\nNon-missing records: 58\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_m\nVariable: tot_bmdage_am_adjust\nLabel: Total age-matched adjusted to normal BMD for age\nTopic: anthropometry\nType: integer\nNon-missing records: 488\n```\n\n```\nTable: BiB_PrimarySchoolYears.ef_task_bdr_bib\nVariable: AgeYears\nLabel: Child age in years at BDR completion\nTopic: age\nType: integer\nNon-missing records: 5986\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_GrowingUp.dxa_scan_c\nDisplay name: BiB Growing Up DXA scan (child)\nProject: BiB_GrowingUp\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 147 | Rows: 541 | Entities: 541\nLast updated: 2024-05-14 09:12:47\n```\n\n```\nTable: BiB_GrowingUp.dxa_scan_f\nDisplay name: BiB Growing Up DXA scan (father)\nProject: BiB_GrowingUp\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 128 | Rows: 58 | Entities: 58\nLast updated: 2024-05-14 09:12:47\n```\n\n```\nTable: BiB_AgeOfWonder.bioimpedance_dr23\nDisplay name: AoW school visit bioimpedance 2023 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 28 | Rows: 1583 | Entities: 1583\nLast updated: 2024-05-14 16:40:29.736719\n```\n\n```\nTable: BiB_AgeOfWonder.bioimpedance_dr24\nDisplay name: AoW school visit bioimpedance 2024 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 27 | Rows: 3723 | Entities: 3721\nLast updated: 2025-01-21 08:42:03.778494\n```\n\n```\nTable: BiB_AgeOfWonder.bloodpressure_dr23\nDisplay name: AoW school visit blood pressure 2023 release\nProject: BiB_AgeOfWonder\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 21 | Rows: 1854 | Entities: 1747\nLast updated: 2024-05-14 16:40:55.067242\n```\n"
+    },
+    {
+      "query_id": "q_10",
+      "question": "In the paper \"Incidence of developmental disorders and special educational needs and disabilities in children in the UK\" (2026), what criteria were used to exclude certain feeding problem codes?",
+      "reference_answer": "Codes relating to feeding problems recorded before 6 months of age were excluded because they were unlikely to represent oromotor feeding difficulties as described by NICE.",
+      "source_chunk_id": "pdf_incidence_of_developmental_disorders_and_special_educational_chunk_7",
+      "rag_answer": "###\n###\n###\n###\n###\n###\n###\n###  202\n###\n###\n    1\n    - 2\n    - 1-2- 1**\n- 1\n    1\n    - 1\n    1\n    1\n    -1</\n    1\n    1\n    -1\n    1\n    -1\n    1\n    -2\n    1\n    -2\n    1\n    -1\n    1\n    -2\n    -1\n    -2\n    -1\n    -1\n    -2\n    -1\n    -2-1\n    -2\n    1\n    -2\n    ***\n    1\n    2-3 of the 1 (2) - the 1\n    2\n    1\n    2\n    1\n    2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2\n- 1\n- 2 (the)\n- 1\n- 2-1-2-1-2-2-1-2-**\n- 1-2-3-1-2-1-2-1-2-202-1-2- (In)\n- 1-2-1-2-2-3\n(D) 2-3-1-2- the 2-1-2-3-2-1- (Ret-2-3-1-2-3-1-2-3-1-2-3-1-2-3-1-2-1-3-2-1\n   —\n2-1\n   2-9\n   —\n2-3-202-1-2\n-1-2-2-1-2-1-2-2-1-2-2-3-202-2-2\n-1\n   —\n   -2\n   —\n    2-1\n   —2-1\n   —Ret\n    2-2-1-2-2-1-2-2-2-1-2-2-1-2-1-202-1-2-1-2-1-2-1\n-2\n   -",
+      "answer_relevance": 0.12,
+      "completeness": 0.038461538461538464,
+      "conciseness": 0.14857142857142855,
+      "answer_correctness_token_f1": 0.009950248756218905,
+      "answer_exact_match": false,
+      "retrieved_tokens": 1097,
+      "answer_tokens": 175,
+      "latency_retrieval_ms": 297.8787920437753,
+      "latency_answer_ms": 41262.96683307737,
+      "latency_external_judge_ms": 0.0,
+      "latency_qwen_judge_ms": 0.0,
+      "latency_total_ms": 41560.84562512115,
+      "judgments": {
+        "external": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        },
+        "qwen": {
+          "claims": [],
+          "counts": {
+            "total": 0,
+            "supported": 0,
+            "contradicted": 0,
+            "not_found": 0,
+            "unclear": 0,
+            "invalid_claims": 0
+          },
+          "overall": {
+            "faithful": false,
+            "risky": true,
+            "notes": "failed_gibberish_output"
+          },
+          "raw_judge_response": ""
+        }
+      },
+      "classifier_decision_source_external": "gibberish_answer",
+      "classifier_decision_source_qwen": "gibberish_answer",
+      "retrieved_context": "## Exact Registry Matches\n\n[PAPER TITLE FOUND: 'Incidence of developmental disorders and special educational needs and disabilit']\nYear: 2026\nDOI: 10.1111/dmcn.16396\nHas full-text PDF chunks in index: yes\n\n\n## Relevant Published Papers\n\n**Incidence of developmental disorders and special educational needs and disabilities in children in the UK** (2026) — Pettinger Katherine, Blower Sarah, Boyle Elaine, Hewitt Catherine, Fraser Lorna\nTitle: Incidence of developmental disorders and special educational needs and disabilities in children in the UK\nYear: 2026\nSource: full-text PDF\n\nevelopmental disorders were developed by \nthe first author using published lists (see Tables S1 and S2) \nas well as by searching the Clinical Terminology browser \nand NHS Digital's Classifications browser.16 The partici­\npants' medical records were sear\n\n**Incidence of developmental disorders and special educational needs and disabilities in children in the UK** (2026) — Pettinger Katherine, Blower Sarah, Boyle Elaine, Hewitt Catherine, Fraser Lorna\nTitle: Incidence of developmental disorders and special educational needs and disabilities in children in the UK\nYear: 2026\nSource: full-text PDF\n\ne of professionals involved in the care of \nchildren and young people, such as healthcare profession­\nals and those working in education and social care. The \nguideline includes a broad range of conditions, reflecting \nthe reality that developmental dis\n\n**Incidence of developmental disorders and special educational needs and disabilities in children in the UK** (2026) — Pettinger Katherine, Blower Sarah, Boyle Elaine, Hewitt Catherine, Fraser Lorna\nTitle: Incidence of developmental disorders and special educational needs and disabilities in children in the UK\nYear: 2026\nSource: full-text PDF\n\nrs of children who had a code corresponding to \na developmental disorder by the amount of at-­risk person-­\ntime.19 Incidence rate was used as the measure of disease \nfrequency when considering individual disorders, so as not \nto lose information. A chi\n\n**Incidence of developmental disorders and special educational needs and disabilities in children in the UK** (2026) — Pettinger Katherine, Blower Sarah, Boyle Elaine, Hewitt Catherine, Fraser Lorna\nTitle: Incidence of developmental disorders and special educational needs and disabilities in children in the UK\nYear: 2026\nSource: full-text PDF\n\ntainment strategy, the effect sizes were \nonly marginally different (see Table S15).\nThe results of the Kaplan–Meier estimation and Cox re­\ngression are presented in Tables S16 to S21 and Figures S4 to \nS7; the hazard ratios show similar trends to the o\n\n**Incidence of developmental disorders and special educational needs and disabilities in children in the UK** (2026) — Pettinger Katherine, Blower Sarah, Boyle Elaine, Hewitt Catherine, Fraser Lorna\nTitle: Incidence of developmental disorders and special educational needs and disabilities in children in the UK\nYear: 2026\nSource: full-text PDF\n\nlargest FMI, 0.15.\nSEN provision. Pakistani heritage children: imputations, 20; RVI, 0.09; largest FMI, 0.30. See also Figure 4. White British children, imputations, 17, average RVI, 0.05, largest FMI, 0.18.\nAbbreviations: CI, confidence interval; FMI, \n\n\n## Relevant Variables\n\n```\nTable: BiB_1000.bib1000_12m_main\nVariable: bib12d02pcarerfeed\nLabel: Does a local authority creche feed your child\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 28\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24f21anursery\nLabel: Does child eat during evening at nursery(weekends)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 1228\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24f19anursery\nLabel: Does child eat during afternoon at nursery(weekends)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 1228\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24e02pcarerfeed\nLabel: Does a local authority creche feed your child\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 10\n```\n\n```\nTable: BiB_1000.bib1000_6m_main\nVariable: bib6g2pcarerfeed\nLabel: Does a local authority creche feed your child\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 5\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24f20anursery\nLabel: Does child eat at tea-time at nursery(weekends)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 1228\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24f17anursery\nLabel: Does child eat during morning at nursery(weekends)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 1228\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24f23anursery\nLabel: Does child eat before bed at nursery(weekends)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 1228\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24f10anursery\nLabel: Does child eat at tea-time at nursery(weekdays)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 1228\n```\n\n```\nTable: BiB_1000.bib1000_24m_main\nVariable: bib24f21atv\nLabel: Does child eat during evening in front of TV(weekends)\nTopic: diet_and_nutrition\nType: categorical\nCategories/Values: [1 Yes] [2 No] [3 Don't know] [4 Refused to answer]\nNon-missing records: 1228\n```\n\n\n## Relevant Tables\n\n```\nTable: BiB_Baseline.base_m2_foodfrequency\nDisplay name: Mother food frequency and knowledge survey questions phase 2\nProject: BiB_Baseline\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 43 | Rows: 4494 | Entities: 4494\nLast updated: 2024-05-14 09:12:04\n```\n\n```\nTable: BiB_PrimarySchoolYears.ef_task_inhibition\nDisplay name: Primary School Years EF Inhibition task data\nProject: BiB_PrimarySchoolYears\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 22 | Rows: 14538 | Entities: 14538\nLast updated: 2024-05-14 09:14:26\n```\n\n```\nTable: BiB_Baseline.base_m1_foodfrequency\nDisplay name: BiB Baseline mother food frequency phase 1\nProject: BiB_Baseline\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 116 | Rows: 1776 | Entities: 1776\nLast updated: 2024-05-14 09:12:03\n```\n\n```\nTable: BiB_SDQs.PrimarySchoolYears_sdq\nDisplay name: Strength and Difficulties questionnaire from the Primary School Years surve\nProject: BiB_SDQs\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 58 | Rows: 3502 | Entities: 3234\nLast updated: 2024-05-14 09:15:37\n```\n\n```\nTable: BiB_Baseline.base_m1_consumptionoffats\nDisplay name: Mother consumption of fats survey questions phase 1\nProject: BiB_Baseline\nEntity type: participant\nData subjects: \nCohort: bib\nVariables: 21 | Rows: 104 | Entities: 104\nLast updated: 2024-05-14 09:12:03\n```\n"
+    }
+  ]
+}
