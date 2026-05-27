@@ -42,7 +42,7 @@ cd BornInBradford-datadict/llm_poc
 ../../.venv/bin/python bib_research_assistant.py --build
 ```
 
-This reads the BiB variable/table metadata from the CSVs, enriches variables from the HTML data-dictionary pages, indexes paper abstracts from `bib_papers_metadata.json`, and adds full-text chunks from local research paper PDFs in `papers/`. It embeds everything locally using `all-MiniLM-L6-v2` and saves the index to `.chroma_db/`. To do a clean rebuild from scratch at any time run `bash build_index.sh` instead.
+This reads the BiB variable/table metadata from the CSVs, enriches variables from the HTML data-dictionary pages, indexes paper abstracts from `bib_papers_metadata.json`, adds full-text chunks from local research paper PDFs in `papers/`, and indexes questionnaire PDFs from `questionnaires/`. It embeds everything locally using `all-MiniLM-L6-v2` and saves the index to `.chroma_db/`. To do a clean rebuild from scratch at any time run `bash build_index.sh` instead. Non-PDF questionnaire files are skipped, so convert Word documents to text-selectable PDFs first.
 
 ---
 
@@ -64,7 +64,7 @@ cd BornInBradford-datadict/llm_poc
 You should see:
 
 ```
-✅ Index ready — 500 abstracts + 12345 PDF chunks | 26104 variables | 289 tables
+✅ Index ready — 500 abstracts + 12345 PDF chunks | 26104 variables | 289 tables | 678 questionnaire chunks
 🌐 Server running at: http://127.0.0.1:5050
 ```
 
@@ -146,6 +146,7 @@ User question
 |--------|---------|-------|
 | `papers/bib_papers_metadata.json` | Title + abstract metadata for BiB publications | 500 papers |
 | `papers/*.pdf` | Full-text local research paper PDFs, chunked into retrievable passages | 174 PDFs |
+| `questionnaires/*.pdf` | Study questionnaires and survey instruments, chunked into retrievable passages | 27 PDFs |
 | `docs/csv/all_variables_meta.csv` | Variable names, labels, types, topics, completeness | 26,104 variables |
 | `docs/csv/all_tables.csv` | Table IDs, projects, entity types, row counts | 289 tables |
 | `docs/*.html` | `closer_title` section groupings parsed from Reactable JSON | 326 HTML files |
@@ -154,7 +155,7 @@ User question
 
 1. **HTML parsing** — Each data dictionary HTML file contains an embedded Reactable JSON blob. The indexer extracts `variable → closer_title` (section heading) mappings to enrich variable records with human-readable context that isn't in the CSVs.
 
-2. **Embedding** — All text is embedded using ChromaDB's default model (`all-MiniLM-L6-v2`, runs locally, no API needed) and stored in three collections: `bib_papers`, `bib_variables`, `bib_tables`. The `bib_papers` collection contains both abstract records and chunked PDF full text.
+2. **Embedding** — All text is embedded using ChromaDB's default model (`all-MiniLM-L6-v2`, runs locally, no API needed) and stored in four collections: `bib_papers`, `bib_variables`, `bib_tables`, `bib_questionnaires`. The `bib_papers` collection contains both abstract records and chunked PDF full text.
 
 3. **Persistence** — The index is saved to `.chroma_db/` and reused on every subsequent query.
 
@@ -227,7 +228,7 @@ cd BornInBradford-datadict/llm_poc
 bash build_index.sh
 ```
 
-This wipes `.chroma_db/` and rebuilds all three collections from scratch, including the chunked full-text PDF paper index inside `bib_papers`.
+This wipes `.chroma_db/` and rebuilds all collections from scratch, including the chunked full-text PDF paper index inside `bib_papers` and questionnaire PDFs inside `bib_questionnaires`.
 
 
 ## Retrieval Evaluation (PDF triples)
@@ -311,6 +312,31 @@ Outputs from this workflow:
 | `dense` | Pure semantic vector search against ChromaDB using `all-MiniLM-L6-v2` embeddings. Fast baseline with no keyword matching. |
 | `hybrid` | Dense retrieval + BM25 sparse retrieval fused with Reciprocal Rank Fusion (RRF). Combines semantic understanding with exact keyword matching. |
 | `hybrid_rerank` | Hybrid fusion followed by a lightweight lexical reranker (unigram + bigram overlap) applied to the top-N fused candidates. Best overall quality. |
+| `dense_cross_encoder` | Dense candidates reranked by an optional SentenceTransformers CrossEncoder model. Not included in defaults. |
+| `hybrid_cross_encoder` | Hybrid RRF candidates reranked by an optional SentenceTransformers CrossEncoder model. Not included in defaults. |
+
+Cross-encoder reranker experiments are opt-in, so the default evaluation remains `dense hybrid hybrid_rerank`. Example runs:
+
+```bash
+# BGE reranker
+../../.venv/bin/python eval/run_pdf_retrieval_eval_updated.py \
+  --modes dense hybrid hybrid_rerank hybrid_cross_encoder \
+  --cross-encoder-model BAAI/bge-reranker-base \
+  --run-name retrieval_bge_reranker_base
+
+# Jina reranker; may require trust_remote_code
+../../.venv/bin/python eval/run_pdf_retrieval_eval_updated.py \
+  --modes dense hybrid hybrid_rerank hybrid_cross_encoder \
+  --cross-encoder-model jinaai/jina-reranker-v2-base-multilingual \
+  --cross-encoder-trust-remote-code \
+  --run-name retrieval_jina_reranker_v2_base
+
+# Small local baseline reranker
+../../.venv/bin/python eval/run_pdf_retrieval_eval_updated.py \
+  --modes dense hybrid hybrid_rerank hybrid_cross_encoder \
+  --cross-encoder-model cross-encoder/ms-marco-MiniLM-L-6-v2 \
+  --run-name retrieval_ms_marco_minilm_l6
+```
 
 ### Results (300 queries, top-k = 1 / 3 / 5 / 10)
 

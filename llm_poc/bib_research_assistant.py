@@ -1,11 +1,12 @@
 """
 Born in Bradford - RAG-Powered Research Assistant
 ==================================================
-Indexes three knowledge sources into ChromaDB:
+Indexes five knowledge sources into ChromaDB:
   1. bib_papers_metadata.json  - 500 paper abstracts
   2. docs/csv/all_variables_meta.csv - 26k variables
   3. docs/csv/all_tables.csv   - 291 tables
   4. docs/*.html               - section groupings (closer_title)
+  5. questionnaires/*.pdf      - study questionnaires and survey instruments
 
 Usage:
   # Build index (one-time, ~2-5 mins):
@@ -80,6 +81,7 @@ CHROMA_DIR   = SCRIPT_DIR / ".chroma_db"
 TABLES_CSV    = CSV_DIR / "all_tables.csv"
 VARIABLES_CSV = CSV_DIR / "all_variables_meta.csv"
 PDFS_DIR      = DATADICT_DIR / "papers"
+QUESTIONNAIRES_DIR = DATADICT_DIR / "questionnaires"
 
 # ── LLM model default ─────────────────────────────────────────────────────────
 DEFAULT_MODEL = "meta-llama/Llama-3.1-70B-Instruct"
@@ -230,6 +232,17 @@ def _extract_pdf_text(pdf_path: Path) -> str:
         return ""
 
 
+def _is_pdf_path(path: Path) -> bool:
+    """Return True when a file is a PDF, even if the extension is missing."""
+    if path.suffix.lower() == ".pdf":
+        return True
+    try:
+        with path.open("rb") as f:
+            return f.read(5) == b"%PDF-"
+    except OSError:
+        return False
+
+
 def _chunk_text(text: str, chunk_size: int = 1500, overlap: int = 200) -> list[str]:
     """
     Split text into overlapping chunks of ~chunk_size characters.
@@ -260,6 +273,14 @@ def _year_from_filename(stem: str) -> str:
     """Extract a 4-digit year from the end of a filename stem."""
     m = re.search(r'(\d{4})$', stem)
     return m.group(1) if m else ""
+
+
+def _title_from_path(path: Path) -> str:
+    """Convert a local filename to a readable title without a file extension."""
+    stem = path.stem if path.suffix else path.name
+    cleaned = re.sub(r"[_]+", " ", stem)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned or path.name
 
 
 def index_pdf_fulltext_into_papers(
@@ -394,6 +415,76 @@ def build_tables_collection(client: chromadb.ClientAPI, tables_path: Path):
     return collection
 
 
+def build_questionnaires_collection(
+    client: chromadb.ClientAPI,
+    questionnaires_dir: Path,
+):
+    """Index questionnaire PDFs into the 'bib_questionnaires' collection."""
+    print("\n📝 Indexing questionnaires...")
+
+    try:
+        client.delete_collection("bib_questionnaires")
+    except Exception:
+        pass
+    collection = client.create_collection("bib_questionnaires")
+
+    if not questionnaires_dir.exists():
+        print("   ℹ️  No questionnaires directory found — skipping")
+        return collection
+
+    files = sorted(p for p in questionnaires_dir.iterdir() if p.is_file())
+    pdf_files = [p for p in files if _is_pdf_path(p)]
+    skipped = [p.name for p in files if not _is_pdf_path(p)]
+
+    if skipped:
+        preview = ", ".join(skipped[:5])
+        suffix = " ..." if len(skipped) > 5 else ""
+        print(
+            "   ⚠️  Skipping non-PDF questionnaires "
+            f"(convert to PDF to index): {preview}{suffix}"
+        )
+
+    if not pdf_files:
+        print("   ℹ️  No questionnaire PDFs found — skipping")
+        return collection
+
+    total_chunks = 0
+    for pdf_path in pdf_files:
+        text = _extract_pdf_text(pdf_path)
+        if not text.strip():
+            continue
+
+        title = _title_from_path(pdf_path)
+        chunks = _chunk_text(text, chunk_size=1200, overlap=150)
+        docs, ids, metas = [], [], []
+        for i, chunk in enumerate(chunks):
+            chunk_id = f"questionnaire_{re.sub(r'[^a-z0-9]', '_', title.lower())[:60]}_chunk_{i}"
+            header = (
+                f"Title: {title}\n"
+                f"Source: questionnaire PDF\n"
+                f"File: {pdf_path.name}\n\n"
+            )
+            docs.append(header + chunk)
+            ids.append(chunk_id)
+            metas.append({
+                "title": title[:500],
+                "source": "questionnaire_pdf",
+                "file_name": pdf_path.name[:200],
+                "chunk": str(i),
+            })
+
+        for doc_batch, id_batch, meta_batch in zip(
+            _batch(docs, 500), _batch(ids, 500), _batch(metas, 500)
+        ):
+            collection.upsert(documents=doc_batch, ids=id_batch, metadatas=meta_batch)
+
+        total_chunks += len(docs)
+        print(f"   ✅ {pdf_path.name[:60]}  → {len(docs)} chunks")
+
+    print(f"\n   📝 Total questionnaire chunks added: {total_chunks}")
+    return collection
+
+
 def build_variables_collection(
     client: chromadb.ClientAPI,
     variables_path: Path,
@@ -521,6 +612,7 @@ def build_index():
     build_papers_collection(client, PAPERS_JSON)
     build_tables_collection(client, TABLES_CSV)
     build_variables_collection(client, VARIABLES_CSV, html_sections)
+    build_questionnaires_collection(client, QUESTIONNAIRES_DIR)
 
     # Load paper metadata for cross-referencing
     with open(PAPERS_JSON, encoding="utf-8") as f:
@@ -555,8 +647,9 @@ Data structure:
 When answering:
 1. If the user asks about BiB variables or tables, cite specific variable names and table IDs.
 2. If the user asks about published studies, answer directly from the study context (title, year, key findings).
-3. Note data quality issues (n_complete, cohort waves) when directly relevant to the question.
-4. Be honest about limitations — if the answer is not in the context, say so clearly.
+3. If the user asks about questionnaire wording, modules, or survey instruments, answer from questionnaire context and cite the questionnaire title where possible.
+4. Note data quality issues (n_complete, cohort waves) when directly relevant to the question.
+5. Be honest about limitations — if the answer is not in the context, say so clearly.
 
 
 Answer only what the user asked:
@@ -816,7 +909,7 @@ def _exact_match_registry_lookup(query: str, client: chromadb.ClientAPI) -> str:
 
 
 def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5) -> str:
-    """Retrieve relevant docs from all three collections and format as context."""
+    """Retrieve relevant docs from the indexed collections and format as context."""
     context_parts = []
 
     # ── Exact registry lookups (highest authority, prepended before semantic results) ──
@@ -869,6 +962,25 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
                 )
     except Exception as e:
         context_parts.append(f"[Papers collection unavailable: {e}]\n")
+
+    # ── Questionnaires ───────────────────────────────────────────────────────
+    try:
+        questionnaires_col = client.get_collection("bib_questionnaires")
+        results = questionnaires_col.query(query_texts=[query], n_results=n_results)
+        docs = results["documents"][0]
+        metas = results["metadatas"][0]
+        if docs:
+            context_parts.append("\n## Relevant Questionnaires\n")
+            for doc, meta in zip(docs, metas):
+                title = (meta or {}).get("title", "")
+                file_name = (meta or {}).get("file_name", "")
+                context_parts.append(
+                    f"**{title}**"
+                    f"{f' ({file_name})' if file_name else ''}\n"
+                    f"{doc[:700]}\n"
+                )
+    except Exception as e:
+        context_parts.append(f"[Questionnaires collection unavailable: {e}]\n")
 
     # ── Variables ────────────────────────────────────────────────────────────
     try:
@@ -1104,9 +1216,15 @@ def _check_index(client: chromadb.ClientAPI) -> bool:
             n_pdf = len(pdf_chunks.get("ids", []))
         except Exception:
             n_pdf = 0
+        try:
+            questionnaires_col = client.get_collection("bib_questionnaires")
+            n_questionnaires = questionnaires_col.count()
+        except Exception:
+            n_questionnaires = 0
         n_abstracts = cols['bib_papers'] - n_pdf
         print(f"✅ Index ready — {n_abstracts} abstracts + {n_pdf} PDF chunks | "
-              f"{cols['bib_variables']} variables | {cols['bib_tables']} tables")
+              f"{cols['bib_variables']} variables | {cols['bib_tables']} tables | "
+              f"{n_questionnaires} questionnaire chunks")
         return True
     except Exception as e:
         print(f"❌ Could not read index: {e}")

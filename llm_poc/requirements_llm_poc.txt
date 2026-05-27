@@ -8,6 +8,7 @@ python-dotenv>=1.0.0
 chromadb>=0.5.0          # Local vector store + default embeddings
 huggingface_hub>=0.23.0  # Hugging Face Inference API + dedicated endpoint client
 pymupdf>=1.24.0          # PDF full-text extraction (fitz)
+sentence-transformers>=3,<4  # Optional retrieval eval CrossEncoder rerankers
 
 # Optional: for advanced features
 # vanna>=0.3.0  # Alternative framework

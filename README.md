@@ -216,6 +216,29 @@ BornInBradford-datadict/
 └── .nojekyll                 # Prevents Jekyll processing
 ```
 
+## 🔄 Updating `docs/` from the Original Repository
+
+If this repository is a fork and you only want to pull the latest data dictionary site from the original repo without changing your other work, you can update just the `docs/` folder.
+
+Add the original repository as `upstream` once:
+
+```bash
+git remote add upstream https://github.com/BornInBradford/datadict.git
+```
+
+Then fetch and copy only `docs/` from upstream into a new branch:
+
+```bash
+git fetch upstream
+git checkout -b update-docs-from-upstream
+git checkout upstream/main -- docs
+git status
+git commit -m "Update docs from upstream"
+git push origin update-docs-from-upstream
+```
+
+This workflow updates `docs/` only and leaves the rest of your fork, such as `llm_poc/`, `papers/`, and other custom files, unchanged.
+
 ## 🤖 LLM Research Assistant
 
 The `llm_poc/` directory contains a Retrieval-Augmented Generation (RAG) assistant that lets researchers ask natural-language questions about the BiB dataset — e.g. *"which variables measure anxiety in children?"* or *"what rcad_ga columns are available?"*.

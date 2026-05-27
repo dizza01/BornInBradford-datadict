@@ -5,6 +5,7 @@
 # Run this script whenever source data changes:
 #   • New data release (CSVs updated)
 #   • New papers added to papers/ or bib_papers_metadata.json
+#   • New questionnaire PDFs added to questionnaires/
 #   • New data dictionary HTML pages added to docs/
 #
 # Usage:

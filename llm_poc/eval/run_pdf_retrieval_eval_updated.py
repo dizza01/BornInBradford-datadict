@@ -15,6 +15,12 @@ Usage
         --triples eval/evaluation_datasets/triples/pdf_retrieval_triples.jsonl \
         --top-k 1 3 5 10 \
         --output eval/pdf_retrieval_eval_results_updated.json
+
+    # Optional: benchmark a cross-encoder reranker on top of hybrid retrieval
+    ../../.venv/bin/python eval/run_pdf_retrieval_eval_updated.py \
+        --modes dense hybrid hybrid_rerank hybrid_cross_encoder \
+        --cross-encoder-model BAAI/bge-reranker-base \
+        --run-name bge_reranker_base
 """
 
 from __future__ import annotations
@@ -43,6 +49,7 @@ DEFAULT_OUTPUT = Path(__file__).resolve().parent / "pdf_retrieval_eval_results_u
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "results" / "retrieval_metrics"
 DEFAULT_TOP_K = [1, 3, 5, 10]
 DEFAULT_MODES = ["dense", "hybrid", "hybrid_rerank"]
+DEFAULT_CROSS_ENCODER_MODEL = "BAAI/bge-reranker-base"
 
 
 def parse_args() -> argparse.Namespace:
@@ -79,7 +86,10 @@ def parse_args() -> argparse.Namespace:
         type=str,
         nargs="+",
         default=DEFAULT_MODES,
-        help="Retrieval modes to benchmark (dense, hybrid, hybrid_rerank).",
+        help=(
+            "Retrieval modes to benchmark. Defaults stay unchanged: dense, hybrid, "
+            "hybrid_rerank. Optional: dense_cross_encoder, hybrid_cross_encoder."
+        ),
     )
     parser.add_argument(
         "--dense-pool",
@@ -104,6 +114,33 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=60,
         help="RRF constant used for dense+sparse rank fusion in hybrid modes.",
+    )
+    parser.add_argument(
+        "--cross-encoder-model",
+        type=str,
+        default=DEFAULT_CROSS_ENCODER_MODEL,
+        help=(
+            "SentenceTransformers CrossEncoder model used by *_cross_encoder modes. "
+            "Examples: BAAI/bge-reranker-base, jinaai/jina-reranker-v2-base-multilingual, "
+            "cross-encoder/ms-marco-MiniLM-L-6-v2."
+        ),
+    )
+    parser.add_argument(
+        "--cross-encoder-batch-size",
+        type=int,
+        default=16,
+        help="Batch size for CrossEncoder scoring.",
+    )
+    parser.add_argument(
+        "--cross-encoder-max-length",
+        type=int,
+        default=512,
+        help="Maximum sequence length for CrossEncoder input pairs.",
+    )
+    parser.add_argument(
+        "--cross-encoder-trust-remote-code",
+        action="store_true",
+        help="Pass trust_remote_code=True when loading CrossEncoder models that require it, such as some Jina rerankers.",
     )
     parser.add_argument(
         "--run-name",
@@ -234,6 +271,10 @@ def _append_comparison_csv(
         "sparse_pool",
         "rerank_pool",
         "rrf_k",
+        "cross_encoder_model",
+        "cross_encoder_batch_size",
+        "cross_encoder_max_length",
+        "cross_encoder_trust_remote_code",
         "output_file",
     ]
 
@@ -291,6 +332,10 @@ def _append_comparison_csv(
                     "sparse_pool": config.get("sparse_pool", ""),
                     "rerank_pool": config.get("rerank_pool", ""),
                     "rrf_k": config.get("rrf_k", ""),
+                    "cross_encoder_model": config.get("cross_encoder_model", ""),
+                    "cross_encoder_batch_size": config.get("cross_encoder_batch_size", ""),
+                    "cross_encoder_max_length": config.get("cross_encoder_max_length", ""),
+                    "cross_encoder_trust_remote_code": config.get("cross_encoder_trust_remote_code", ""),
                     "output_file": str(output_path),
                 }
             )
@@ -380,6 +425,52 @@ def _simple_rerank_score(query: str, doc: str) -> float:
     return (0.65 * overlap) + (0.25 * bigram_overlap) + (0.10 * contains_query)
 
 
+def _load_cross_encoder(
+    model_name: str,
+    max_length: int,
+    trust_remote_code: bool,
+) -> Any:
+    try:
+        from sentence_transformers import CrossEncoder
+    except ImportError as exc:
+        raise RuntimeError(
+            "Cross-encoder reranking requires sentence-transformers. "
+            "Install it with: pip install sentence-transformers"
+        ) from exc
+
+    try:
+        return CrossEncoder(
+            model_name,
+            max_length=max_length,
+            trust_remote_code=trust_remote_code,
+        )
+    except TypeError:
+        # Older sentence-transformers versions may not expose trust_remote_code.
+        if trust_remote_code:
+            raise
+        return CrossEncoder(model_name, max_length=max_length)
+
+
+def _cross_encoder_rerank(
+    query: str,
+    candidate_ids: list[str],
+    doc_by_id: dict[str, str],
+    cross_encoder: Any,
+    batch_size: int,
+) -> list[str]:
+    pairs = [(query, doc_by_id.get(doc_id, "")) for doc_id in candidate_ids]
+    if not pairs:
+        return []
+
+    scores = cross_encoder.predict(
+        pairs,
+        batch_size=max(1, int(batch_size)),
+        show_progress_bar=False,
+    )
+    scored = zip(candidate_ids, [float(score) for score in scores])
+    return [doc_id for doc_id, _ in sorted(scored, key=lambda kv: kv[1], reverse=True)]
+
+
 def _build_summary(per_query: list[dict[str, Any]], top_k: list[int]) -> dict[str, Any]:
     n = len(per_query)
     first_hit_ranks = [q["hit_rank"] for q in per_query if q["hit_rank"]]
@@ -445,12 +536,22 @@ def evaluate_retrieval_side_by_side(
     sparse_pool: int,
     rerank_pool: int,
     rrf_k: int,
+    cross_encoder_model: str,
+    cross_encoder_batch_size: int,
+    cross_encoder_max_length: int,
+    cross_encoder_trust_remote_code: bool,
 ) -> dict[str, Any]:
     top_k = sorted({k for k in top_k if k > 0})
     if not top_k:
         raise ValueError("top_k must contain at least one positive integer")
 
-    allowed_modes = {"dense", "hybrid", "hybrid_rerank"}
+    allowed_modes = {
+        "dense",
+        "hybrid",
+        "hybrid_rerank",
+        "dense_cross_encoder",
+        "hybrid_cross_encoder",
+    }
     requested_modes = []
     seen = set()
     for mode in modes:
@@ -459,7 +560,10 @@ def evaluate_retrieval_side_by_side(
             requested_modes.append(m)
             seen.add(m)
     if not requested_modes:
-        raise ValueError("At least one valid mode is required: dense, hybrid, hybrid_rerank")
+        raise ValueError(
+            "At least one valid mode is required: dense, hybrid, hybrid_rerank, "
+            "dense_cross_encoder, hybrid_cross_encoder"
+        )
 
     max_k = max(top_k)
     dense_pool = max(dense_pool, max_k)
@@ -469,15 +573,26 @@ def evaluate_retrieval_side_by_side(
     client = get_chroma_client()
     collection = client.get_collection("bib_papers")
 
-    # Build sparse corpus only when hybrid modes are requested.
+    # Build sparse/document cache only when rerank modes need it.
     sparse_index: SparseBM25 | None = None
     doc_by_id: dict[str, str] = {}
-    if any(m in requested_modes for m in ("hybrid", "hybrid_rerank")):
+    needs_sparse = any(m in requested_modes for m in ("hybrid", "hybrid_rerank", "hybrid_cross_encoder"))
+    needs_docs = any(m in requested_modes for m in ("hybrid", "hybrid_rerank", "dense_cross_encoder", "hybrid_cross_encoder"))
+    if needs_sparse or needs_docs:
         sparse_source = collection.get(where={"source": "pdf_fulltext"}, include=["documents"])
         sparse_ids = sparse_source.get("ids", []) or []
         sparse_docs = sparse_source.get("documents", []) or []
         doc_by_id = {doc_id: doc for doc_id, doc in zip(sparse_ids, sparse_docs)}
+    if needs_sparse:
         sparse_index = SparseBM25(sparse_ids, sparse_docs)
+
+    cross_encoder = None
+    if any(m in requested_modes for m in ("dense_cross_encoder", "hybrid_cross_encoder")):
+        cross_encoder = _load_cross_encoder(
+            model_name=cross_encoder_model,
+            max_length=max(64, int(cross_encoder_max_length)),
+            trust_remote_code=bool(cross_encoder_trust_remote_code),
+        )
 
     by_mode_per_query: dict[str, list[dict[str, Any]]] = {m: [] for m in requested_modes}
     attempted_queries = 0
@@ -529,10 +644,44 @@ def evaluate_retrieval_side_by_side(
                 mode_to_retrieved["hybrid_rerank"] = reranked[:max_k]
                 rerank_latency_ms = hybrid_latency_ms + ((time.perf_counter() - t2) * 1000.0)
 
+            dense_cross_encoder_latency_ms = dense_latency_ms
+            if "dense_cross_encoder" in requested_modes:
+                if cross_encoder is None:
+                    raise RuntimeError("CrossEncoder was not loaded")
+                t3 = time.perf_counter()
+                dense_ce_candidates = dense_ids[:rerank_pool]
+                dense_ce_reranked = _cross_encoder_rerank(
+                    query=question,
+                    candidate_ids=dense_ce_candidates,
+                    doc_by_id=doc_by_id,
+                    cross_encoder=cross_encoder,
+                    batch_size=cross_encoder_batch_size,
+                )
+                mode_to_retrieved["dense_cross_encoder"] = dense_ce_reranked[:max_k]
+                dense_cross_encoder_latency_ms = dense_latency_ms + ((time.perf_counter() - t3) * 1000.0)
+
+            hybrid_cross_encoder_latency_ms = hybrid_latency_ms
+            if "hybrid_cross_encoder" in requested_modes:
+                if cross_encoder is None:
+                    raise RuntimeError("CrossEncoder was not loaded")
+                t4 = time.perf_counter()
+                hybrid_ce_candidates = fused_ids[:rerank_pool]
+                hybrid_ce_reranked = _cross_encoder_rerank(
+                    query=question,
+                    candidate_ids=hybrid_ce_candidates,
+                    doc_by_id=doc_by_id,
+                    cross_encoder=cross_encoder,
+                    batch_size=cross_encoder_batch_size,
+                )
+                mode_to_retrieved["hybrid_cross_encoder"] = hybrid_ce_reranked[:max_k]
+                hybrid_cross_encoder_latency_ms = hybrid_latency_ms + ((time.perf_counter() - t4) * 1000.0)
+
             mode_to_latency_ms: dict[str, float] = {
                 "dense": dense_latency_ms,
                 "hybrid": hybrid_latency_ms,
                 "hybrid_rerank": rerank_latency_ms,
+                "dense_cross_encoder": dense_cross_encoder_latency_ms,
+                "hybrid_cross_encoder": hybrid_cross_encoder_latency_ms,
             }
 
             for mode in requested_modes:
@@ -588,6 +737,10 @@ def evaluate_retrieval_side_by_side(
             "sparse_pool": sparse_pool,
             "rerank_pool": rerank_pool,
             "rrf_k": rrf_k,
+            "cross_encoder_model": cross_encoder_model,
+            "cross_encoder_batch_size": cross_encoder_batch_size,
+            "cross_encoder_max_length": cross_encoder_max_length,
+            "cross_encoder_trust_remote_code": cross_encoder_trust_remote_code,
         },
         "run_status": {
             "attempted_queries": attempted_queries,
@@ -619,6 +772,8 @@ def main() -> None:
         )
     print(f"🎯 Evaluating top-k: {args.top_k}")
     print(f"⚙️  Modes: {args.modes}")
+    if any("cross_encoder" in mode for mode in args.modes):
+        print(f"🔁 CrossEncoder reranker: {args.cross_encoder_model}")
 
     eval_results = evaluate_retrieval_side_by_side(
         triples=triples,
@@ -628,6 +783,10 @@ def main() -> None:
         sparse_pool=args.sparse_pool,
         rerank_pool=args.rerank_pool,
         rrf_k=args.rrf_k,
+        cross_encoder_model=args.cross_encoder_model,
+        cross_encoder_batch_size=args.cross_encoder_batch_size,
+        cross_encoder_max_length=args.cross_encoder_max_length,
+        cross_encoder_trust_remote_code=args.cross_encoder_trust_remote_code,
     )
     eval_results["input_summary"] = input_summary
 
