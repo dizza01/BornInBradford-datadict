@@ -44,6 +44,7 @@ STATIC_DIR   = SCRIPT_DIR / "static"
 # ── Import RAG engine from bib_research_assistant.py ──────────────────────────
 sys.path.insert(0, str(SCRIPT_DIR))
 from bib_research_assistant import (
+    SYSTEM_PROMPT,
     retrieve_context,
     query as rag_query,
     query_stream as rag_query_stream,
@@ -71,6 +72,17 @@ current_model: str = DEFAULT_MODEL
 _init_lock = threading.Lock()
 _registry_lock = threading.Lock()
 _registry_cache: Optional[dict[str, Any]] = None
+
+PRODUCTION_SYSTEM_PROMPT = SYSTEM_PROMPT + """
+
+Production answer style:
+- Be useful, not terse. Prefer 2-5 short paragraphs, or a compact table plus 1-2 explanatory sentences, when the question asks about papers, questionnaires, variables, or interpretation.
+- Stay grounded. Only mention papers, findings, measures, tables, and variables that appear in the retrieved context or deterministic registry results.
+- For paper-listing questions, include up to 5 relevant papers with title, year, why each is relevant, and what evidence/measure/topic links it to the question. If the context does not contain enough paper evidence, say so rather than filling gaps.
+- For one-paper requests, give the paper title/year and a concise explanation of what it studied, why it is relevant to the user question, and any limits of the retrieved context.
+- For paper summaries, summarize the specific paper named or clearly identified by the latest user turn. If the requested paper is not in the retrieved context, say you do not have enough context for that paper.
+- Avoid one-sentence answers when the user asks to explain, summarize, compare, or provide research papers.
+"""
 
 
 def _ensure_clients():
@@ -118,6 +130,98 @@ _TOPIC_THEME_MAP = {
   "education": "Education & Development",
   "development": "Education & Development",
   "omics": "Biosamples & Omics",
+}
+
+_VARIABLE_DISCOVERY_RE = re.compile(
+  r"\b("
+  r"what|which|find|show|list|search|give|return|identify|available|exist|exists|include|includes|contain|contains"
+  r")\b.*\b("
+  r"variable|variables|measure|measures|field|fields"
+  r")\b"
+  r"|\b(variable|variables|measure|measures|field|fields)\b.*\b("
+  r"available|exist|exists|related|about|for|on"
+  r")\b",
+  re.I,
+)
+
+_VARIABLE_DETAIL_RE = re.compile(
+  r"\b("
+  r"what does|what is|explain|define|meaning of|mean|means|"
+  r"items? of|questions? of|response options?|categories|values|scoring|score|"
+  r"calculated|derived|coded|coding|interpret|interpretation"
+  r")\b",
+  re.I,
+)
+
+_VARIABLE_SEARCH_STOPWORDS = {
+  "age", "air", "are",
+  "about", "available", "bib", "born", "bradford", "cohort", "cohorts", "contain", "contains", "data",
+  "dataset", "datasets", "does", "exist", "exists", "field", "fields", "find",
+  "give", "include", "includes", "item", "items", "list", "measure", "measures",
+  "different", "occur", "occurs", "quality", "related", "return", "search", "show", "study", "studies", "table", "tables", "the", "theme",
+  "themes", "variable", "variables", "what", "which", "with",
+  "wonder",
+}
+
+_VARIABLE_SYNONYMS: dict[str, list[str]] = {
+  "anxiety": ["anxiety", "anxious", "rcads", "gad", "worry", "worries", "panic", "fear", "phobia", "nervous"],
+  "depression": ["depression", "depressive", "depressed", "epds", "rcads", "mood", "sad", "low mood"],
+  "mental health": ["mental health", "wellbeing", "well-being", "anxiety", "depression", "stress", "mood", "sdq", "rcads", "epds"],
+  "wellbeing": ["wellbeing", "well-being", "quality of life", "life satisfaction", "happiness", "mood"],
+  "stress": ["stress", "stressed", "distress", "strain"],
+  "ethnicity": ["ethnicity", "ethnic", "race", "heritage", "country of birth", "language"],
+  "birthweight": ["birthweight", "birth weight", "birth_weight", "weight at birth"],
+  "gestation": ["gestation", "gestational", "gestational age", "pregnancy weeks", "term birth"],
+  "pregnancy": ["pregnancy", "pregnant", "antenatal", "maternity", "maternal", "gestation", "parity"],
+  "sleep": ["sleep", "bedtime", "insomnia", "night waking", "tired", "fatigue"],
+  "diet": ["diet", "dietary", "nutrition", "food", "fruit", "vegetable", "ffq", "food frequency"],
+  "smoking": ["smoking", "smoke", "smoker", "cigarette", "tobacco", "vaping", "vape"],
+  "alcohol": ["alcohol", "drinking", "drink", "units alcohol"],
+  "breastfeeding": ["breastfeeding", "breast feeding", "breastfeed", "breastfed", "infant feeding"],
+  "education": ["education", "educational", "school", "gcse", "ks1", "ks2", "ks4", "eyfs", "attainment"],
+  "school": ["school", "education", "attendance", "attainment", "eyfs", "ks1", "ks2", "ks4", "gcse"],
+  "development": ["development", "developmental", "cognitive", "language", "speech", "motor", "milestone"],
+  "physical activity": ["physical activity", "activity", "exercise", "sedentary", "sport"],
+  "bmi": ["bmi", "body mass index", "height", "weight", "obesity", "overweight", "adiposity"],
+  "obesity": ["obesity", "obese", "overweight", "bmi", "adiposity", "body mass"],
+  "pollution": ["pollution", "air pollution", "air quality", "no2", "pm10", "pm2.5", "pm25"],
+  "environment": ["environment", "environmental", "pollution", "green space", "greenspace", "neighbourhood", "neighborhood"],
+  "deprivation": ["deprivation", "deprived", "imd", "socioeconomic", "ses", "poverty"],
+  "income": ["income", "earnings", "salary", "benefits", "financial", "affluence", "fas"],
+  "postcode": ["postcode", "address", "lsoa", "ward", "geography", "geographic"],
+  "genetics": ["genetic", "genetics", "genotype", "genotyping", "dna", "snp", "polygenic", "omics"],
+  "omics": ["omics", "metabolomics", "proteomics", "glycomics", "methylation", "genomics"],
+  "biosample": ["biosample", "biobank", "sample", "blood", "serum", "plasma", "urine", "saliva"],
+  "hospital": ["hospital", "hes", "admission", "inpatient", "outpatient", "a&e", "emergency"],
+  "gp": ["gp", "general practice", "primary care", "prescription", "medication"],
+}
+
+_STUDY_FILTER_ALIASES: dict[str, list[str]] = {
+  "Age of Wonder": ["age of wonder", "ageofwonder", "aow"],
+  "Baseline": ["baseline", "bib_baseline"],
+  "BiB 1000": ["bib1000", "bib 1000", "bib_1000"],
+  "Growing Up": ["growing up", "growingup"],
+  "BiBBS": ["bibbs", "better start"],
+  "Core Cohort": ["cohortinfo", "cohort info", "core cohort"],
+  "Starting School": ["starting school", "startingschool"],
+  "Primary School Years": ["primary school", "primaryschoolyears"],
+  "Geographic Linkage": ["geographic", "geography", "postcode", "lsoa"],
+  "Biosamples & Biobank": ["biosamples", "biobank"],
+  "Metabolomics": ["metabolomics"],
+  "Proteomics": ["proteomics"],
+  "COVID-19 Surveys": ["covid", "covid-19"],
+}
+
+_BROAD_SYNONYM_KEYS = {
+  "bmi",
+  "development",
+  "education",
+  "environment",
+  "mental health",
+  "obesity",
+  "omics",
+  "pregnancy",
+  "school",
 }
 
 
@@ -244,6 +348,7 @@ def _build_variable_registry() -> dict[str, Any]:
   theme_counts: dict[str, int] = {}
 
   for _, row in vars_df.iterrows():
+    csv_variable_id = _clean_value(row.get("variable_id", ""))
     table_id = _clean_value(row.get("table_id", ""))
     project = _clean_value(row.get("project", ""))
     table_name = _clean_value(row.get("table", ""))
@@ -275,6 +380,7 @@ def _build_variable_registry() -> dict[str, Any]:
     )
 
     entry = {
+      "variable_id": csv_variable_id or f"{table_id}.{variable}".strip("."),
       "table": table_id,
       "table_name": table_name,
       "table_display": table_meta.get("display_name", ""),
@@ -296,6 +402,16 @@ def _build_variable_registry() -> dict[str, Any]:
     theme_counts[theme] = theme_counts.get(theme, 0) + 1
 
   rows.sort(key=lambda r: (r["theme"], r["table"], r["variable"]))
+  by_variable_id = {
+    row["variable_id"].lower(): row
+    for row in rows
+    if row.get("variable_id")
+  }
+  by_variable: dict[str, list[dict[str, Any]]] = {}
+  for row in rows:
+    variable = _clean_value(row.get("variable", ""))
+    if variable:
+      by_variable.setdefault(variable.lower(), []).append(row)
   themes = [{"name": name, "count": count} for name, count in sorted(
     theme_counts.items(), key=lambda item: (-item[1], item[0])
   )]
@@ -309,7 +425,466 @@ def _build_variable_registry() -> dict[str, Any]:
     },
     "themes": themes,
     "rows": rows,
+    "by_variable_id": by_variable_id,
+    "by_variable": by_variable,
   }
+
+
+def _identifier_in_text(identifier: str, text: str) -> bool:
+  if not identifier:
+    return False
+  pattern = rf"(?<![A-Za-z0-9_]){re.escape(identifier)}(?![A-Za-z0-9_])"
+  return re.search(pattern, text, flags=re.IGNORECASE) is not None
+
+
+def _table_parts(table_id: str) -> tuple[str, str, str]:
+  """Normalise current and legacy table IDs for answer-to-registry matching."""
+  table_id = _clean_value(table_id).lower()
+  if "." in table_id:
+    project, table = table_id.split(".", 1)
+  else:
+    project, table = "", table_id
+
+  project_base = re.sub(r"_20\d{2}$", "", project)
+  table_base = re.sub(r"_dr\d+$", "", table)
+  return project_base, table_base, table
+
+
+def _table_match_score(answer_table: str, registry_table: str) -> int:
+  """Score exact or legacy table aliases, e.g. survey_mod02_dr23 -> survey_mod02."""
+  answer_table = _clean_value(answer_table).lower()
+  registry_table = _clean_value(registry_table).lower()
+  if not answer_table or not registry_table:
+    return 0
+  if answer_table == registry_table:
+    return 100
+
+  answer_project, answer_base, answer_raw_table = _table_parts(answer_table)
+  registry_project, registry_base, _ = _table_parts(registry_table)
+  if answer_project and registry_project and answer_project != registry_project:
+    return 0
+  if answer_base != registry_base:
+    return 0
+
+  score = 60
+  release_match = re.search(r"_dr(\d{2})$", answer_raw_table)
+  if release_match and f"_20{release_match.group(1)}" in registry_table:
+    score += 30
+  return score
+
+
+def _extract_table_candidates(text: str) -> list[str]:
+  candidates = re.findall(r"\bBiB_[A-Za-z0-9_]+\.[A-Za-z0-9_]+\b", text)
+  seen: set[str] = set()
+  ordered: list[str] = []
+  for candidate in candidates:
+    key = candidate.lower()
+    if key not in seen:
+      seen.add(key)
+      ordered.append(candidate)
+  return ordered
+
+
+def _variable_export_record(row: dict[str, Any]) -> dict[str, str]:
+  return {
+    "variable_id": _clean_value(row.get("variable_id", "")),
+    "variable": _clean_value(row.get("variable", "")),
+    "table": _clean_value(row.get("table", "")),
+    "label": _clean_value(row.get("label", "")),
+    "description": _clean_value(row.get("description", "")),
+    "type": _clean_value(row.get("type", "")),
+    "non_missing": _clean_value(row.get("non_missing", "")),
+    "topic": _clean_value(row.get("topic", "")),
+    "theme": _clean_value(row.get("theme", "")),
+    "study_context": _clean_value(row.get("study_context", "")),
+  }
+
+
+def _normalise_search_text(text: str) -> str:
+  text = _clean_value(text).lower()
+  text = text.replace("_", " ")
+  text = re.sub(r"[^a-z0-9.+&/ -]+", " ", text)
+  return re.sub(r"\s+", " ", text).strip()
+
+
+def _term_in_text(term: str, text: str) -> bool:
+  term = _normalise_search_text(term)
+  text = _normalise_search_text(text)
+  if not term or not text:
+    return False
+  if re.search(r"[^a-z0-9]", term):
+    return term in text
+  return re.search(rf"\b{re.escape(term)}s?\b", text) is not None
+
+
+def _row_search_text(row: dict[str, Any]) -> str:
+  return " ".join(
+    _clean_value(row.get(field, ""))
+    for field in [
+      "variable_id", "variable", "label", "description", "topic", "theme",
+      "section", "table", "table_name", "table_display", "project",
+      "study_context", "entity_type",
+    ]
+  )
+
+
+def _looks_like_variable_discovery(question: str) -> bool:
+  if _looks_like_variable_detail_question(question):
+    return False
+  return bool(_VARIABLE_DISCOVERY_RE.search(question or ""))
+
+
+def _looks_like_variable_detail_question(question: str) -> bool:
+  q = _normalise_search_text(question)
+  if not q:
+    return False
+
+  if _VARIABLE_DETAIL_RE.search(q):
+    return True
+  if re.search(r"\b\d+\s+items?\b", q):
+    return True
+  if re.search(r"\bitems?\s+(?:in|for|from|on)\b", q):
+    return True
+  return False
+
+
+def _infer_study_filters(question: str) -> list[str]:
+  q = _normalise_search_text(question)
+  filters: list[str] = []
+  for study, aliases in _STUDY_FILTER_ALIASES.items():
+    if any(_term_in_text(alias, q) for alias in aliases):
+      filters.append(study)
+  return filters
+
+
+def _expand_variable_search_terms(question: str) -> list[str]:
+  q = _normalise_search_text(question)
+  terms: list[str] = []
+
+  def add(term: str) -> None:
+    term = _normalise_search_text(term)
+    if term and term not in terms:
+      terms.append(term)
+
+  for key, synonyms in _VARIABLE_SYNONYMS.items():
+    key_in_query = _term_in_text(key, q)
+    alias_in_query = key not in _BROAD_SYNONYM_KEYS and any(
+      _term_in_text(alias, q) for alias in synonyms
+    )
+    if key_in_query or alias_in_query:
+      for synonym in synonyms:
+        add(synonym)
+
+  for token in re.findall(r"\b[a-z][a-z0-9_]{2,}\b", question.lower()):
+    token_norm = _normalise_search_text(token)
+    if token_norm in _VARIABLE_SEARCH_STOPWORDS:
+      continue
+    if token_norm.startswith("bib_"):
+      continue
+    add(token_norm)
+
+  for phrase in re.findall(r"['\"]([^'\"]{3,80})['\"]", question):
+    add(phrase)
+
+  # Drop study aliases from content matching; they are handled as filters.
+  study_aliases = {
+    _normalise_search_text(alias)
+    for aliases in _STUDY_FILTER_ALIASES.values()
+    for alias in aliases
+  }
+  study_alias_tokens = {
+    token
+    for alias in study_aliases
+    for token in alias.split()
+    if len(token) > 3
+  }
+  filtered_terms = [
+    term for term in terms
+    if term not in study_aliases and term not in study_alias_tokens
+  ]
+
+  # For physical activity, standalone "activity" and "physical" are too broad:
+  # they match unrelated registry areas such as dental activity or physical IDs.
+  if "physical activity" in filtered_terms:
+    filtered_terms = [
+      term for term in filtered_terms
+      if term not in {"activity", "physical"}
+    ]
+  return filtered_terms
+
+
+def _variable_search_score(row: dict[str, Any], terms: list[str]) -> tuple[int, list[str]]:
+  if not terms:
+    return 1, []
+
+  weighted_fields = {
+    "variable_id": 5,
+    "variable": 5,
+    "label": 4,
+    "description": 3,
+    "topic": 3,
+    "theme": 3,
+    "section": 2,
+    "table": 2,
+    "table_display": 2,
+    "project": 1,
+    "study_context": 1,
+  }
+  score = 0
+  matched: list[str] = []
+  for term in terms:
+    term_score = 0
+    for field, weight in weighted_fields.items():
+      if _term_in_text(term, _clean_value(row.get(field, ""))):
+        term_score = max(term_score, weight)
+    if term_score:
+      score += term_score
+      matched.append(term)
+
+  return score, matched
+
+
+def _row_matches_study_filters(row: dict[str, Any], study_filters: list[str]) -> bool:
+  if not study_filters:
+    return True
+  study_context = _normalise_search_text(_clean_value(row.get("study_context", "")))
+  for study in study_filters:
+    study_norm = _normalise_search_text(study)
+    if not study_norm:
+      continue
+    if study_context == study_norm:
+      return True
+    if study_context.startswith(f"{study_norm} "):
+      return True
+    if study_context.startswith(f"{study_norm} ("):
+      return True
+  return False
+
+
+def _wants_variable_study_summary(question: str) -> bool:
+  """Detect variable questions that ask where matches occur, not just what matches."""
+  q = _normalise_search_text(question)
+  if not q:
+    return False
+  return bool(re.search(r"\b(cohort|cohorts|study|studies|wave|waves|where|occur|occurs)\b", q))
+
+
+def _summarise_variable_matches_by_study(matches: list[dict[str, str]]) -> list[dict[str, Any]]:
+  grouped: dict[str, dict[str, Any]] = {}
+  for row in matches:
+    study = _clean_value(row.get("study_context", "")) or "Study not inferred"
+    table = _clean_value(row.get("table", ""))
+    variable_id = _clean_value(row.get("variable_id", ""))
+    label = _clean_value(row.get("label", ""))
+
+    item = grouped.setdefault(
+      study,
+      {
+        "study_context": study,
+        "n_variables": 0,
+        "_tables": set(),
+        "examples": [],
+      },
+    )
+    item["n_variables"] += 1
+    if table:
+      item["_tables"].add(table)
+    if variable_id and len(item["examples"]) < 4:
+      example = {"variable_id": variable_id}
+      if label:
+        example["label"] = label
+      item["examples"].append(example)
+
+  summary: list[dict[str, Any]] = []
+  for item in grouped.values():
+    tables = sorted(item.pop("_tables"))
+    item["n_tables"] = len(tables)
+    item["tables"] = tables[:5]
+    summary.append(item)
+
+  summary.sort(key=lambda item: (-int(item.get("n_variables", 0) or 0), item.get("study_context", "")))
+  return summary
+
+
+def _search_variable_registry(
+  question: str,
+  limit: int = 5000,
+  require_discovery_intent: bool = True,
+) -> Optional[dict[str, Any]]:
+  """Complete CSV-backed variable discovery with synonym expansion."""
+  if require_discovery_intent and not _looks_like_variable_discovery(question):
+    return None
+
+  terms = _expand_variable_search_terms(question)
+  study_filters = _infer_study_filters(question)
+  if not terms and not study_filters:
+    return None
+
+  matches: list[dict[str, Any]] = []
+  for row in _get_variable_registry()["rows"]:
+    if not _row_matches_study_filters(row, study_filters):
+      continue
+
+    score, matched_terms = _variable_search_score(row, terms)
+    if terms and score <= 0:
+      continue
+
+    record = _variable_export_record(row)
+    record["matched_terms"] = ", ".join(matched_terms)
+    record["_score"] = str(score)
+    matches.append(record)
+
+  matches.sort(
+    key=lambda r: (
+      -float(r.get("_score", "0") or 0),
+      r.get("study_context", ""),
+      r.get("table", ""),
+      r.get("variable", ""),
+    )
+  )
+
+  total = len(matches)
+  limited = matches[: max(1, int(limit))]
+  for row in limited:
+    row.pop("_score", None)
+
+  study_summary = _summarise_variable_matches_by_study(matches) if _wants_variable_study_summary(question) else []
+
+  result = {
+    "query": question,
+    "terms": terms,
+    "study_filters": study_filters,
+    "total": total,
+    "returned": len(limited),
+    "truncated": total > len(limited),
+    "rows": limited,
+  }
+  if study_summary:
+    result["summary_mode"] = "study_context"
+    result["study_summary"] = study_summary
+  return result
+
+
+def _format_variable_discovery_answer(variable_results: dict[str, Any]) -> str:
+  total = int(variable_results.get("total", 0) or 0)
+  returned = int(variable_results.get("returned", 0) or 0)
+  study_filters = variable_results.get("study_filters") or []
+  terms = variable_results.get("terms") or []
+
+  if total == 0:
+    return (
+      "I could not find matching variables in the registry for that request. "
+      "Try a broader term or remove study/wave filters."
+    )
+
+  if variable_results.get("summary_mode") == "study_context":
+    summary = variable_results.get("study_summary") or []
+    term_text = f" Matched terms: {', '.join(terms[:8])}." if terms else ""
+    shown_summary = summary[:10]
+    lines = [
+      (
+        f"These variables occur across {len(summary)} study context/cohort "
+        f"label{'s' if len(summary) != 1 else ''} in the data dictionary registry "
+        f"({total} matching variable{'s' if total != 1 else ''})."
+      ),
+      "Study contexts with matching variables:",
+    ]
+    for item in shown_summary:
+      study = item.get("study_context") or "Study not inferred"
+      n_variables = int(item.get("n_variables", 0) or 0)
+      n_tables = int(item.get("n_tables", 0) or 0)
+      examples = [
+        example.get("variable_id", "")
+        for example in item.get("examples", [])
+        if example.get("variable_id")
+      ][:3]
+      table_text = f" across {n_tables} table{'s' if n_tables != 1 else ''}" if n_tables else ""
+      example_text = f" Examples: {', '.join(examples)}." if examples else ""
+      lines.append(
+        f"- {study}: {n_variables} variable{'s' if n_variables != 1 else ''}{table_text}.{example_text}"
+      )
+    if len(summary) > len(shown_summary):
+      lines.append(
+        f"- {len(summary) - len(shown_summary)} more study context/cohort "
+        "labels are included in the exportable results below."
+      )
+    if term_text:
+      lines.append(term_text.strip())
+    if variable_results.get("truncated"):
+      lines.append(
+        f"The first {returned} variable rows are shown below; use Add all or Export CSV for the available set."
+      )
+    else:
+      lines.append("The full matching variable set is shown below and can be added to the export basket.")
+    return "\n".join(lines)
+
+  scope = f" in {', '.join(study_filters)}" if study_filters else ""
+  term_text = f" Matching terms included: {', '.join(terms[:8])}." if terms else ""
+  truncated = (
+    f" The first {returned} are available below; use Add all or Export CSV for the full set."
+    if variable_results.get("truncated")
+    else " The complete set is shown below and can be added to the export basket."
+  )
+  return (
+    f"I found {total} matching variable{'s' if total != 1 else ''}{scope} "
+    f"using the data dictionary registry.{term_text}{truncated}"
+  )
+
+
+def _extract_variables_for_export(text: str, limit: int = 80) -> list[dict[str, str]]:
+  """Find valid registry variables mentioned in a chat answer for UX export."""
+  if not text:
+    return []
+
+  registry = _get_variable_registry()
+  by_variable_id = registry.get("by_variable_id", {})
+  by_variable = registry.get("by_variable", {})
+  selected: dict[str, dict[str, str]] = {}
+  table_candidates = _extract_table_candidates(text)
+
+  full_id_candidates = re.findall(
+    r"\bBiB_[A-Za-z0-9_]+\.[A-Za-z0-9_]+\.[A-Za-z0-9_]+\b",
+    text,
+  )
+  for variable_id in full_id_candidates:
+    row = by_variable_id.get(variable_id.lower())
+    if row:
+      selected[variable_id] = _variable_export_record(row)
+
+  if len(selected) >= limit:
+    return list(selected.values())[:limit]
+
+  variable_candidates = {
+    token.lower()
+    for token in re.findall(r"\b[A-Za-z][A-Za-z0-9_]{1,}\b", text)
+  }
+  for variable_l in variable_candidates:
+    matches = by_variable.get(variable_l, [])
+    if not matches:
+      continue
+    variable = matches[0].get("variable", "")
+
+    if len(matches) == 1:
+      # Avoid exporting generic prose matches such as "relationship" from paper
+      # summaries. Full variable IDs are handled above; this fallback is only
+      # for code-like variable names such as rcad_total_cat or awb7_3_foo.
+      if "_" not in variable and not re.search(r"\d", variable):
+        continue
+      row = matches[0]
+      selected.setdefault(row.get("variable_id", ""), _variable_export_record(row))
+      continue
+
+    # For duplicated names like "id", require the table to be present too.
+    for row in matches:
+      table_id = _clean_value(row.get("table", ""))
+      if table_id and any(
+        _table_match_score(candidate, table_id) > 0 for candidate in table_candidates
+      ):
+        selected.setdefault(row.get("variable_id", ""), _variable_export_record(row))
+      if len(selected) >= limit:
+        return list(selected.values())[:limit]
+
+  return list(selected.values())[:limit]
 
 
 def _get_variable_registry() -> dict[str, Any]:
@@ -468,13 +1043,29 @@ def chat_endpoint():
         return jsonify({"error": "Vector database not initialised — run --build first"}), 503
 
     try:
+        variable_results = _search_variable_registry(question)
+        if variable_results:
+            answer = _format_variable_discovery_answer(variable_results)
+            result: dict = {
+                "answer": answer,
+                "variables": variable_results.get("rows", []),
+                "variable_results": variable_results,
+            }
+            if show_ctx:
+                result["context"] = ""
+            return jsonify(result)
+
         context = retrieve_context(question, chroma_client)
         answer  = rag_query(
             question, chroma_client, llm_client,
             model=current_model, show_context=False,
             history=history,
+            system_prompt=PRODUCTION_SYSTEM_PROMPT,
         )
-        result: dict = {"answer": answer}
+        result: dict = {
+            "answer": answer,
+            "variables": _extract_variables_for_export(answer),
+        }
         if show_ctx:
             result["context"] = context
         return jsonify(result)
@@ -494,6 +1085,8 @@ def chat_stream_endpoint():
     Returns: text/event-stream with events:
       data: {"token": "..."}    — each generated token
       data: {"replace": "..."}  — footer was stripped; replace full message
+      data: {"variables": [...]} — validated variables mentioned in the answer
+      data: {"variable_results": {...}} — complete registry search for variable-discovery questions
       data: {"error": "..."}    — error occurred
       data: {"done": true}      — generation complete
     """
@@ -513,9 +1106,19 @@ def chat_stream_endpoint():
     def generate():
         full_text = ""
         try:
+            variable_results = _search_variable_registry(question)
+            if variable_results:
+                full_text = _format_variable_discovery_answer(variable_results)
+                yield f"data: {json.dumps({'token': full_text})}\n\n"
+                yield f"data: {json.dumps({'variables': variable_results.get('rows', [])})}\n\n"
+                yield f"data: {json.dumps({'variable_results': variable_results})}\n\n"
+                yield 'data: {"done": true}\n\n'
+                return
+
             for token in rag_query_stream(
                 question, chroma_client, llm_client,
                 model=current_model, history=history,
+                system_prompt=PRODUCTION_SYSTEM_PROMPT,
             ):
                 full_text += token
                 yield f"data: {json.dumps({'token': token})}\n\n"
@@ -524,6 +1127,11 @@ def chat_stream_endpoint():
             cleaned = _strip_filler(full_text)
             if cleaned != full_text:
                 yield f"data: {json.dumps({'replace': cleaned})}\n\n"
+            full_text = cleaned
+
+            variables = _extract_variables_for_export(full_text)
+            if variables:
+                yield f"data: {json.dumps({'variables': variables})}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
@@ -681,6 +1289,328 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   }
   .suggestion-btn:hover { background: #d0e0f8; border-color: var(--bib-blue); }
 
+  #variable-basket {
+    background: #fff;
+    border-top: 1px solid #e0e4ef;
+    padding: 10px 20px;
+    box-shadow: 0 -1px 6px rgba(0,0,0,.04);
+  }
+  .basket-row {
+    max-width: 920px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .basket-title {
+    color: var(--bib-blue);
+    font-size: .84rem;
+    font-weight: 700;
+  }
+  #basket-count {
+    display: inline-block;
+    margin-left: 6px;
+    background: #e8f0fb;
+    border-radius: 999px;
+    padding: 1px 8px;
+    color: #14397a;
+  }
+  #basket-list {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+  }
+  .basket-empty {
+    color: #7a8499;
+    font-size: .78rem;
+  }
+  .var-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eef4ff;
+    border: 1px solid #c3d4f0;
+    border-radius: 999px;
+    padding: 4px 6px 4px 10px;
+    white-space: nowrap;
+  }
+  .var-chip code { color: #14397a; font-size: .78rem; }
+  .var-chip button,
+  .basket-actions button,
+  .detected-vars button {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .var-chip button {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #d5e2fb;
+    color: #42506b;
+  }
+  .var-chip button:hover { background: #c24747; color: #fff; }
+  .basket-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .basket-actions button {
+    border-radius: 8px;
+    padding: 7px 11px;
+    font-size: .78rem;
+  }
+  #export-vars { background: var(--bib-blue); color: #fff; }
+  #clear-vars { background: #e9eef8; color: #42506b; }
+  .basket-actions button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+  .detected-vars {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #d0d8e8;
+    white-space: normal;
+  }
+  .detected-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    color: #42506b;
+    font-size: .8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .add-all-vars {
+    background: var(--bib-blue);
+    color: #fff;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: .76rem;
+  }
+  .detected-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 7px;
+  }
+  .detected-var {
+    background: #f7f9fe;
+    border: 1px solid #d0d8e8 !important;
+    border-radius: 9px;
+    padding: 8px 10px;
+    text-align: left;
+    color: #1a1a2e;
+  }
+  .detected-var:hover { border-color: var(--bib-blue) !important; background: #fff; }
+  .detected-var code { display: block; margin-bottom: 3px; }
+  .detected-var span {
+    display: block;
+    color: #5f6f91;
+    font-size: .76rem;
+    line-height: 1.3;
+  }
+  .study-summary {
+    background: linear-gradient(145deg, #ffffff 0%, #eef5ff 100%);
+    border: 1px solid #d0d8e8;
+    border-radius: 14px;
+    padding: 14px;
+    white-space: normal;
+  }
+  .study-summary-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .study-summary-head strong {
+    display: block;
+    color: #14397a;
+    font-size: .98rem;
+  }
+  .study-summary-head span {
+    display: block;
+    color: #52647f;
+    font-size: .8rem;
+    line-height: 1.35;
+    margin-top: 2px;
+  }
+  .study-term-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .study-term-pills span {
+    background: #dfeaff;
+    border: 1px solid #bfd0ef;
+    border-radius: 999px;
+    color: #14397a;
+    font-size: .74rem;
+    padding: 3px 8px;
+  }
+  .study-summary-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 9px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
+  .study-card {
+    background: rgba(255,255,255,.92);
+    border: 1px solid #d3ddf1;
+    border-radius: 11px;
+    padding: 10px;
+  }
+  .study-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .study-card-top strong {
+    color: #122b57;
+    display: block;
+    font-size: .86rem;
+  }
+  .study-card-top span {
+    color: #667691;
+    display: block;
+    font-size: .76rem;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+  .study-card-top button {
+    background: var(--bib-blue);
+    border: 0;
+    border-radius: 999px;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: inherit;
+    font-size: .72rem;
+    padding: 4px 9px;
+  }
+  .study-vars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 190px;
+    margin-top: 8px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
+  .study-vars button {
+    background: #fbfdff;
+    border: 1px solid #d3ddf1;
+    border-radius: 9px;
+    color: #1a1a2e;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 6px 8px;
+    text-align: left;
+  }
+  .study-vars button:hover {
+    background: #f1f6ff;
+    border-color: var(--bib-blue);
+  }
+  .study-vars code {
+    background: #edf3ff !important;
+    color: #14397a;
+    display: block;
+    font-size: .72rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .study-vars span {
+    color: #667691;
+    display: block;
+    font-size: .72rem;
+    line-height: 1.3;
+    margin-top: 3px;
+  }
+  .study-card-note {
+    color: #687895;
+    font-size: .72rem;
+    line-height: 1.3;
+    margin-top: 7px;
+  }
+  .study-summary-note {
+    color: #687895;
+    font-size: .76rem;
+    line-height: 1.3;
+    margin-top: 10px;
+  }
+  .variable-results {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #d0d8e8;
+    white-space: normal;
+  }
+  .variable-results-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    color: #42506b;
+    font-size: .8rem;
+    margin-bottom: 8px;
+  }
+  .variable-results-head strong { color: #14397a; }
+  .variable-results-meta,
+  .variable-results-more {
+    color: #687895;
+    font-size: .76rem;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+  .add-all-results {
+    background: var(--bib-blue);
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: .76rem;
+    cursor: pointer;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  .variable-results-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 7px;
+    max-height: 460px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
+  .variable-result {
+    background: #f7f9fe;
+    border: 1px solid #d0d8e8 !important;
+    border-radius: 9px;
+    padding: 8px 10px;
+    text-align: left;
+    color: #1a1a2e;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .variable-result:hover { border-color: var(--bib-blue) !important; background: #fff; }
+  .variable-result code { display: block; margin-bottom: 3px; }
+  .variable-result span {
+    display: block;
+    color: #5f6f91;
+    font-size: .76rem;
+    line-height: 1.3;
+  }
+  .variable-results-more {
+    margin-top: 8px;
+  }
+
   #input-bar {
     background: #fff;
     border-top: 1px solid #e0e4ef;
@@ -792,6 +1722,17 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   </div>
 </div>
 
+<div id="variable-basket">
+  <div class="basket-row">
+    <div class="basket-title">Selected variables <span id="basket-count">0</span></div>
+    <div id="basket-list"></div>
+    <div class="basket-actions">
+      <button id="export-vars" type="button" disabled>Export CSV</button>
+      <button id="clear-vars" type="button" disabled>Clear</button>
+    </div>
+  </div>
+</div>
+
 <div id="input-bar">
   <textarea id="q-input" rows="1" placeholder="Ask about the BiB dataset, variables, papers, or analysis plans…"
             onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
@@ -804,6 +1745,8 @@ const input    = document.getElementById('q-input');
 const sendBtn  = document.getElementById('send-btn');
 let thinking   = null;
 const convHistory = [];  // tracks turns for multi-turn context
+const selectedVariables = new Map();
+const STORAGE_KEY = 'bibSelectedVariables';
 
 function autoResize(el) {
   el.style.height = 'auto';
@@ -832,6 +1775,248 @@ function removeThinking() { if (thinking) { thinking.remove(); thinking = null; 
 
 function escHtml(t) {
   return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function csvEscape(value) {
+  const text = String(value || '');
+  if (/[",\n\r]/.test(text)) return '"' + text.replace(/"/g, '""') + '"';
+  return text;
+}
+function variableKey(v) {
+  return v.variable_id || [v.table, v.variable].filter(Boolean).join('.');
+}
+function loadSelectedVariables() {
+  try {
+    const rows = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
+    rows.forEach(v => {
+      const key = variableKey(v);
+      if (key) selectedVariables.set(key, v);
+    });
+  } catch {
+    selectedVariables.clear();
+  }
+}
+function saveSelectedVariables() {
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(selectedVariables.values())));
+}
+function renderBasket() {
+  const rows = Array.from(selectedVariables.values());
+  const countEl = document.getElementById('basket-count');
+  const listEl = document.getElementById('basket-list');
+  const exportBtn = document.getElementById('export-vars');
+  const clearBtn = document.getElementById('clear-vars');
+
+  countEl.textContent = String(rows.length);
+  exportBtn.disabled = rows.length === 0;
+  clearBtn.disabled = rows.length === 0;
+
+  if (!rows.length) {
+    listEl.innerHTML = '<div class="basket-empty">Add variables from chat results to export them.</div>';
+    return;
+  }
+
+  listEl.innerHTML = rows.map(v => `
+    <span class="var-chip" title="${escHtml(v.variable_id || '')}">
+      <code>${escHtml(v.variable || v.variable_id)}</code>
+      <button type="button" data-remove-var="${escHtml(variableKey(v))}" title="Remove">x</button>
+    </span>
+  `).join('');
+
+  listEl.querySelectorAll('[data-remove-var]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedVariables.delete(btn.getAttribute('data-remove-var'));
+      saveSelectedVariables();
+      renderBasket();
+    });
+  });
+}
+function addVariable(v) {
+  const key = variableKey(v);
+  if (!key) return;
+  selectedVariables.set(key, v);
+  saveSelectedVariables();
+  renderBasket();
+}
+function exportSelectedVariables() {
+  const rows = Array.from(selectedVariables.values());
+  if (!rows.length) return;
+  const headers = [
+    'variable_id', 'variable', 'table', 'label', 'description',
+    'type', 'non_missing', 'topic', 'theme', 'study_context'
+  ];
+  const csv = [
+    headers.join(','),
+    ...rows.map(row => headers.map(h => csvEscape(row[h])).join(',')),
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bib-selected-variables.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function renderVariablePicker(container, variables) {
+  if (!container || !variables || !variables.length) return;
+  const unique = [];
+  const seen = new Set();
+  variables.forEach(v => {
+    const key = variableKey(v);
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      unique.push(v);
+    }
+  });
+  if (!unique.length) return;
+
+  const picker = document.createElement('div');
+  picker.className = 'detected-vars';
+  picker.innerHTML = `
+    <div class="detected-head">
+      <span>${unique.length} variable${unique.length === 1 ? '' : 's'} found</span>
+      <button type="button" class="add-all-vars">Add all</button>
+    </div>
+    <div class="detected-list">
+      ${unique.map(v => `
+        <button type="button" class="detected-var" data-var-key="${escHtml(variableKey(v))}">
+          <code>${escHtml(v.variable || v.variable_id)}</code>
+          <span>${escHtml(v.label || v.table || '')}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+  container.appendChild(picker);
+
+  picker.querySelector('.add-all-vars').addEventListener('click', () => {
+    unique.forEach(addVariable);
+  });
+  picker.querySelectorAll('[data-var-key]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = unique.find(v => variableKey(v) === btn.getAttribute('data-var-key'));
+      if (row) addVariable(row);
+    });
+  });
+}
+function renderVariableStudySummary(container, result) {
+  const summary = result.study_summary || [];
+  if (!container || !summary.length) return;
+
+  const terms = (result.terms || []).slice(0, 8);
+  const rows = result.rows || [];
+  const rowByKey = new Map(rows.map(row => [variableKey(row), row]));
+  const panel = document.createElement('div');
+  panel.className = 'study-summary';
+  panel.innerHTML = `
+    <div class="study-summary-head">
+      <div>
+        <strong>Variables by study/cohort</strong>
+        <span>${result.total} matching variable${result.total === 1 ? '' : 's'} across ${summary.length} study context/cohort label${summary.length === 1 ? '' : 's'}</span>
+      </div>
+      ${terms.length ? `
+        <div class="study-term-pills">
+          ${terms.map(term => `<span>${escHtml(term)}</span>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+    <div class="study-summary-list">
+      ${summary.map((item, idx) => {
+        const studyRows = rows.filter(row => row.study_context === item.study_context);
+        const examples = studyRows.length
+          ? studyRows
+          : (item.examples || []).map(example => ({
+              variable_id: example.variable_id,
+              variable: example.variable_id,
+              label: example.label,
+            }));
+        const nVars = Number(item.n_variables || 0);
+        const nTables = Number(item.n_tables || 0);
+        return `
+          <div class="study-card">
+            <div class="study-card-top">
+              <div>
+                <strong>${escHtml(item.study_context || 'Study not inferred')}</strong>
+                <span>${nVars} variable${nVars === 1 ? '' : 's'} · ${nTables} table${nTables === 1 ? '' : 's'}</span>
+              </div>
+              <button type="button" data-study-index="${idx}">Add cohort</button>
+            </div>
+            ${examples.length ? `
+              <div class="study-vars" aria-label="Variables in ${escHtml(item.study_context || 'study')}">
+                ${examples.map(row => `
+                  <button type="button" data-study-var-key="${escHtml(variableKey(row))}">
+                    <code>${escHtml(row.variable_id || row.variable || '')}</code>
+                    <span>${escHtml(row.label || row.table || '')}</span>
+                  </button>
+                `).join('')}
+              </div>
+              ${studyRows.length && studyRows.length < nVars ? `<div class="study-card-note">Showing ${studyRows.length} of ${nVars} variables for this cohort.</div>` : ''}
+            ` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div class="study-summary-note">
+      The full matching variable set is shown below for review and CSV export.
+    </div>
+  `;
+  container.appendChild(panel);
+
+  panel.querySelectorAll('[data-study-index]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = summary[Number(btn.getAttribute('data-study-index'))];
+      const study = item && item.study_context;
+      rows
+        .filter(row => row.study_context === study)
+        .forEach(addVariable);
+    });
+  });
+  panel.querySelectorAll('[data-study-var-key]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = rowByKey.get(btn.getAttribute('data-study-var-key'));
+      if (row) addVariable(row);
+    });
+  });
+}
+function renderVariableResults(container, result) {
+  if (!container || !result || !result.rows || !result.rows.length) return;
+  const rows = result.rows;
+  const terms = (result.terms || []).slice(0, 10).join(', ');
+  const filters = (result.study_filters || []).join(', ');
+
+  const panel = document.createElement('div');
+  panel.className = 'variable-results';
+  panel.innerHTML = `
+    <div class="variable-results-head">
+      <div>
+        <strong>${result.total} variable${result.total === 1 ? '' : 's'} found</strong>
+        <div class="variable-results-meta">
+          ${terms ? `Matched terms: ${escHtml(terms)}` : 'Matched by registry filters'}
+          ${filters ? ` · Study: ${escHtml(filters)}` : ''}
+          ${result.truncated ? ` · Showing ${result.returned}` : ''}
+        </div>
+      </div>
+      <button type="button" class="add-all-results">Add all</button>
+    </div>
+    <div class="variable-results-list">
+      ${rows.map(v => `
+        <button type="button" class="variable-result" data-var-key="${escHtml(variableKey(v))}">
+          <code>${escHtml(v.variable_id || v.variable)}</code>
+          <span>${escHtml(v.label || v.table || '')}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+  container.appendChild(panel);
+
+  panel.querySelector('.add-all-results').addEventListener('click', () => {
+    rows.forEach(addVariable);
+  });
+  panel.querySelectorAll('[data-var-key]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = rows.find(v => variableKey(v) === btn.getAttribute('data-var-key'));
+      if (row) addVariable(row);
+    });
+  });
 }
 function renderMdTable(lines) {
   const rows = lines.filter(l => !l.trim().match(/^\|[-: |]+\|$/));
@@ -897,6 +2082,8 @@ async function sendMessage() {
 
   let msgEl    = null;
   let fullText = '';
+  let detectedVariables = [];
+  let variableResults = null;
 
   try {
     const res = await fetch('/api/chat/stream', {
@@ -941,8 +2128,26 @@ async function sendMessage() {
           removeThinking();
           appendMsg('assistant error-msg', '⚠ ' + escHtml(evt.error));
         }
+        if (evt.variables) {
+          detectedVariables = evt.variables;
+        }
+        if (evt.variable_results) {
+          variableResults = evt.variable_results;
+        }
         if (evt.done) {
-          if (msgEl) msgEl.innerHTML = formatAnswer(fullText);
+          if (!msgEl) { removeThinking(); msgEl = appendMsg('assistant', ''); }
+          if (variableResults && variableResults.rows && variableResults.rows.length) {
+            if (variableResults.summary_mode === 'study_context' && variableResults.study_summary) {
+              msgEl.innerHTML = '';
+              renderVariableStudySummary(msgEl, variableResults);
+            } else {
+              msgEl.innerHTML = formatAnswer(fullText);
+            }
+            renderVariableResults(msgEl, variableResults);
+          } else {
+            msgEl.innerHTML = formatAnswer(fullText);
+            renderVariablePicker(msgEl, detectedVariables);
+          }
           convHistory.push({ role: 'assistant', content: fullText });
           chatLog.scrollTop = chatLog.scrollHeight;
         }
@@ -957,6 +2162,14 @@ async function sendMessage() {
   }
 }
 
+document.getElementById('export-vars').addEventListener('click', exportSelectedVariables);
+document.getElementById('clear-vars').addEventListener('click', () => {
+  selectedVariables.clear();
+  saveSelectedVariables();
+  renderBasket();
+});
+loadSelectedVariables();
+renderBasket();
 input.focus();
 </script>
 </body>
@@ -1306,7 +2519,6 @@ REGISTRY_HTML = r"""<!DOCTYPE html>
 <div class="page">
   <section class="hero">
     <div class="hero-card">
-      <h2>Real variables first</h2>
       <p>
         This page implements the new metadata layer for the BiB assistant. It uses only
         real data dictionary sources — the HTML files in <span class="mono">docs/</span> plus the CSV metadata tables — to build a finite, auditable registry of valid variables. Themes are assigned from metadata signals such as topic, section headings, labels, and table context.
@@ -1531,6 +2743,7 @@ function selectRow(row) {
   document.getElementById('detail-body').innerHTML = `
     <dl>
       <dt>Variable</dt><dd><span class="mono">${escHtml(row.variable)}</span></dd>
+      <dt>Variable ID</dt><dd><span class="mono">${escHtml(row.variable_id || '')}</span></dd>
       <dt>Label</dt><dd>${detailValue(row.label)}</dd>
       <dt>Description</dt><dd>${detailValue(row.description)}</dd>
       <dt>Study</dt><dd><span class="pill study-chip">${escHtml(row.study_context || 'Study not inferred')}</span></dd>
@@ -1603,6 +2816,35 @@ def registry_api():
         "total": total,
         "rows": rows[:limit],
     })
+
+
+@app.route("/api/variables/search")
+def variables_search_api():
+    """Complete variable discovery endpoint backed by the CSV registry."""
+    q = (request.args.get("q") or "").strip()
+    if not q:
+        return jsonify({"error": "q is required"}), 400
+    try:
+        limit = max(1, min(int(request.args.get("limit", 5000)), 10000))
+    except ValueError:
+        limit = 5000
+
+    result = _search_variable_registry(
+        q,
+        limit=limit,
+        require_discovery_intent=False,
+    )
+    if result is None:
+        result = {
+            "query": q,
+            "terms": [],
+            "study_filters": [],
+            "total": 0,
+            "returned": 0,
+            "truncated": False,
+            "rows": [],
+        }
+    return jsonify(result)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

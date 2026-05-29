@@ -366,6 +366,14 @@ cd BornInBradford-datadict/llm_poc
   --run-name faithfulness_baseline
 ```
 
+To test question-anchor context formatting without changing the default retriever, add:
+
+```bash
+--context-format question_anchors
+```
+
+This prepends exact question-matched evidence lines to the answer model context while keeping the raw retrieved context available in outputs when `--include-context` is used.
+
 Method used:
 
 - Generate RAG answers with the baseline answer model (Qwen by default).

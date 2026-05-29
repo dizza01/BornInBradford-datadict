@@ -157,9 +157,11 @@ Usage
         --answer-endpoint-url https://riu8fhweetx0zk2a.us-east-1.aws.endpoints.huggingface.cloud \
         --external-judge-model meta-llama/Llama-3.1-70B-Instruct \
         --qwen-judge-model Qwen/Qwen2.5-72B-Instruct \
+        --context-format question_anchors \
+        --answer-endpoint-mode handler_structured \
         --judge-retries 2 \
         --include-context \
-        --run-name faithfulness_llama-3-1-8b-bib-grounded-sf-tfx-endpointmode-nots
+        --run-name faithfulness_llama-3-1-8b-bib-grounded-sf-anchored
 
      ../../.venv/bin/python eval/run_faithfulness_eval_updated.py \
         --triples eval/evaluation_datasets/triples/train_dev_val/sft_test.jsonl \
@@ -334,6 +336,7 @@ from bib_research_assistant import (
     SYSTEM_PROMPT,
     _get_hf_client,
     _strip_filler,
+    format_context_with_question_anchors,
     get_chroma_client,
     retrieve_context,
 )
@@ -492,6 +495,16 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=5,
         help="Top-k paper chunks for dense retrieval mode.",
+    )
+    parser.add_argument(
+        "--context-format",
+        type=str,
+        choices=["raw", "question_anchors"],
+        default="raw",
+        help=(
+            "Context formatting passed to the answer model. "
+            "raw preserves current behavior; question_anchors prepends question-matched evidence lines."
+        ),
     )
     parser.add_argument(
         "--external-judge-model",
@@ -1389,11 +1402,19 @@ def _retrieve_context_dense(question: str, client: Any, n_results: int) -> str:
     # Variables (same as baseline)
     try:
         vars_col = client.get_collection("bib_variables")
-        results = vars_col.query(query_texts=[question], n_results=n_results * 2)
+        results = vars_col.query(
+            query_texts=[question],
+            n_results=n_results * 2,
+            include=["documents", "metadatas"],
+        )
         docs = results["documents"][0]
+        metas = results["metadatas"][0]
         if docs:
             context_parts.append("\n## Relevant Variables\n")
-            for doc in docs:
+            for doc, meta in zip(docs, metas):
+                meta = meta or {}
+                if "Variable ID:" not in doc and meta.get("variable_id"):
+                    doc = f"Variable ID: {meta.get('variable_id')}\n{doc}"
                 context_parts.append(f"```\n{doc}\n```\n")
     except Exception as exc:
         context_parts.append(f"[Variables collection unavailable: {exc}]\n")
@@ -1916,6 +1937,7 @@ def _append_comparison_csv(
         "avg_answer_tokens",
         "answer_tokens_per_retrieved_token",
         "retrieval_mode",
+        "context_format",
         "dense_top_k",
         "answer_model",
         "triples",
@@ -2003,6 +2025,7 @@ def _append_comparison_csv(
                     "avg_answer_tokens": generation_quality.get("avg_answer_tokens", ""),
                     "answer_tokens_per_retrieved_token": generation_quality.get("answer_tokens_per_retrieved_token", ""),
                     "retrieval_mode": config.get("retrieval_mode", ""),
+                    "context_format": config.get("context_format", ""),
                     "dense_top_k": config.get("dense_top_k", ""),
                     "answer_model": config.get("answer_model", ""),
                     "triples": config.get("triples", ""),
@@ -2060,6 +2083,7 @@ def main() -> None:
 
     print(f"📥 Loaded questions: {len(triples)}")
     print(f"🔎 Retrieval mode: {args.retrieval_mode}")
+    print(f"🧭 Context format: {args.context_format}")
     print(f"🤖 Answer model: {args.answer_model}")
     print(f"🤖 Answer API mode: {args.answer_api_mode}")
     if args.answer_api_mode == "hf_endpoint":
@@ -2105,18 +2129,25 @@ def main() -> None:
         is_gibberish_answer = False
         try:
             t_retrieval_start = time.perf_counter()
-            context = _retrieve_context_for_eval(
+            raw_context = _retrieve_context_for_eval(
                 question=question,
                 client=chroma_client,
                 retrieval_mode=args.retrieval_mode,
                 dense_top_k=args.dense_top_k,
             )
+            if args.context_format == "question_anchors":
+                answer_context = format_context_with_question_anchors(
+                    question=question,
+                    context=raw_context,
+                )
+            else:
+                answer_context = raw_context
             retrieval_ms = (time.perf_counter() - t_retrieval_start) * 1000.0
 
             t_answer_start = time.perf_counter()
             answer = _generate_rag_answer(
                 question=question,
-                context=context,
+                context=answer_context,
                 llm_client=rag_client,
                 model=answer_model_for_call,
                 max_tokens=args.answer_max_tokens,
@@ -2164,7 +2195,7 @@ def main() -> None:
                 t_ext_start = time.perf_counter()
                 ext = _judge_faithfulness(
                     question=question,
-                    context=context,
+                    context=raw_context,
                     answer=answer,
                     judge_client=ext_judge_client,
                     judge_model=args.external_judge_model,
@@ -2178,7 +2209,7 @@ def main() -> None:
                 t_qwn_start = time.perf_counter()
                 qwn = _judge_faithfulness(
                     question=question,
-                    context=context,
+                    context=raw_context,
                     answer=answer,
                     judge_client=qwen_judge_client,
                     judge_model=args.qwen_judge_model,
@@ -2216,7 +2247,8 @@ def main() -> None:
         correctness_f1 = _token_f1(pred=answer, gold=reference_answer)
         answer_exact_match = _is_exact_match(answer=answer, reference_answer=reference_answer)
 
-        retrieved_tokens = _estimate_token_count(context)
+        retrieved_tokens = _estimate_token_count(answer_context)
+        raw_retrieved_tokens = _estimate_token_count(raw_context)
         answer_tokens = _estimate_token_count(answer)
         total_ms = retrieval_ms + answer_ms + ext_judge_ms + qwen_judge_ms
 
@@ -2232,6 +2264,7 @@ def main() -> None:
             "answer_correctness_token_f1": correctness_f1,
             "answer_exact_match": answer_exact_match,
             "retrieved_tokens": retrieved_tokens,
+            "raw_retrieved_tokens": raw_retrieved_tokens,
             "answer_tokens": answer_tokens,
             "latency_retrieval_ms": retrieval_ms,
             "latency_answer_ms": answer_ms,
@@ -2252,7 +2285,9 @@ def main() -> None:
             result["classifier_decision_source_external"] = "gibberish_answer"
             result["classifier_decision_source_qwen"] = "gibberish_answer"
         if args.include_context:
-            result["retrieved_context"] = context
+            result["retrieved_context"] = raw_context
+            if args.context_format != "raw":
+                result["answer_context"] = answer_context
 
         per_query.append(result)
 
@@ -2283,6 +2318,7 @@ def main() -> None:
         "config": {
             "triples": str(args.triples),
             "retrieval_mode": args.retrieval_mode,
+            "context_format": args.context_format,
             "dense_top_k": args.dense_top_k,
             "answer_model": args.answer_model,
             "answer_api_mode": args.answer_api_mode,

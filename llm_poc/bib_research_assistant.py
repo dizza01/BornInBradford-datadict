@@ -536,6 +536,7 @@ def build_variables_collection(
 
         # Build rich text for embedding
         parts = [
+            f"Variable ID: {var_id}",
             f"Table: {table_id}",
             f"Variable: {variable}",
             f"Label: {label}",
@@ -645,7 +646,7 @@ Data structure:
 - Projects include: BiB_CohortInfo, BiB_Baseline, BiB_1000, BiB_AgeOfWonder, BiB_GrowingUp, BiB_Geographic, BiB_Biosamples, BiB_Metabolomics
 
 When answering:
-1. If the user asks about BiB variables or tables, cite specific variable names and table IDs.
+1. If the user asks about BiB variables or tables, cite specific variable names, full variable IDs, and table IDs.
 2. If the user asks about published studies, answer directly from the study context (title, year, key findings).
 3. If the user asks about questionnaire wording, modules, or survey instruments, answer from questionnaire context and cite the questionnaire title where possible.
 4. Note data quality issues (n_complete, cohort waves) when directly relevant to the question.
@@ -664,11 +665,11 @@ Context retrieved from the BiB knowledge base is provided below. Use it to groun
 Important style rules:
 - Never open with filler phrases such as "Certainly!", "Of course!", "Sure!", "Absolutely!", "Great question!", "Happy to help!", or similar. Begin your response directly with the substantive answer.
 - Do NOT append generic boilerplate sections at the end of your response, such as "### Privacy Rules", "### Limitations", "### Note", "### Important", "### Disclaimer", or closing lines like "If you need further assistance…", "Feel free to ask!", "Let me know if…", or similar. End your answer when the content is complete.
-- When listing multiple variables, use a compact markdown table instead of nested bullet points. Preferred format:
+- When listing multiple variables, always include the full `variable_id` as a column. Use a compact markdown table instead of nested bullet points. Preferred format:
 
-  | Variable | Table | Label | Type | N (non-missing) |
-  |---|---|---|---|---|
-  | rcad_ga | BiB_AgeOfWonder.survey_mod232_derived_dr24 | RCADS-25 General anxiety. Raw score | integer | 8421 |
+  | Variable ID | Variable | Table | Label | Type | N (non-missing) |
+  |---|---|---|---|---|---|
+  | BiB_AgeOfWonder.survey_mod232_derived_dr24.rcad_ga | rcad_ga | BiB_AgeOfWonder.survey_mod232_derived_dr24 | RCADS-25 General anxiety. Raw score | integer | 8421 |
 
   Omit columns that are not available. For a single variable, inline prose is fine."""
 
@@ -955,10 +956,12 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
             for doc, meta in zip(docs, metas):
                 if not doc:
                     continue
+                title = (meta or {}).get("title", "")
+                authors = (meta or {}).get("authors", "")
                 context_parts.append(
-                    f"**{meta.get('title','')[:120]}** "
-                    f"({meta.get('year','')}) — {meta.get('authors','')[:80]}\n"
-                    f"{doc[doc.find('Abstract:'):doc.find('Abstract:')+600] if 'Abstract:' in doc else doc[:400]}\n"
+                    f"**{title}** "
+                    f"({meta.get('year','')}) — {authors[:160]}\n"
+                    f"{doc[doc.find('Abstract:'):doc.find('Abstract:')+600] if 'Abstract:' in doc else doc[:1800]}\n"
                 )
     except Exception as e:
         context_parts.append(f"[Papers collection unavailable: {e}]\n")
@@ -1011,6 +1014,174 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
     return "\n".join(context_parts)
 
 
+_ANCHOR_STOPWORDS = {
+    "about",
+    "after",
+    "again",
+    "against",
+    "also",
+    "been",
+    "being",
+    "between",
+    "could",
+    "does",
+    "from",
+    "have",
+    "into",
+    "more",
+    "most",
+    "that",
+    "their",
+    "there",
+    "these",
+    "they",
+    "this",
+    "those",
+    "used",
+    "uses",
+    "using",
+    "what",
+    "when",
+    "where",
+    "which",
+    "while",
+    "with",
+    "were",
+    "would",
+    "study",
+    "cohort",
+    "questionnaire",
+    "questionnaires",
+}
+
+
+def _extract_question_anchors(question: str, max_anchors: int = 14) -> list[str]:
+    """Extract exact terms that should steer row/sentence selection."""
+    anchors: list[str] = []
+
+    def add(anchor: str) -> None:
+        cleaned = anchor.strip(" \t\n\r\"'`.,;:()[]{}")
+        if not cleaned:
+            return
+        key = cleaned.lower()
+        if key not in {a.lower() for a in anchors}:
+            anchors.append(cleaned)
+
+    for phrase in re.findall(r"['\"]([^'\"]{2,80})['\"]", question):
+        add(phrase)
+
+    for token in re.findall(r"\b\d+(?:\.\d+)?%?\b|\b[A-Za-z][A-Za-z0-9_]{2,}\b", question):
+        lower = token.lower()
+        if lower in _ANCHOR_STOPWORDS:
+            continue
+        if len(token) < 4 and not re.search(r"\d", token):
+            continue
+        add(token)
+
+    return anchors[:max_anchors]
+
+
+def _split_context_units(context: str) -> list[dict[str, str]]:
+    units: list[dict[str, str]] = []
+    section = "context"
+
+    for raw_line in context.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("## "):
+            section = line.lstrip("#").strip()
+            continue
+        if line in {"```", "---"}:
+            continue
+
+        line = re.sub(r"^\s*[-*]\s+", "", line)
+        if len(line) > 420:
+            parts = re.split(r"(?<=[.!?])\s+", line)
+        else:
+            parts = [line]
+        for part in parts:
+            text = part.strip()
+            if len(text) >= 20:
+                units.append({"section": section, "text": text})
+
+    return units
+
+
+def _anchor_score(text: str, anchors: list[str]) -> tuple[float, int]:
+    lower = text.lower()
+    matched = 0
+    score = 0.0
+
+    for anchor in anchors:
+        a = anchor.lower()
+        if not a:
+            continue
+        if re.search(rf"(?<![a-z0-9_]){re.escape(a)}(?![a-z0-9_])", lower):
+            matched += 1
+            if re.search(r"\d", a):
+                score += 2.0
+            elif " " in a or "_" in a:
+                score += 1.6
+            else:
+                score += 1.0
+
+    length_penalty = min(len(text) / 1200.0, 0.5)
+    return score - length_penalty, matched
+
+
+def format_context_with_question_anchors(
+    question: str,
+    context: str,
+    max_evidence_lines: int = 8,
+    max_nearby_lines: int = 6,
+) -> str:
+    """Prepend a question-anchor guide while preserving the original context."""
+    anchors = _extract_question_anchors(question)
+    if not anchors:
+        return context
+
+    scored: list[dict[str, Any]] = []
+    for unit in _split_context_units(context):
+        score, matched = _anchor_score(unit["text"], anchors)
+        if matched:
+            scored.append({**unit, "score": score, "matched": matched})
+
+    if not scored:
+        return context
+
+    scored.sort(key=lambda item: (item["score"], item["matched"]), reverse=True)
+    evidence = scored[:max_evidence_lines]
+    evidence_texts = {item["text"] for item in evidence}
+    nearby = [
+        item
+        for item in scored[max_evidence_lines:]
+        if item["text"] not in evidence_texts and item["matched"] < len(anchors)
+    ][:max_nearby_lines]
+
+    parts: list[str] = [
+        "## Question-Anchored Evidence Guide",
+        "Use these extracted anchors to choose the exact matching row or sentence. "
+        "The guide is derived only from the retrieved context below.",
+        "Do not cite match/near labels in the final answer; use the evidence content only.",
+        "",
+        "Question anchors to match:",
+    ]
+    parts.extend(f"- {anchor}" for anchor in anchors)
+
+    parts.append("\nMatching evidence rows or sentences:")
+    for i, item in enumerate(evidence, start=1):
+        parts.append(f"- [match_{i} | {item['section']}] {item['text']}")
+
+    if nearby:
+        parts.append("\nDistractor rows or sentences to ignore because one or more anchors differ:")
+        for i, item in enumerate(nearby, start=1):
+            parts.append(f"- [near_{i} | {item['section']}] {item['text']}")
+
+    parts.extend(["", "## Original Retrieved Context", context])
+    return "\n".join(parts)
+
+
 _FILLER_RE = re.compile(
     r"^(?:"
     r"Certainly[!,.]?\s*|"
@@ -1042,6 +1213,31 @@ _FOOTER_RE = re.compile(
     re.IGNORECASE | re.DOTALL,
 )
 
+_FOLLOWUP_RE = re.compile(
+    r"\b("
+    r"this|that|the|it|above|previous|paper|study|article|summari[sz]e|explain|tell me more"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def _retrieval_query_from_history(question: str, history: list | None) -> str:
+    """Add recent turns to short follow-up queries so retrieval keeps the subject."""
+    if not history or len(question.split()) > 8 or not _FOLLOWUP_RE.search(question):
+        return question
+
+    recent = []
+    for turn in reversed(history[-4:]):
+        content = str((turn or {}).get("content", "")).strip()
+        if content:
+            recent.append(content[:700])
+        if len(recent) >= 3:
+            break
+    if not recent:
+        return question
+    return f"{question}\n\nRecent conversation context:\n" + "\n".join(reversed(recent))
+
+
 def _strip_filler(text: str) -> str:
     """Remove hollow opener phrases and boilerplate footer sections."""
     text = _FILLER_RE.sub("", text).lstrip()
@@ -1060,6 +1256,7 @@ def query_stream(
     llm_client: Any,
     model: str = DEFAULT_MODEL,
     history: list | None = None,
+    system_prompt: str = SYSTEM_PROMPT,
 ):
     """
     Streaming version of query(). Yields raw token strings as they are generated
@@ -1073,10 +1270,25 @@ def query_stream(
     Falls back to a single yield of the full non-streamed answer when the client
     object doesn't expose the raw HF interface.
     """
-    context = retrieve_context(question, client)
+    hf = getattr(llm_client, "_hf_raw", None)
+    if hf is None:
+        # Fallback: yield the complete answer in one chunk.
+        yield query(
+            question,
+            client,
+            llm_client,
+            model=model,
+            history=history,
+            system_prompt=system_prompt,
+        )
+        return
+
     prior = history or []
+    retrieval_query = _retrieval_query_from_history(question, prior)
+    raw_context = retrieve_context(retrieval_query, client)
+    context = format_context_with_question_anchors(question, raw_context)
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": system_prompt},
         *prior,
         {
             "role": "user",
@@ -1086,12 +1298,6 @@ def query_stream(
             ),
         },
     ]
-
-    hf = getattr(llm_client, "_hf_raw", None)
-    if hf is None:
-        # Fallback: yield the complete answer in one chunk
-        yield query(question, client, llm_client, model=model, history=history)
-        return
 
     try:
         stream = hf.chat_completion(
@@ -1134,19 +1340,22 @@ def query_stream(
 
 def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
           model: str = DEFAULT_MODEL, show_context: bool = False,
-          history: list | None = None) -> str:
+          history: list | None = None,
+          system_prompt: str = SYSTEM_PROMPT) -> str:
     """Run a RAG query: retrieve context → call HuggingFace LLM → return answer."""
 
-    context = retrieve_context(question, client)
+    prior = history or []
+    retrieval_query = _retrieval_query_from_history(question, prior)
+    raw_context = retrieve_context(retrieval_query, client)
+    context = format_context_with_question_anchors(question, raw_context)
 
     if show_context:
         print("\n── Retrieved Context ──────────────────────────────────────────")
-        print(context[:3000])
+        print(raw_context[:3000])
         print("──────────────────────────────────────────────────────────────\n")
 
-    prior = history or []
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": system_prompt},
         *prior,
         {
             "role": "user",
@@ -1180,7 +1389,7 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
         llm_client, "handler_structured_generate"
     ):
         answer = llm_client.handler_structured_generate(
-            system=SYSTEM_PROMPT,
+            system=system_prompt,
             context=context,
             question=question,
         )
