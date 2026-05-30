@@ -750,6 +750,170 @@ def _simple_rerank_score(query: str, doc: str) -> float:
     return (0.65 * overlap) + (0.25 * bigram_overlap) + (0.10 * contains_query)
 
 
+_QUESTIONNAIRE_QUERY_RE = re.compile(
+    r"\b(questionnaire|questionnaires|survey|surveys|module|modules|asked|ask|wording|"
+    r"items?|questions?|months?|age of wonder|ague of wonder)\b",
+    re.I,
+)
+
+_NUMBER_WORDS = {
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+}
+
+
+def _normalise_questionnaire_text(text: str) -> str:
+    text = (text or "").lower()
+    text = text.replace("’", "'").replace("‘", "'")
+    # Common typo seen in chat: "ague of wonder" should match Age of Wonder.
+    text = re.sub(r"\bague of wonder\b", "age of wonder", text)
+    for word, digit in _NUMBER_WORDS.items():
+        text = re.sub(rf"\bmodule {word}\b", f"module {digit}", text)
+    text = re.sub(r"\b(\d{4})[-/](\d{2})\b", r"\1 \2", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _questionnaire_token_set(text: str) -> set[str]:
+    stop = {
+        "the", "was", "were", "what", "asked", "ask", "in", "of", "a", "an",
+        "and", "to", "for", "survey", "questionnaire", "questionnaires",
+        "young", "people", "s",
+    }
+    return {
+        token for token in _normalise_questionnaire_text(text).split()
+        if token not in stop and len(token) > 1
+    }
+
+
+def _questionnaire_focus_score(query: str, meta: dict[str, Any]) -> float:
+    q_norm = _normalise_questionnaire_text(query)
+    title = str((meta or {}).get("title", ""))
+    file_name = str((meta or {}).get("file_name", ""))
+    title_norm = _normalise_questionnaire_text(title)
+    file_norm = _normalise_questionnaire_text(file_name)
+    candidate_norm = f"{title_norm} {file_norm}".strip()
+    if not q_norm or not candidate_norm:
+        return 0.0
+
+    q_tokens = _questionnaire_token_set(query)
+    c_tokens = _questionnaire_token_set(candidate_norm)
+    overlap = len(q_tokens & c_tokens) / max(1, len(q_tokens))
+    score = overlap * 10.0
+
+    if title_norm and title_norm in q_norm:
+        score += 20.0
+    if file_norm and file_norm.replace(" pdf", "") in q_norm:
+        score += 20.0
+
+    q_module = re.search(r"\bmodule (\d+)\b", q_norm)
+    c_module = re.search(r"\bmodule (\d+)\b", candidate_norm)
+    if q_module:
+        score += 8.0 if c_module and q_module.group(1) == c_module.group(1) else -8.0
+
+    q_month = re.search(r"\b(6|12|18|24|36) months?\b", q_norm)
+    c_month = re.search(r"\b(6|12|18|24|36) months?\b", candidate_norm)
+    if q_month:
+        score += 8.0 if c_month and q_month.group(1) == c_month.group(1) else -6.0
+
+    q_year = re.search(r"\b(20\d{2})\s+(\d{2})\b", q_norm)
+    if q_year:
+        year_a, year_b = q_year.groups()
+        score += 6.0 if year_a in candidate_norm and year_b in candidate_norm else -4.0
+
+    if "age of wonder" in q_norm:
+        score += 5.0 if "age of wonder" in candidate_norm else -5.0
+
+    return score
+
+
+def _best_questionnaire_file(query: str, collection) -> dict[str, Any] | None:
+    if not _QUESTIONNAIRE_QUERY_RE.search(query or ""):
+        return None
+
+    try:
+        rows = collection.get(include=["metadatas"])
+    except Exception:
+        return None
+
+    best_by_file: dict[str, dict[str, Any]] = {}
+    for meta in rows.get("metadatas", []) or []:
+        if not meta:
+            continue
+        file_name = str(meta.get("file_name", ""))
+        if not file_name or file_name in best_by_file:
+            continue
+        score = _questionnaire_focus_score(query, meta)
+        best_by_file[file_name] = {
+            "file_name": file_name,
+            "title": meta.get("title", ""),
+            "score": score,
+        }
+
+    if not best_by_file:
+        return None
+    best = max(best_by_file.values(), key=lambda item: item["score"])
+    return best if best["score"] >= 6.0 else None
+
+
+def _chunk_number(meta: dict[str, Any]) -> int:
+    try:
+        return int((meta or {}).get("chunk", 0))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _get_questionnaire_file_chunks(collection, file_name: str) -> list[tuple[str, dict[str, Any]]]:
+    try:
+        rows = collection.get(
+            where={"file_name": {"$eq": file_name}},
+            include=["documents", "metadatas"],
+        )
+    except Exception:
+        return []
+    docs = rows.get("documents", []) or []
+    metas = rows.get("metadatas", []) or []
+    pairs = [(doc, meta or {}) for doc, meta in zip(docs, metas) if doc]
+    return sorted(pairs, key=lambda pair: _chunk_number(pair[1]))
+
+
+def _select_questionnaire_chunks(
+    query: str,
+    chunks: list[tuple[str, dict[str, Any]]],
+    max_chunks: int,
+) -> list[tuple[str, dict[str, Any]]]:
+    if len(chunks) <= max_chunks:
+        return chunks
+
+    q_norm = _normalise_questionnaire_text(query)
+    if re.search(r"\b(what was asked|what questions|what items|module|questionnaire|survey)\b", q_norm):
+        # For broad wording questions, early chunks usually contain the module
+        # overview and first question rows. Add a few query-relevant later chunks.
+        selected = chunks[: min(6, max_chunks)]
+        remaining = [pair for pair in chunks if pair not in selected]
+        ranked = sorted(
+            remaining,
+            key=lambda pair: _simple_rerank_score(query, pair[0]),
+            reverse=True,
+        )
+        selected.extend(ranked[: max(0, max_chunks - len(selected))])
+        return sorted(selected, key=lambda pair: _chunk_number(pair[1]))
+
+    return sorted(
+        chunks,
+        key=lambda pair: _simple_rerank_score(query, pair[0]),
+        reverse=True,
+    )[:max_chunks]
+
+
 _PAPERS_CACHE: dict[str, Any] = {
     "count": -1,
     "doc_by_id": {},
@@ -969,19 +1133,55 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
     # ── Questionnaires ───────────────────────────────────────────────────────
     try:
         questionnaires_col = client.get_collection("bib_questionnaires")
-        results = questionnaires_col.query(query_texts=[query], n_results=n_results)
+        questionnaire_parts: list[str] = []
+        targeted_file = _best_questionnaire_file(query, questionnaires_col)
+        targeted_file_name = targeted_file.get("file_name", "") if targeted_file else ""
+        seen_questionnaire_keys: set[tuple[str, str]] = set()
+
+        if targeted_file_name:
+            all_chunks = _get_questionnaire_file_chunks(questionnaires_col, targeted_file_name)
+            max_file_chunks = int(os.getenv("QUESTIONNAIRE_FILE_CHUNKS", "10"))
+            target_chars = int(os.getenv("QUESTIONNAIRE_TARGET_CHARS", "1800"))
+            selected_chunks = _select_questionnaire_chunks(query, all_chunks, max_file_chunks)
+            if selected_chunks:
+                title = targeted_file.get("title") or targeted_file_name
+                questionnaire_parts.append(
+                    "## Targeted Questionnaire Match\n"
+                    f"Matched questionnaire: **{title}** ({targeted_file_name})\n"
+                    f"Match score: {targeted_file.get('score', 0):.1f}\n"
+                )
+                for doc, meta in selected_chunks:
+                    chunk = str((meta or {}).get("chunk", ""))
+                    seen_questionnaire_keys.add((targeted_file_name, chunk))
+                    questionnaire_parts.append(
+                        f"### {title} — chunk {chunk}\n"
+                        f"{doc[:target_chars]}\n"
+                    )
+
+        semantic_n = max(n_results, int(os.getenv("QUESTIONNAIRE_SEMANTIC_RESULTS", "8")))
+        results = questionnaires_col.query(query_texts=[query], n_results=semantic_n)
         docs = results["documents"][0]
         metas = results["metadatas"][0]
-        if docs:
+        for doc, meta in zip(docs, metas):
+            meta = meta or {}
+            file_name = meta.get("file_name", "")
+            chunk = str(meta.get("chunk", ""))
+            key = (file_name, chunk)
+            if key in seen_questionnaire_keys:
+                continue
+            title = meta.get("title", "")
+            questionnaire_parts.append(
+                f"**{title}**"
+                f"{f' ({file_name})' if file_name else ''}\n"
+                f"{doc[:1200]}\n"
+            )
+            seen_questionnaire_keys.add(key)
+            if len(seen_questionnaire_keys) >= semantic_n + (10 if targeted_file_name else 0):
+                break
+
+        if questionnaire_parts:
             context_parts.append("\n## Relevant Questionnaires\n")
-            for doc, meta in zip(docs, metas):
-                title = (meta or {}).get("title", "")
-                file_name = (meta or {}).get("file_name", "")
-                context_parts.append(
-                    f"**{title}**"
-                    f"{f' ({file_name})' if file_name else ''}\n"
-                    f"{doc[:700]}\n"
-                )
+            context_parts.extend(questionnaire_parts)
     except Exception as e:
         context_parts.append(f"[Questionnaires collection unavailable: {e}]\n")
 
