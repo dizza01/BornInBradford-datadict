@@ -10,6 +10,11 @@ huggingface_hub>=0.23.0  # Hugging Face Inference API + dedicated endpoint clien
 pymupdf>=1.24.0          # PDF full-text extraction (fitz)
 sentence-transformers>=3,<4  # Optional retrieval eval CrossEncoder rerankers
 
+# Optional local GGUF backend. Install manually because platform flags differ:
+#   CPU: pip install llama-cpp-python
+#   Apple Silicon: CMAKE_ARGS="-DGGML_METAL=on" pip install -U llama-cpp-python --no-cache-dir
+#   NVIDIA CUDA: CMAKE_ARGS="-DGGML_CUDA=on" pip install -U llama-cpp-python --no-cache-dir
+
 # Optional: for advanced features
 # vanna>=0.3.0  # Alternative framework
 # langchain>=0.1.0  # LangChain framework

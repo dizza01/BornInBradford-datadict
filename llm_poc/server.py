@@ -14,6 +14,12 @@ Usage:
   # Use a different HF model:
   python server.py --model "HuggingFaceH4/zephyr-7b-beta"
 
+  # Use a local quantized GGUF model:
+  python server.py --llm-backend llama_cpp --gguf-model-path models/bib-llama-3.1-8b.Q4_K_M.gguf
+
+  # Experimental: use a non-quantized local Hugging Face model:
+  python server.py --llm-backend transformers_local --model meta-llama/Llama-3.2-3B-Instruct
+
 Then open: http://localhost:5050
 """
 
@@ -40,6 +46,8 @@ SCRIPT_DIR   = Path(__file__).parent
 DATADICT_DIR = SCRIPT_DIR.parent          # BornInBradford-datadict/
 DOCS_DIR     = DATADICT_DIR / "docs"
 STATIC_DIR   = SCRIPT_DIR / "static"
+RCADS25_PDF  = DATADICT_DIR / "papers" / "RCADS25-Youth-English-2018.pdf"
+PRODUCTION_DD_REFERENCE = SCRIPT_DIR / "production_data_dictionary_reference.md"
 
 # ── Import RAG engine from bib_research_assistant.py ──────────────────────────
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -52,6 +60,7 @@ from bib_research_assistant import (
   parse_html_sections,
     _get_hf_client,
     DEFAULT_MODEL,
+    GGUF_MODEL_DEFAULT,
     _check_index,
     _strip_filler,
 )
@@ -69,20 +78,70 @@ app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="/widget-st
 chroma_client: Any = None
 llm_client:    Any = None
 current_model: str = DEFAULT_MODEL
+current_llm_backend: str = os.getenv("LLM_BACKEND", "hf_api")
+current_gguf_model_path: str = os.getenv("GGUF_MODEL_PATH", str(GGUF_MODEL_DEFAULT))
+current_llama_n_ctx: int = int(os.getenv("LLAMA_CPP_N_CTX", "4096"))
+current_llama_n_gpu_layers: int = int(os.getenv("LLAMA_CPP_N_GPU_LAYERS", "-1"))
+current_llama_chat_format: str = os.getenv("LLAMA_CPP_CHAT_FORMAT", "llama-3")
+current_llama_n_threads: int = int(os.getenv("LLAMA_CPP_N_THREADS", "0"))
+current_llama_verbose: bool = os.getenv("LLAMA_CPP_VERBOSE", "").strip().lower() in {"1", "true", "yes", "on"}
+current_transformers_device: str = os.getenv("TRANSFORMERS_LOCAL_DEVICE", "auto")
+current_transformers_dtype: str = os.getenv("TRANSFORMERS_LOCAL_DTYPE", "auto")
+current_transformers_attn_implementation: str = os.getenv("TRANSFORMERS_LOCAL_ATTN_IMPLEMENTATION", "")
+current_rag_n_results: int = int(os.getenv("RAG_N_RESULTS", "0") or "0")
+current_rag_context_max_chars: int = int(os.getenv("RAG_CONTEXT_MAX_CHARS", "0") or "0")
 _init_lock = threading.Lock()
 _registry_lock = threading.Lock()
 _registry_cache: Optional[dict[str, Any]] = None
+_rcads25_items_cache: Optional[list[tuple[int, str]]] = None
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _load_production_dd_reference() -> str:
+    """Load the compact data-dictionary reference for production LLM calls."""
+    if not _env_flag("BIB_USE_DD_REFERENCE", True):
+        return ""
+    try:
+        text = PRODUCTION_DD_REFERENCE.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return ""
+    max_chars = int(os.getenv("BIB_DD_REFERENCE_MAX_CHARS", "6500"))
+    if max_chars > 0 and len(text) > max_chars:
+        text = text[:max_chars].rstrip()
+    return text
+
+
+_PRODUCTION_DD_REFERENCE_TEXT = _load_production_dd_reference()
 
 PRODUCTION_SYSTEM_PROMPT = SYSTEM_PROMPT + """
 
 Production answer style:
-- Be useful, not terse. Prefer 2-5 short paragraphs, or a compact table plus 1-2 explanatory sentences, when the question asks about papers, questionnaires, variables, or interpretation.
+- Be useful, not terse. For non-variable questions, answer in short prose or simple bullet points. Avoid markdown tables unless the user explicitly asks for a table.
 - Stay grounded. Only mention papers, findings, measures, tables, and variables that appear in the retrieved context or deterministic registry results.
-- For paper-listing questions, include up to 5 relevant papers with title, year, why each is relevant, and what evidence/measure/topic links it to the question. If the context does not contain enough paper evidence, say so rather than filling gaps.
+- Keep variable discovery/listing answers unchanged: when the user asks for variables, continue to show the complete queried variable list in the existing variable table/export UI.
+- Distinguish source types carefully. Published research papers/articles are different from data summaries, protocols, questionnaires, survey instruments, data dictionary pages, registry tables, and internal documentation PDFs.
+- Do not count a source as a research paper just because it is a PDF or appears under retrieved paper/PDF context. If a source title includes terms like "Data Summary", "questionnaire", "survey", "protocol", "data dictionary", or "registry", label it as documentation/protocol/questionnaire unless the retrieved context clearly shows it is a published research article.
+- For paper-listing questions, include up to 5 relevant published papers with title, year, why each is relevant, and what evidence/measure/topic links it to the question. If the retrieved context only contains documentation or data summaries, say that no clearly relevant published research paper was found in the retrieved context and then separately summarize the documentation evidence.
 - For one-paper requests, give the paper title/year and a concise explanation of what it studied, why it is relevant to the user question, and any limits of the retrieved context.
 - For paper summaries, summarize the specific paper named or clearly identified by the latest user turn. If the requested paper is not in the retrieved context, say you do not have enough context for that paper.
+- For "papers related to X" questions, require substantive relevance to X. A passing mention that X data exist is not enough to list the source as a paper about X; describe it as a passing mention or supporting documentation instead.
+- Do not include table rows, bullets, or list items with blank or vague relevance. If the relevant-information field would be empty, omit that source or state that the retrieved context is insufficient.
 - Avoid one-sentence answers when the user asks to explain, summarize, compare, or provide research papers.
-"""
+- Avoid repeating the same point in multiple paragraphs. If evidence is limited, say that briefly rather than restating general background.
+- For definition questions like "what does X mean?" or "what does X stand for?", answer the definition and brief context only. Do not include variable tables unless the user asks where it occurs in the data.
+- When the user asks about time periods, dates, waves, ages, or when something was carried out, answer the timing question first in prose or bullets. Separate exact calendar dates from age ranges, school stages, study waves, or cohort labels. If the retrieved context gives a study stage but not exact calendar dates, say that explicitly. Do not include administration procedures, task descriptions, or methodological detail unless the user asks how the measure was administered.
+""" + (
+    "\nProduction data dictionary quick reference:\n"
+    + _PRODUCTION_DD_REFERENCE_TEXT
+    + "\n"
+    if _PRODUCTION_DD_REFERENCE_TEXT
+    else ""
+)
 
 
 def _ensure_clients():
@@ -91,7 +150,39 @@ def _ensure_clients():
         if chroma_client is None:
             chroma_client = get_chroma_client()
         if llm_client is None:
-            llm_client = _get_hf_client(current_model)
+            llm_client = _get_hf_client(
+                current_model,
+                backend=current_llm_backend,
+                gguf_model_path=current_gguf_model_path,
+                llama_n_ctx=current_llama_n_ctx,
+                llama_n_gpu_layers=current_llama_n_gpu_layers,
+                llama_chat_format=current_llama_chat_format,
+                llama_n_threads=current_llama_n_threads,
+                llama_verbose=current_llama_verbose,
+                transformers_device=current_transformers_device,
+                transformers_dtype=current_transformers_dtype,
+                transformers_attn_implementation=current_transformers_attn_implementation,
+            )
+
+
+def _llm_unavailable_message() -> str:
+    if current_llm_backend == "llama_cpp":
+        return "LLM client not available — check llama-cpp-python install and GGUF model path"
+    if current_llm_backend == "transformers_local":
+        return "LLM client not available — check torch/transformers install, model access, and available memory"
+    return "LLM client not available — check HF_TOKEN in .env"
+
+
+def _effective_rag_n_results() -> int:
+    if current_rag_n_results > 0:
+        return current_rag_n_results
+    return 5
+
+
+def _effective_rag_context_max_chars() -> int:
+    if current_rag_context_max_chars > 0:
+        return current_rag_context_max_chars
+    return 0
 
 
 def _clean_value(val: Any) -> str:
@@ -136,10 +227,10 @@ _VARIABLE_DISCOVERY_RE = re.compile(
   r"\b("
   r"what|which|find|show|list|search|give|return|identify|available|exist|exists|include|includes|contain|contains"
   r")\b.*\b("
-  r"variable|variables|measure|measures|field|fields"
+  r"variable|variables|measure|measures|field|fields|data|dataset|datasets"
   r")\b"
-  r"|\b(variable|variables|measure|measures|field|fields)\b.*\b("
-  r"available|exist|exists|related|about|for|on"
+  r"|\b(variable|variables|measure|measures|field|fields|data|dataset|datasets)\b.*\b("
+  r"available|exist|exists|related|about|around|for|on"
   r")\b",
   re.I,
 )
@@ -153,13 +244,24 @@ _VARIABLE_DETAIL_RE = re.compile(
   re.I,
 )
 
+_DEFINITION_ONLY_RE = re.compile(
+  r"\b(what does|what is|define|meaning of|mean|means|stand(?:s)? for)\b",
+  re.I,
+)
+
 _VARIABLE_SEARCH_STOPWORDS = {
-  "age", "air", "are",
-  "about", "available", "bib", "born", "bradford", "cohort", "cohorts", "contain", "contains", "data",
-  "dataset", "datasets", "does", "exist", "exists", "field", "fields", "find",
-  "give", "include", "includes", "item", "items", "list", "measure", "measures",
-  "different", "occur", "occurs", "quality", "related", "return", "search", "show", "study", "studies", "table", "tables", "the", "theme",
-  "themes", "variable", "variables", "what", "which", "with",
+  "a", "about", "across", "after", "age", "all", "also", "an", "and", "any",
+  "are", "around", "as", "at", "available", "be", "been", "before",
+  "between", "bib", "born", "bradford", "by", "can", "cohort", "cohorts",
+  "contain", "contains", "data", "dataset", "datasets", "different", "do",
+  "does", "during", "exist", "exists", "field", "fields", "find", "for",
+  "from", "give", "has", "have", "how", "in", "include", "includes",
+  "including", "into", "is", "item", "items", "list", "measure", "measures",
+  "near", "of", "on", "or", "occur", "occurs", "over", "please", "quality",
+  "related", "return", "search", "show", "study", "studies", "table",
+  "tables", "that", "the", "their", "theme", "themes", "there", "these",
+  "this", "through", "to", "used", "using", "variable", "variables", "was",
+  "were", "what", "when", "where", "which", "who", "with", "within",
   "wonder",
 }
 
@@ -548,6 +650,134 @@ def _looks_like_variable_detail_question(question: str) -> bool:
   return False
 
 
+def _looks_like_available_item_registry_question(question: str) -> bool:
+  """Detect item/field availability questions that should use the registry.
+
+  "What are the 25 items of RCAD25?" is a scale-content question, but
+  "What items are available for RCAD?" usually means "which data fields exist?".
+  Keep this narrow so explanatory questionnaire questions still go through RAG.
+  """
+  q = _normalise_search_text(question)
+  if not q or not re.search(r"\bitems?\b", q):
+    return False
+  if re.search(r"\b\d+\s+items?\b", q):
+    return False
+  return bool(
+    re.search(
+      r"\b(available|exist|exists|included|recorded|collected|stored|present)\b",
+      q,
+    )
+  )
+
+
+def _history_mentions_rcads25(history: list[dict[str, str]]) -> bool:
+  history_text = " ".join(
+    _clean_value(turn.get("content", ""))
+    for turn in (history or [])[-4:]
+    if isinstance(turn, dict)
+  )
+  q = _normalise_search_text(history_text)
+  return bool(re.search(r"\brcads?\s*[- ]?\s*25\b|\brcads?25\b|\brevised child(?:ren)?s? anxiety and depression scale\b", q))
+
+
+def _looks_like_rcads25_item_wording_question(
+  question: str,
+  history: Optional[list[dict[str, str]]] = None,
+) -> bool:
+  q = _normalise_search_text(question)
+  if not q or not re.search(r"\bitems?\b|\bquestions?\b|\bwording\b", q):
+    return False
+  if re.search(r"\brcads?\s*[- ]?\s*25\b|\brcads?25\b|\brcads?\b", q):
+    return True
+  if re.search(r"\b(these|those|the)\s+(items?|questions?)\b", q) and _history_mentions_rcads25(history or []):
+    return True
+  return False
+
+
+def _load_rcads25_items() -> list[tuple[int, str]]:
+  """Extract the 25 RCADS-25 item wordings from the source PDF."""
+  global _rcads25_items_cache
+  if _rcads25_items_cache is not None:
+    return _rcads25_items_cache
+  if not RCADS25_PDF.exists():
+    _rcads25_items_cache = []
+    return _rcads25_items_cache
+
+  try:
+    import fitz
+    doc = fitz.open(str(RCADS25_PDF))
+    text = "\n".join(page.get_text("text") for page in doc)
+    doc.close()
+  except Exception:
+    _rcads25_items_cache = []
+    return _rcads25_items_cache
+
+  matches = re.findall(
+    r"(?ms)^\s*(\d{1,2})\.\s+(.*?)(?:\n\s*Never\s*\n\s*Sometimes\s*\n\s*Often\s*\n\s*Always)",
+    text,
+  )
+  items: list[tuple[int, str]] = []
+  for number, wording in matches:
+    item_number = int(number)
+    if 1 <= item_number <= 25:
+      clean_wording = re.sub(r"\s+", " ", wording).strip()
+      items.append((item_number, clean_wording))
+
+  seen: set[int] = set()
+  deduped: list[tuple[int, str]] = []
+  for number, wording in sorted(items, key=lambda item: item[0]):
+    if number not in seen:
+      deduped.append((number, wording))
+      seen.add(number)
+  _rcads25_items_cache = deduped
+  return _rcads25_items_cache
+
+
+def _direct_rcads25_item_answer(
+  question: str,
+  history: Optional[list[dict[str, str]]] = None,
+) -> Optional[dict[str, Any]]:
+  if not _looks_like_rcads25_item_wording_question(question, history):
+    return None
+
+  items = _load_rcads25_items()
+  if len(items) != 25:
+    return None
+
+  q = _normalise_search_text(question)
+  wants_asked_format = bool(re.search(r"\b(how|asked|ask|module|survey|response|options?)\b", q))
+  lines = [
+    (
+      "In the RCADS-25 Youth-English source questionnaire, each item is asked as a statement "
+      "with the response options `Never`, `Sometimes`, `Often`, and `Always`."
+      if wants_asked_format
+      else "The 25 RCADS-25 Youth-English items in the source questionnaire are:"
+    ),
+    "",
+  ]
+  for number, wording in items:
+    lines.append(f"{number}. {wording}")
+  lines.extend([
+    "",
+    f"Source: `{RCADS25_PDF.name}`.",
+    "Note: these are questionnaire item wordings, not separate `rcad_ga` variable IDs. Derived registry variables such as `rcad_ga`, `rcad_md`, and `rcad_total` are scale scores/categories.",
+  ])
+  return {"answer": "\n".join(lines), "variables": []}
+
+
+def _looks_like_definition_only_question(question: str) -> bool:
+  """Return True for glossary/explanation questions, not data-location asks."""
+  q = _normalise_search_text(question)
+  if not q or not _DEFINITION_ONLY_RE.search(q):
+    return False
+  if re.search(
+    r"\b(where|occur|occurs|available|variables?|fields?|tables?|dataset|data dictionary|export|csv)\b",
+    q,
+  ):
+    return False
+  return True
+
+
 def _infer_study_filters(question: str) -> list[str]:
   q = _normalise_search_text(question)
   filters: list[str] = []
@@ -765,6 +995,19 @@ def _search_variable_registry(
   return result
 
 
+def _search_available_item_registry(question: str) -> Optional[dict[str, Any]]:
+  if not _looks_like_available_item_registry_question(question):
+    return None
+  result = _search_variable_registry(
+    question,
+    limit=5000,
+    require_discovery_intent=False,
+  )
+  if result and int(result.get("total", 0) or 0) > 0:
+    result["summary_mode"] = "available_items"
+  return result
+
+
 def _format_variable_discovery_answer(variable_results: dict[str, Any]) -> str:
   total = int(variable_results.get("total", 0) or 0)
   returned = int(variable_results.get("returned", 0) or 0)
@@ -817,6 +1060,20 @@ def _format_variable_discovery_answer(variable_results: dict[str, Any]) -> str:
     else:
       lines.append("The full matching variable set is shown below and can be added to the export basket.")
     return "\n".join(lines)
+
+  if variable_results.get("summary_mode") == "available_items":
+    scope = f" in {', '.join(study_filters)}" if study_filters else ""
+    term_text = f" Matched terms: {', '.join(terms[:8])}." if terms else ""
+    truncated = (
+      f" The first {returned} are available below; use Add all or Export CSV for the full set."
+      if variable_results.get("truncated")
+      else " The complete set is shown below and can be added to the export basket."
+    )
+    return (
+      f"I found {total} data dictionary item/field match{'es' if total != 1 else ''}{scope}. "
+      "These are registry variables/fields rather than questionnaire item wording."
+      f"{term_text}{truncated}"
+    )
 
   scope = f" in {', '.join(study_filters)}" if study_filters else ""
   term_text = f" Matching terms included: {', '.join(terms[:8])}." if terms else ""
@@ -1037,13 +1294,23 @@ def chat_endpoint():
         return jsonify({"error": "question is required"}), 400
 
     if not llm_client:
-        return jsonify({"error": "LLM client not available — check HF_TOKEN in .env"}), 503
+        return jsonify({"error": _llm_unavailable_message()}), 503
 
     if not chroma_client:
         return jsonify({"error": "Vector database not initialised — run --build first"}), 503
 
     try:
-        variable_results = _search_variable_registry(question)
+        direct_answer = _direct_rcads25_item_answer(question, history)
+        if direct_answer:
+            result: dict = direct_answer
+            if show_ctx:
+                result["context"] = f"Source: {RCADS25_PDF.name}"
+            return jsonify(result)
+
+        variable_results = (
+            _search_variable_registry(question)
+            or _search_available_item_registry(question)
+        )
         if variable_results:
             answer = _format_variable_discovery_answer(variable_results)
             result: dict = {
@@ -1061,10 +1328,12 @@ def chat_endpoint():
             model=current_model, show_context=False,
             history=history,
             system_prompt=PRODUCTION_SYSTEM_PROMPT,
+            retrieval_n_results=_effective_rag_n_results(),
+            max_context_chars=_effective_rag_context_max_chars(),
         )
         result: dict = {
             "answer": answer,
-            "variables": _extract_variables_for_export(answer),
+            "variables": [] if _looks_like_definition_only_question(question) else _extract_variables_for_export(answer),
         }
         if show_ctx:
             result["context"] = context
@@ -1099,14 +1368,25 @@ def chat_stream_endpoint():
     if not question:
         return jsonify({"error": "question is required"}), 400
     if not llm_client:
-        return jsonify({"error": "LLM client not available — check HF_TOKEN in .env"}), 503
+        return jsonify({"error": _llm_unavailable_message()}), 503
     if not chroma_client:
         return jsonify({"error": "Vector database not initialised — run --build first"}), 503
 
     def generate():
         full_text = ""
         try:
-            variable_results = _search_variable_registry(question)
+            direct_answer = _direct_rcads25_item_answer(question, history)
+            if direct_answer:
+                full_text = direct_answer["answer"]
+                yield f"data: {json.dumps({'token': full_text})}\n\n"
+                yield f"data: {json.dumps({'variables': []})}\n\n"
+                yield 'data: {"done": true}\n\n'
+                return
+
+            variable_results = (
+                _search_variable_registry(question)
+                or _search_available_item_registry(question)
+            )
             if variable_results:
                 full_text = _format_variable_discovery_answer(variable_results)
                 yield f"data: {json.dumps({'token': full_text})}\n\n"
@@ -1119,6 +1399,8 @@ def chat_stream_endpoint():
                 question, chroma_client, llm_client,
                 model=current_model, history=history,
                 system_prompt=PRODUCTION_SYSTEM_PROMPT,
+                retrieval_n_results=_effective_rag_n_results(),
+                max_context_chars=_effective_rag_context_max_chars(),
             ):
                 full_text += token
                 yield f"data: {json.dumps({'token': token})}\n\n"
@@ -1129,7 +1411,7 @@ def chat_stream_endpoint():
                 yield f"data: {json.dumps({'replace': cleaned})}\n\n"
             full_text = cleaned
 
-            variables = _extract_variables_for_export(full_text)
+            variables = [] if _looks_like_definition_only_question(question) else _extract_variables_for_export(full_text)
             if variables:
                 yield f"data: {json.dumps({'variables': variables})}\n\n"
 
@@ -2893,23 +3175,110 @@ def serve_docs(path):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    global current_model
+    global current_model, current_llm_backend, current_gguf_model_path
+    global current_llama_n_ctx, current_llama_n_gpu_layers
+    global current_llama_chat_format, current_llama_n_threads, current_llama_verbose
+    global current_transformers_device, current_transformers_dtype, current_transformers_attn_implementation
+    global current_rag_n_results, current_rag_context_max_chars
 
     parser = argparse.ArgumentParser(description="BiB Research Assistant Web Server")
     parser.add_argument("--port",  type=int, default=5050, help="Port to listen on (default: 5050)")
     parser.add_argument("--host",  type=str, default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
-    parser.add_argument("--model", type=str, default=DEFAULT_MODEL, help=f"HuggingFace model (default: {DEFAULT_MODEL})")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=DEFAULT_MODEL,
+        help=f"Model for hf_api or transformers_local backend (default: {DEFAULT_MODEL})",
+    )
+    parser.add_argument(
+        "--llm-backend",
+        type=str,
+        choices=["hf_api", "llama_cpp", "transformers_local"],
+        default=current_llm_backend,
+        help=(
+            "LLM backend: hf_api for Hugging Face API/endpoints, "
+            "llama_cpp for local GGUF files, "
+            "transformers_local for experimental non-quantized local HF models"
+        ),
+    )
+    parser.add_argument(
+        "--gguf-model-path",
+        type=str,
+        default=current_gguf_model_path,
+        help=f"Path to a quantized GGUF model for --llm-backend llama_cpp (default: {GGUF_MODEL_DEFAULT})",
+    )
+    parser.add_argument("--llama-n-ctx", type=int, default=current_llama_n_ctx, help="llama.cpp context window size (default: 4096)")
+    parser.add_argument("--llama-n-gpu-layers", type=int, default=current_llama_n_gpu_layers, help="llama.cpp GPU layers to offload. -1 means all supported layers")
+    parser.add_argument("--llama-chat-format", type=str, default=current_llama_chat_format, help="llama.cpp chat_format (default: llama-3)")
+    parser.add_argument("--llama-n-threads", type=int, default=current_llama_n_threads, help="llama.cpp CPU thread count. 0 lets llama.cpp choose")
+    parser.add_argument("--llama-verbose", action="store_true", default=current_llama_verbose, help="Enable verbose llama.cpp logging")
+    parser.add_argument(
+        "--transformers-device",
+        type=str,
+        choices=["auto", "cuda", "mps", "cpu"],
+        default=current_transformers_device,
+        help="Device for --llm-backend transformers_local (default: auto)",
+    )
+    parser.add_argument(
+        "--transformers-dtype",
+        type=str,
+        choices=["auto", "float16", "fp16", "bfloat16", "bf16", "float32", "fp32"],
+        default=current_transformers_dtype,
+        help="Torch dtype for --llm-backend transformers_local (default: auto)",
+    )
+    parser.add_argument(
+        "--transformers-attn-implementation",
+        type=str,
+        default=current_transformers_attn_implementation,
+        help="Optional transformers_local attn_implementation, e.g. sdpa",
+    )
+    parser.add_argument(
+        "--rag-n-results",
+        type=int,
+        default=current_rag_n_results,
+        help="Retrieved results per collection for answer generation. 0 uses the standard default of 5",
+    )
+    parser.add_argument(
+        "--rag-context-max-chars",
+        type=int,
+        default=current_rag_context_max_chars,
+        help="Maximum formatted context characters sent to the LLM. 0 means unlimited",
+    )
     parser.add_argument("--debug", action="store_true", help="Enable Flask debug mode")
     args = parser.parse_args()
 
     current_model = args.model
+    current_llm_backend = (args.llm_backend or "hf_api").strip().lower()
+    current_gguf_model_path = args.gguf_model_path
+    current_llama_n_ctx = int(args.llama_n_ctx)
+    current_llama_n_gpu_layers = int(args.llama_n_gpu_layers)
+    current_llama_chat_format = args.llama_chat_format
+    current_llama_n_threads = int(args.llama_n_threads)
+    current_llama_verbose = bool(args.llama_verbose)
+    current_transformers_device = args.transformers_device
+    current_transformers_dtype = args.transformers_dtype
+    current_transformers_attn_implementation = args.transformers_attn_implementation
+    current_rag_n_results = int(args.rag_n_results)
+    current_rag_context_max_chars = int(args.rag_context_max_chars)
 
     print("╔══════════════════════════════════════════════════════╗")
     print("║  Born in Bradford — Research Assistant Server        ║")
     print("╚══════════════════════════════════════════════════════╝")
     print(f"  Docs dir  : {DOCS_DIR}")
     print(f"  ChromaDB  : {SCRIPT_DIR / '.chroma_db'}")
-    print(f"  LLM model : {current_model}")
+    print(f"  LLM backend: {current_llm_backend}")
+    if current_llm_backend == "llama_cpp":
+        print(f"  GGUF model : {current_gguf_model_path}")
+        print(f"  RAG results: {_effective_rag_n_results()} per collection")
+        print(f"  RAG context: {_effective_rag_context_max_chars()} chars max")
+    elif current_llm_backend == "transformers_local":
+        print(f"  HF weights : {current_model}")
+        print(f"  Device/dtype: {current_transformers_device}/{current_transformers_dtype}")
+        print("  Mode       : experimental non-quantized local Transformers")
+        print(f"  RAG results: {_effective_rag_n_results()} per collection")
+        print(f"  RAG context: {_effective_rag_context_max_chars()} chars max")
+    else:
+        print(f"  LLM model  : {current_model}")
     print()
 
     # Pre-initialise clients
@@ -2921,7 +3290,12 @@ def main():
 
     if not llm_client:
         print("⚠️  Starting without LLM — /api/chat will return 503")
-        print("   Set HF_TOKEN in llm_poc/.env to enable chat")
+        if current_llm_backend == "llama_cpp":
+            print("   Install llama-cpp-python and confirm --gguf-model-path exists")
+        elif current_llm_backend == "transformers_local":
+            print("   Install torch/transformers/accelerate/sentencepiece and confirm the model fits in memory")
+        else:
+            print("   Set HF_TOKEN in llm_poc/.env to enable chat")
 
     print(f"\n🌐 Server running at: http://{args.host}:{args.port}")
     print(f"   Data dictionary  : http://{args.host}:{args.port}/")

@@ -28,6 +28,12 @@ Usage:
   python bib_research_assistant.py --model "meta-llama/Llama-3.1-8B-Instruct" --chat
   python bib_research_assistant.py --model "microsoft/Phi-3-mini-4k-instruct" --query "What is BiB1000?"
 
+  # Run a local quantized GGUF model with llama.cpp:
+  python bib_research_assistant.py --llm-backend llama_cpp --gguf-model-path models/bib-llama-3.1-8b.Q4_K_M.gguf --chat
+
+  # Experimental: run a non-quantized local Hugging Face model with Transformers:
+  python bib_research_assistant.py --llm-backend transformers_local --model meta-llama/Llama-3.2-3B-Instruct --chat
+
   # Recommended models (all free via HF Inference API):
   #   meta-llama/Llama-3.1-70B-Instruct    best in metrics so far
   #   Qwen/Qwen2.5-72B-Instruct            (default — best free quality)
@@ -82,9 +88,11 @@ TABLES_CSV    = CSV_DIR / "all_tables.csv"
 VARIABLES_CSV = CSV_DIR / "all_variables_meta.csv"
 PDFS_DIR      = DATADICT_DIR / "papers"
 QUESTIONNAIRES_DIR = DATADICT_DIR / "questionnaires"
+MODELS_DIR   = DATADICT_DIR / "models"
 
 # ── LLM model default ─────────────────────────────────────────────────────────
 DEFAULT_MODEL = "meta-llama/Llama-3.1-70B-Instruct"
+GGUF_MODEL_DEFAULT = MODELS_DIR / "bib-llama-3.1-8b.Q4_K_M.gguf"
 
 # ── ChromaDB setup ─────────────────────────────────────────────────────────────
 def get_chroma_client():
@@ -232,6 +240,24 @@ def _extract_pdf_text(pdf_path: Path) -> str:
         return ""
 
 
+def _extract_pdf_pages(pdf_path: Path) -> list[tuple[int, str]]:
+    """
+    Extract text page-by-page from a PDF.
+
+    Returning page numbers lets the index preserve evidence location instead
+    of flattening the whole paper into anonymous character windows.
+    """
+    try:
+        import fitz  # pymupdf
+        doc = fitz.open(str(pdf_path))
+        pages = [(idx + 1, page.get_text("text")) for idx, page in enumerate(doc)]
+        doc.close()
+        return [(page_no, text) for page_no, text in pages if (text or "").strip()]
+    except Exception as e:
+        print(f"   ⚠️  Could not read {pdf_path.name}: {e}")
+        return []
+
+
 def _is_pdf_path(path: Path) -> bool:
     """Return True when a file is a PDF, even if the extension is missing."""
     if path.suffix.lower() == ".pdf":
@@ -255,6 +281,63 @@ def _chunk_text(text: str, chunk_size: int = 1500, overlap: int = 200) -> list[s
         chunks.append(text[start:end].strip())
         start += chunk_size - overlap
     return [c for c in chunks if len(c) > 50]  # drop tiny tail fragments
+
+
+def _chunk_pdf_pages(
+    pages: list[tuple[int, str]],
+    chunk_size: int = 1800,
+    overlap_chars: int = 250,
+) -> list[tuple[str, int, int]]:
+    """Chunk PDF text while preserving page spans.
+
+    Chunks are assembled from whole pages where possible. Large single pages
+    are split locally, but metadata still records their page number.
+    """
+    chunks: list[tuple[str, int, int]] = []
+    current_parts: list[str] = []
+    current_start_page = 0
+    current_end_page = 0
+
+    def flush() -> str:
+        nonlocal current_parts, current_start_page, current_end_page
+        text = "\n\n".join(current_parts).strip()
+        if len(text) > 50:
+            chunks.append((text, current_start_page, current_end_page))
+        current_parts = []
+        current_start_page = 0
+        current_end_page = 0
+        return text[-overlap_chars:] if overlap_chars > 0 else ""
+
+    for page_no, raw_text in pages:
+        page_text = re.sub(r"\n{3,}", "\n\n", (raw_text or "").strip())
+        if not page_text:
+            continue
+
+        if len(page_text) > chunk_size:
+            carry = flush() if current_parts else ""
+            page_chunks = _chunk_text(page_text, chunk_size=chunk_size, overlap=overlap_chars)
+            for page_chunk in page_chunks:
+                text = f"{carry}\n\n{page_chunk}".strip() if carry else page_chunk
+                chunks.append((text, page_no, page_no))
+                carry = page_chunk[-overlap_chars:] if overlap_chars > 0 else ""
+            continue
+
+        projected_len = sum(len(part) for part in current_parts) + len(page_text)
+        if current_parts and projected_len > chunk_size:
+            carry = flush()
+            if carry:
+                current_parts = [carry]
+                current_start_page = page_no
+                current_end_page = page_no
+
+        if not current_parts:
+            current_start_page = page_no
+        current_parts.append(page_text)
+        current_end_page = page_no
+
+    if current_parts:
+        flush()
+    return chunks
 
 
 def _title_from_filename(stem: str) -> str:
@@ -330,15 +413,22 @@ def index_pdf_fulltext_into_papers(
         if not year:
             year = _safe_str(meta.get("year", ""))
 
-        full_text = _extract_pdf_text(pdf_path)
-        if not full_text.strip():
+        pages = _extract_pdf_pages(pdf_path)
+        if not pages:
             continue
 
-        chunks = _chunk_text(full_text)
+        chunks = _chunk_pdf_pages(pages)
         docs, ids, metas = [], [], []
-        for i, chunk in enumerate(chunks):
+        for i, (chunk, page_start, page_end) in enumerate(chunks):
             chunk_id = f"pdf_{re.sub(r'[^a-z0-9]', '_', stem.lower()[:60])}_chunk_{i}"
-            header   = f"Title: {title}\nYear: {year}\nSource: full-text PDF\n\n"
+            page_label = f"page {page_start}" if page_start == page_end else f"pages {page_start}-{page_end}"
+            header = (
+                f"Title: {title}\n"
+                f"Year: {year}\n"
+                f"Source: full-text PDF\n"
+                f"PDF file: {pdf_path.name}\n"
+                f"Location: {page_label}\n\n"
+            )
             docs.append(header + chunk)
             ids.append(chunk_id)
             metas.append({
@@ -350,6 +440,9 @@ def index_pdf_fulltext_into_papers(
                 "source":  "pdf_fulltext",
                 "pdf_file": pdf_path.name[:200],
                 "chunk":   str(i),
+                "page_start": str(page_start),
+                "page_end": str(page_end),
+                "chunk_type": "page_window",
             })
 
         # Upsert in batches (handles re-runs without duplicate IDs)
@@ -621,6 +714,7 @@ def build_index():
 
     # Index full text from local PDFs (adds chunks into bib_papers collection)
     index_pdf_fulltext_into_papers(client, PDFS_DIR, papers_meta)
+    build_tool_references_collection(client)
 
     print(f"\n✅ Index built and saved to: {CHROMA_DIR}")
     print("   Run --chat or --query to start querying.\n")
@@ -665,6 +759,7 @@ Context retrieved from the BiB knowledge base is provided below. Use it to groun
 Important style rules:
 - Never open with filler phrases such as "Certainly!", "Of course!", "Sure!", "Absolutely!", "Great question!", "Happy to help!", or similar. Begin your response directly with the substantive answer.
 - Do NOT append generic boilerplate sections at the end of your response, such as "### Privacy Rules", "### Limitations", "### Note", "### Important", "### Disclaimer", or closing lines like "If you need further assistance…", "Feel free to ask!", "Let me know if…", or similar. End your answer when the content is complete.
+- For non-variable questions, prefer short prose or simple bullet points. Do not use markdown tables unless the user explicitly asks for a table.
 - When listing multiple variables, always include the full `variable_id` as a column. Use a compact markdown table instead of nested bullet points. Preferred format:
 
   | Variable ID | Variable | Table | Label | Type | N (non-missing) |
@@ -678,12 +773,185 @@ def _tokenize(text: str) -> list[str]:
     return re.findall(r"[a-z0-9]+", (text or "").lower())
 
 
+def _retrieval_query_variants(query: str) -> list[str]:
+    """Return query variants for common instrument spelling differences."""
+    variants = [query]
+    q = query or ""
+    q_l = q.lower()
+
+    # Users often write "rcad 25" while sources use RCADS-25/RCADS25.
+    if re.search(r"\brcad\s*[- ]?\s*25\b", q_l):
+        variants.extend([
+            re.sub(r"\brcad\s*[- ]?\s*25\b", "rcads 25", q_l),
+            re.sub(r"\brcad\s*[- ]?\s*25\b", "rcads-25", q_l),
+            re.sub(r"\brcad\s*[- ]?\s*25\b", "rcads25", q_l),
+        ])
+    if re.search(r"\brcad\b", q_l):
+        variants.append(re.sub(r"\brcad\b", "rcads", q_l))
+
+    return list(dict.fromkeys(v for v in variants if v))
+
+
+def _compact_alnum(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", (text or "").lower())
+
+
+def _tokenize_with_variants(text: str) -> list[str]:
+    tokens = _tokenize(text)
+    expanded = list(tokens)
+    token_set = set(tokens)
+    if "rcad" in token_set:
+        expanded.append("rcads")
+    if "rcads" in token_set:
+        expanded.append("rcad")
+    if ("rcad" in token_set or "rcads" in token_set) and "25" in token_set:
+        expanded.extend(["rcad25", "rcads25"])
+    return expanded
+
+
 def _rrf_fuse(rank_lists: list[list[str]], rrf_k: int) -> list[str]:
     scores: dict[str, float] = defaultdict(float)
     for ranked_ids in rank_lists:
         for rank, doc_id in enumerate(ranked_ids, start=1):
             scores[doc_id] += 1.0 / (rrf_k + rank)
     return [doc_id for doc_id, _ in sorted(scores.items(), key=lambda kv: kv[1], reverse=True)]
+
+
+def _exact_compact_source_boost_ids(
+    query: str,
+    cache: dict[str, Any],
+    limit: int = 10,
+) -> list[str]:
+    """Boost exact compact source matches such as "rcad 25" -> RCADS25 PDFs."""
+    tokens = set(_tokenize_with_variants(query))
+    compact_keys = {
+        token
+        for token in tokens
+        if len(token) >= 5 and re.search(r"[a-z]", token) and re.search(r"\d", token)
+    }
+    if ("rcad" in tokens or "rcads" in tokens) and "25" in tokens:
+        compact_keys.update({"rcad25", "rcads25"})
+    if not compact_keys:
+        return []
+
+    scored: list[tuple[str, float]] = []
+    for doc_id, meta in (cache.get("meta_by_id") or {}).items():
+        doc = (cache.get("doc_by_id") or {}).get(doc_id, "")
+        title = str((meta or {}).get("title", ""))
+        pdf_file = str((meta or {}).get("pdf_file", ""))
+        source_name = f"{title} {pdf_file}"
+        compact_source = _compact_alnum(source_name)
+        compact_doc = _compact_alnum(doc[:2000])
+
+        score = 0.0
+        for key in compact_keys:
+            if key in compact_source:
+                score += 8.0
+            if key in compact_doc:
+                score += 2.0
+        if score:
+            scored.append((doc_id, score + _simple_rerank_score(query, doc)))
+
+    return [
+        doc_id
+        for doc_id, _ in sorted(scored, key=lambda pair: pair[1], reverse=True)[:limit]
+    ]
+
+
+def _paper_context_excerpt(query: str, doc: str, meta: dict[str, Any]) -> str:
+    """Return a prompt-sized paper excerpt, expanding exact item/question PDFs."""
+    if "Abstract:" in doc:
+        start = doc.find("Abstract:")
+        return doc[start:start + int(os.getenv("PAPER_ABSTRACT_EXCERPT_CHARS", "600"))]
+
+    source = str((meta or {}).get("source", ""))
+    source_name = f"{(meta or {}).get('title', '')} {(meta or {}).get('pdf_file', '')}"
+    compact_source = _compact_alnum(source_name)
+    asks_for_items = bool(re.search(r"\b(item|items|question|questions|wording)\b", query or "", re.I))
+    asks_for_rcads25 = "rcad25" in set(_tokenize_with_variants(query)) or "rcads25" in set(_tokenize_with_variants(query))
+
+    if source == "pdf_fulltext" and asks_for_items and asks_for_rcads25 and "rcads25" in compact_source:
+        return doc[:int(os.getenv("PAPER_EXACT_ITEM_EXCERPT_CHARS", "4200"))]
+
+    return doc[:int(os.getenv("PAPER_FULLTEXT_EXCERPT_CHARS", "1800"))]
+
+
+def _paper_or_document_source_type(meta: dict[str, Any]) -> str:
+    """Return a source label that avoids treating every PDF as a paper."""
+    meta = meta or {}
+    title = _safe_str(meta.get("title", ""))
+    pdf_file = _safe_str(meta.get("pdf_file", ""))
+    source = _safe_str(meta.get("source", ""))
+    source_text = f"{title} {pdf_file}".lower()
+
+    if source == "pdf_fulltext" and re.search(
+        r"\b(data summary|data dictionary|registry|questionnaire|survey instrument|readme|manual)\b",
+        source_text,
+    ):
+        return "Documentation PDF"
+    if source == "pdf_fulltext":
+        return "Full-text PDF"
+    return "Published paper metadata"
+
+
+def _expand_pdf_sibling_chunks(
+    query: str,
+    doc_ids: list[str],
+    cache: dict[str, Any],
+    limit: int,
+) -> list[str]:
+    """Include neighbouring chunks from an exact PDF when the user asks for items."""
+    asks_for_items = bool(re.search(r"\b(item|items|question|questions|wording)\b", query or "", re.I))
+    if not asks_for_items:
+        return doc_ids[:limit]
+
+    tokens = set(_tokenize_with_variants(query))
+    compact_keys = {
+        token
+        for token in tokens
+        if len(token) >= 5 and re.search(r"[a-z]", token) and re.search(r"\d", token)
+    }
+    if ("rcad" in tokens or "rcads" in tokens) and "25" in tokens:
+        compact_keys.update({"rcad25", "rcads25"})
+
+    out: list[str] = []
+    seen: set[str] = set()
+    max_siblings = int(os.getenv("PDF_ITEM_SIBLING_CHUNKS", "4"))
+    meta_by_id = cache.get("meta_by_id") or {}
+
+    def append(doc_id: str) -> None:
+        if doc_id not in seen and len(out) < limit:
+            out.append(doc_id)
+            seen.add(doc_id)
+
+    for doc_id in doc_ids:
+        append(doc_id)
+        meta = meta_by_id.get(doc_id, {}) or {}
+        pdf_file = str(meta.get("pdf_file", ""))
+        source_name = f"{meta.get('title', '')} {pdf_file}"
+        if (
+            meta.get("source") != "pdf_fulltext"
+            or not pdf_file
+            or not any(key in _compact_alnum(source_name) for key in compact_keys)
+        ):
+            continue
+
+        siblings = [
+            sibling_id
+            for sibling_id, sibling_meta in meta_by_id.items()
+            if (sibling_meta or {}).get("source") == "pdf_fulltext"
+            and (sibling_meta or {}).get("pdf_file") == pdf_file
+        ]
+        siblings = sorted(
+            siblings,
+            key=lambda sibling_id: int(str((meta_by_id.get(sibling_id) or {}).get("chunk", "0")) or 0),
+        )
+        for sibling_id in siblings[:max_siblings]:
+            append(sibling_id)
+
+    for doc_id in doc_ids:
+        append(doc_id)
+    return out
 
 
 class _SparseBM25:
@@ -718,7 +986,7 @@ class _SparseBM25:
             return []
 
         scores: dict[int, float] = defaultdict(float)
-        for term in _tokenize(query):
+        for term in _tokenize_with_variants(query):
             plist = self.postings.get(term)
             if not plist:
                 continue
@@ -733,7 +1001,7 @@ class _SparseBM25:
 
 
 def _simple_rerank_score(query: str, doc: str) -> float:
-    q_tokens = _tokenize(query)
+    q_tokens = _tokenize_with_variants(query)
     d_tokens = _tokenize(doc)
     if not q_tokens or not d_tokens:
         return 0.0
@@ -755,6 +1023,59 @@ _QUESTIONNAIRE_QUERY_RE = re.compile(
     r"items?|questions?|months?|age of wonder|ague of wonder)\b",
     re.I,
 )
+
+_PAPER_QUERY_RE = re.compile(
+    r"\b(paper|papers|publication|publications|published|article|articles|"
+    r"study|studies|research|summari[sz]e|findings?)\b",
+    re.I,
+)
+
+_METHOD_OR_SCALE_QUERY_RE = re.compile(
+    r"\b(psychometric|scale|scales|screening|tool|tools|assessment|assessments|"
+    r"measure|measures|method|methods|test|tests|questionnaire|instrument|instruments)\b",
+    re.I,
+)
+
+_VARIABLE_OR_TABLE_QUERY_RE = re.compile(
+    r"\b(variable|variables|field|fields|table|tables|dataset|registry|"
+    r"available|exist|exists|occur|occurs)\b",
+    re.I,
+)
+
+_ACRONYM_DEFINITION_QUERY_RE = re.compile(
+    r"\b(stand(?:s)? for|meaning of|mean(?:s)?)\b",
+    re.I,
+)
+
+
+def _context_source_plan(query: str) -> dict[str, bool]:
+    """Choose evidence sources for the prompt without changing retrieval ranking.
+
+    Paper-heavy local prompts are slow because every query was pulling every
+    collection. Routing obvious paper/method turns away from unrelated
+    collections reduces prompt-eval time and usually improves focus.
+    """
+    q = query or ""
+    wants_questionnaires = bool(_QUESTIONNAIRE_QUERY_RE.search(q))
+    wants_papers = bool(_PAPER_QUERY_RE.search(q))
+    wants_methods = bool(_METHOD_OR_SCALE_QUERY_RE.search(q))
+    wants_variables = bool(_VARIABLE_OR_TABLE_QUERY_RE.search(q))
+    wants_acronym_definition = bool(_ACRONYM_DEFINITION_QUERY_RE.search(q))
+    wants_tools = wants_methods
+
+    if wants_acronym_definition and not wants_variables:
+        return {"tools": True, "papers": True, "questionnaires": False, "variables": False, "tables": False}
+
+    if wants_questionnaires and not wants_papers:
+        return {"tools": wants_tools, "papers": True, "questionnaires": True, "variables": wants_variables, "tables": wants_variables}
+
+    if wants_papers:
+        return {"tools": wants_tools, "papers": True, "questionnaires": False, "variables": wants_variables, "tables": wants_variables}
+
+    if wants_methods and not wants_variables:
+        return {"tools": True, "papers": True, "questionnaires": wants_questionnaires, "variables": True, "tables": False}
+
+    return {"tools": wants_tools, "papers": True, "questionnaires": True, "variables": True, "tables": True}
 
 _NUMBER_WORDS = {
     "one": "1",
@@ -919,7 +1240,36 @@ _PAPERS_CACHE: dict[str, Any] = {
     "doc_by_id": {},
     "meta_by_id": {},
     "sparse": None,
+    "uppercase_terms": set(),
+    "defined_acronyms": set(),
 }
+
+_QUESTIONNAIRES_CACHE: dict[str, Any] = {
+    "count": -1,
+    "rows": [],
+    "uppercase_terms": set(),
+    "defined_acronyms": set(),
+}
+
+_ACRONYM_QUERY_STOPWORDS = {
+    "about", "after", "again", "age", "also", "and", "anxiety", "any", "are", "born",
+    "bradford", "carried", "could", "data", "does", "for", "from",
+    "have", "how", "in", "into", "is", "it", "its", "me", "mentioned",
+    "of", "on", "out", "paper", "papers", "please", "publication",
+    "publications", "published", "research", "show", "stand", "stands", "study",
+    "studies", "survey", "surveys", "table", "tell", "the", "there", "these", "this",
+    "time", "to", "use", "used", "variable", "variables", "was", "were",
+    "what", "when", "where", "which", "who", "why", "with", "wonder",
+    "years", "bib", "uk",
+}
+
+_UPPERCASE_TERM_RE = re.compile(r"\b[A-Z][A-Z0-9]{1,11}\b")
+_DEFINITION_FIRST_RE = re.compile(
+    r"\b([A-Z][A-Za-z0-9,&/\- ]{4,120}?)\s*\(\s*([A-Z][A-Z0-9]{1,11})\s*\)"
+)
+_ACRONYM_FIRST_RE = re.compile(
+    r"\b([A-Z][A-Z0-9]{1,11})\s*\(\s*([A-Z][A-Za-z0-9,&/\- ]{4,120}?)\s*\)"
+)
 
 
 def _get_papers_cache(client: chromadb.ClientAPI) -> dict[str, Any]:
@@ -938,7 +1288,329 @@ def _get_papers_cache(client: chromadb.ClientAPI) -> dict[str, Any]:
     _PAPERS_CACHE["doc_by_id"] = {doc_id: doc for doc_id, doc in zip(ids, docs)}
     _PAPERS_CACHE["meta_by_id"] = {doc_id: (meta or {}) for doc_id, meta in zip(ids, metas)}
     _PAPERS_CACHE["sparse"] = _SparseBM25(ids, docs)
+    _PAPERS_CACHE["uppercase_terms"] = _uppercase_terms_from_docs(docs)
+    _PAPERS_CACHE["defined_acronyms"] = _defined_acronyms_from_docs(docs)
     return _PAPERS_CACHE
+
+
+def _uppercase_terms_from_docs(docs: list[str]) -> set[str]:
+    """Return lowercase forms of acronym-like uppercase tokens seen in docs."""
+    terms: set[str] = set()
+    for doc in docs:
+        for match in _UPPERCASE_TERM_RE.findall(doc or ""):
+            if match.lower() not in _ACRONYM_QUERY_STOPWORDS:
+                terms.add(match.lower())
+    return terms
+
+
+def _defined_acronyms_from_docs(docs: list[str]) -> set[str]:
+    """Return lowercase acronyms that appear in definition patterns."""
+    terms: set[str] = set()
+    for doc in docs:
+        text = doc or ""
+        for match in _DEFINITION_FIRST_RE.finditer(text):
+            terms.add(match.group(2).lower())
+        for match in _ACRONYM_FIRST_RE.finditer(text):
+            terms.add(match.group(1).lower())
+    return terms
+
+
+def _get_questionnaires_cache(collection) -> dict[str, Any]:
+    count = collection.count()
+    if _QUESTIONNAIRES_CACHE["count"] == count and _QUESTIONNAIRES_CACHE["rows"]:
+        return _QUESTIONNAIRES_CACHE
+
+    rows = collection.get(include=["documents", "metadatas"])
+    ids = rows.get("ids", []) or []
+    docs = rows.get("documents", []) or []
+    metas = rows.get("metadatas", []) or []
+    cached_rows = [
+        {"id": doc_id, "document": doc, "metadata": meta or {}}
+        for doc_id, doc, meta in zip(ids, docs, metas)
+        if doc
+    ]
+
+    _QUESTIONNAIRES_CACHE["count"] = count
+    _QUESTIONNAIRES_CACHE["rows"] = cached_rows
+    _QUESTIONNAIRES_CACHE["uppercase_terms"] = _uppercase_terms_from_docs(docs)
+    _QUESTIONNAIRES_CACHE["defined_acronyms"] = _defined_acronyms_from_docs(docs)
+    return _QUESTIONNAIRES_CACHE
+
+
+def _query_acronym_candidates(query: str, known_terms: set[str]) -> list[str]:
+    candidates = []
+    for token in _tokenize(query):
+        if not (2 <= len(token) <= 12):
+            continue
+        if token in _ACRONYM_QUERY_STOPWORDS:
+            continue
+        if token in known_terms:
+            candidates.append(token)
+    return list(dict.fromkeys(candidates))
+
+
+def _acronym_snippet(doc: str, term: str, max_chars: int = 900) -> str:
+    match = re.search(rf"\b{re.escape(term)}\b", doc or "", flags=re.IGNORECASE)
+    if not match:
+        return (doc or "")[:max_chars]
+    start = max(0, match.start() - max_chars // 3)
+    end = min(len(doc), start + max_chars)
+    snippet = (doc or "")[start:end].strip()
+    prefix = "..." if start > 0 else ""
+    suffix = "..." if end < len(doc or "") else ""
+    return f"{prefix}{snippet}{suffix}"
+
+
+def _acronym_doc_score(query: str, doc: str, term: str) -> float:
+    text = doc or ""
+    term_re = re.compile(rf"\b{re.escape(term)}\b", re.IGNORECASE)
+    occurrences = len(term_re.findall(text))
+    definition_bonus = 0.0
+    if re.search(rf"\(\s*{re.escape(term)}\s*\)", text, flags=re.IGNORECASE):
+        definition_bonus += 4.0
+    if re.search(rf"\b{re.escape(term)}\s*\(", text, flags=re.IGNORECASE):
+        definition_bonus += 2.0
+    return (occurrences * 1.5) + definition_bonus + _simple_rerank_score(query, text)
+
+
+def _exact_acronym_context(query: str, client: chromadb.ClientAPI) -> str:
+    """Prepend exact paper/questionnaire snippets for known acronym-like terms.
+
+    This handles queries where users write acronyms in lowercase ("ckat") and
+    semantic retrieval would otherwise miss the explanatory definition chunk.
+    """
+    try:
+        papers_cache = _get_papers_cache(client)
+    except Exception:
+        papers_cache = {"doc_by_id": {}, "meta_by_id": {}, "uppercase_terms": set(), "defined_acronyms": set()}
+
+    try:
+        questionnaires_col = client.get_collection("bib_questionnaires")
+        questionnaires_cache = _get_questionnaires_cache(questionnaires_col)
+    except Exception:
+        questionnaires_cache = {"rows": [], "uppercase_terms": set(), "defined_acronyms": set()}
+
+    known_terms = set(papers_cache.get("uppercase_terms", set()))
+    known_terms |= set(papers_cache.get("defined_acronyms", set()))
+    known_terms |= set(questionnaires_cache.get("uppercase_terms", set()))
+    known_terms |= set(questionnaires_cache.get("defined_acronyms", set()))
+
+    terms = _query_acronym_candidates(query, known_terms)
+    if not terms:
+        return ""
+
+    parts = ["## Exact Acronym/Tool Matches\n"]
+    max_terms = int(os.getenv("ACRONYM_BOOST_MAX_TERMS", "3"))
+    max_docs_per_term = int(os.getenv("ACRONYM_BOOST_DOCS_PER_TERM", "3"))
+
+    for term in terms[:max_terms]:
+        candidates: list[tuple[float, str, str, dict[str, Any]]] = []
+
+        for doc_id, doc in (papers_cache.get("doc_by_id", {}) or {}).items():
+            if not re.search(rf"\b{re.escape(term)}\b", doc or "", flags=re.IGNORECASE):
+                continue
+            meta = (papers_cache.get("meta_by_id", {}) or {}).get(doc_id, {})
+            candidates.append((_acronym_doc_score(query, doc, term), "paper", doc, meta))
+
+        for row in questionnaires_cache.get("rows", []) or []:
+            doc = row.get("document", "")
+            if not re.search(rf"\b{re.escape(term)}\b", doc or "", flags=re.IGNORECASE):
+                continue
+            meta = row.get("metadata", {}) or {}
+            candidates.append((_acronym_doc_score(query, doc, term), "questionnaire", doc, meta))
+
+        ranked = []
+        seen_sources: set[tuple[str, str]] = set()
+        for item in sorted(candidates, key=lambda item: item[0], reverse=True):
+            _, source_kind, _, meta = item
+            if source_kind == "paper":
+                source_key = (source_kind, str(meta.get("title", "")))
+            else:
+                source_key = (source_kind, str(meta.get("file_name", "") or meta.get("title", "")))
+            if source_key in seen_sources:
+                continue
+            ranked.append(item)
+            seen_sources.add(source_key)
+            if len(ranked) >= max_docs_per_term:
+                break
+        if not ranked:
+            continue
+
+        parts.append(f"[ACRONYM MATCH: {term.upper()}]\n")
+        for _, source_kind, doc, meta in ranked:
+            if source_kind == "paper":
+                year_suffix = f" ({meta.get('year', '')})" if meta.get("year") else ""
+                source = f"Paper: {meta.get('title', '')}{year_suffix}"
+            else:
+                file_suffix = (
+                    f" ({meta.get('file_name', '')})" if meta.get("file_name") else ""
+                )
+                source = f"Questionnaire: {meta.get('title', '')}{file_suffix}"
+            parts.append(f"{source}\n{_acronym_snippet(doc, term)}\n")
+
+    return "\n".join(parts).strip()
+
+
+def _iter_tool_definition_matches(doc: str) -> list[tuple[str, str]]:
+    """Extract (acronym, expansion) pairs from definition patterns."""
+    matches: list[tuple[str, str]] = []
+    text = doc or ""
+    for match in _DEFINITION_FIRST_RE.finditer(text):
+        expansion = re.sub(r"\s+", " ", match.group(1)).strip(" -,:;")
+        acronym = match.group(2).strip()
+        if acronym and expansion:
+            matches.append((acronym, expansion))
+    for match in _ACRONYM_FIRST_RE.finditer(text):
+        acronym = match.group(1).strip()
+        expansion = re.sub(r"\s+", " ", match.group(2)).strip(" -,:;")
+        if acronym and expansion:
+            matches.append((acronym, expansion))
+    return matches
+
+
+def _looks_like_tool_definition(acronym: str, expansion: str) -> bool:
+    acronym_l = (acronym or "").lower()
+    expansion_l = (expansion or "").lower()
+    if acronym_l in _ACRONYM_QUERY_STOPWORDS:
+        return False
+    if not (2 <= len(acronym_l) <= 12):
+        return False
+    if len(expansion_l.split()) < 2:
+        return False
+    useful_words = {
+        "assessment", "battery", "index", "inventory", "measure", "questionnaire",
+        "scale", "score", "screening", "survey", "test", "tool",
+    }
+    return bool(useful_words & set(_tokenize(expansion_l)))
+
+
+def build_tool_references_collection(client: chromadb.ClientAPI) -> int:
+    """Build a compact collection of scale/tool/acronym definitions.
+
+    The source documents remain papers/questionnaires, but this derived index
+    gives method questions a short, high-signal retrieval path.
+    """
+    print("\n🧰 Indexing tool, scale, and acronym references...")
+    try:
+        client.delete_collection("bib_tool_references")
+    except Exception:
+        pass
+    collection = client.create_collection("bib_tool_references")
+
+    source_rows: list[tuple[str, str, dict[str, Any]]] = []
+    for collection_name, source_kind in [
+        ("bib_papers", "paper"),
+        ("bib_questionnaires", "questionnaire"),
+    ]:
+        try:
+            rows = client.get_collection(collection_name).get(include=["documents", "metadatas"])
+        except Exception:
+            continue
+        docs = rows.get("documents", []) or []
+        metas = rows.get("metadatas", []) or []
+        for doc, meta in zip(docs, metas):
+            if doc:
+                source_rows.append((source_kind, doc, meta or {}))
+
+    docs, ids, metas = [], [], []
+    seen: set[tuple[str, str, str, str]] = set()
+    for source_kind, source_doc, source_meta in source_rows:
+        for acronym, expansion in _iter_tool_definition_matches(source_doc):
+            if not _looks_like_tool_definition(acronym, expansion):
+                continue
+            title = _safe_str(source_meta.get("title", ""))
+            file_name = _safe_str(source_meta.get("file_name", ""))
+            source_key = title or file_name
+            key = (acronym.lower(), expansion.lower(), source_kind, source_key.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+
+            snippet = _acronym_snippet(source_doc, acronym, max_chars=900)
+            doc = (
+                f"Tool/acronym: {acronym}\n"
+                f"Expansion: {expansion}\n"
+                f"Source type: {source_kind}\n"
+                f"Source title: {title}\n"
+                f"Year: {_safe_str(source_meta.get('year', ''))}\n"
+                f"Source file: {file_name}\n\n"
+                f"Evidence snippet:\n{snippet}"
+            )
+            idx = len(ids)
+            ids.append(f"tool_ref_{idx}")
+            docs.append(doc)
+            metas.append({
+                "acronym": acronym[:50],
+                "expansion": expansion[:300],
+                "source": source_kind,
+                "title": title[:500],
+                "year": _safe_str(source_meta.get("year", "")),
+                "file_name": file_name[:200],
+            })
+
+    total = 0
+    for doc_batch, id_batch, meta_batch in zip(
+        _batch(docs, 500), _batch(ids, 500), _batch(metas, 500)
+    ):
+        collection.upsert(documents=doc_batch, ids=id_batch, metadatas=meta_batch)
+        total += len(doc_batch)
+
+    print(f"   ✅ Indexed {total} tool/reference snippets")
+    return total
+
+
+def _retrieve_tool_reference_docs(collection, query: str, n_results: int) -> list[str]:
+    """Retrieve tool refs, preferring exact acronym hits over semantic matches."""
+    try:
+        rows = collection.get(include=["documents", "metadatas"])
+    except Exception:
+        rows = {"documents": [], "metadatas": []}
+
+    q_tokens = set(_tokenize(query))
+    scored: list[tuple[float, str]] = []
+    exact_scored: list[tuple[float, str]] = []
+    for doc, meta in zip(rows.get("documents", []) or [], rows.get("metadatas", []) or []):
+        meta = meta or {}
+        acronym = _safe_str(meta.get("acronym", "")).lower()
+        expansion = _safe_str(meta.get("expansion", "")).lower()
+        score = _simple_rerank_score(query, doc or "")
+        exact_score = 0.0
+        for token in q_tokens:
+            if len(token) < 2 or token in _ACRONYM_QUERY_STOPWORDS:
+                continue
+            if acronym and (acronym == token or acronym.startswith(token) or token.startswith(acronym)):
+                score += 20.0
+                exact_score += 20.0
+            if expansion and _term_in_text_for_tools(token, expansion):
+                score += 4.0
+        if score > 0:
+            scored.append((score, doc))
+        if exact_score > 0:
+            exact_scored.append((score, doc))
+
+    if exact_scored:
+        return [
+            doc
+            for _, doc in sorted(exact_scored, key=lambda item: item[0], reverse=True)
+        ][:n_results]
+
+    ranked = [doc for _, doc in sorted(scored, key=lambda item: item[0], reverse=True)]
+    if ranked:
+        return ranked[:n_results]
+
+    try:
+        semantic = collection.query(query_texts=[query], n_results=n_results)
+        return semantic.get("documents", [[]])[0] or []
+    except Exception:
+        return []
+
+
+def _term_in_text_for_tools(term: str, text: str) -> bool:
+    if not term or not text:
+        return False
+    if re.search(r"[^a-z0-9]", term):
+        return term in text
+    return re.search(rf"\b{re.escape(term)}s?\b", text) is not None
 
 
 def _exact_match_registry_lookup(query: str, client: chromadb.ClientAPI) -> str:
@@ -1076,62 +1748,99 @@ def _exact_match_registry_lookup(query: str, client: chromadb.ClientAPI) -> str:
 def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5) -> str:
     """Retrieve relevant docs from the indexed collections and format as context."""
     context_parts = []
+    source_plan = _context_source_plan(query)
 
     # ── Exact registry lookups (highest authority, prepended before semantic results) ──
     exact_ctx = _exact_match_registry_lookup(query, client)
     if exact_ctx:
         context_parts.append(exact_ctx)
 
+    # ── Exact acronym/tool mentions from papers/questionnaires ───────────────
+    acronym_ctx = _exact_acronym_context(query, client)
+    if acronym_ctx:
+        context_parts.append(acronym_ctx)
+
+    # ── Tool / scale / acronym definitions ──────────────────────────────────
+    if source_plan["tools"]:
+        try:
+            tools_col = client.get_collection("bib_tool_references")
+            docs = _retrieve_tool_reference_docs(tools_col, query, max(3, n_results))
+            if docs:
+                context_parts.append("\n## Relevant Tool and Scale References\n")
+                for doc in docs:
+                    context_parts.append(f"```\n{doc[:1200]}\n```\n")
+        except Exception:
+            pass
+
     # ── Papers ───────────────────────────────────────────────────────────────
-    try:
-        papers_col = client.get_collection("bib_papers")
-        cache = _get_papers_cache(client)
+    if source_plan["papers"]:
+        try:
+            papers_col = client.get_collection("bib_papers")
+            cache = _get_papers_cache(client)
 
-        dense_pool = int(os.getenv("RETRIEVAL_DENSE_POOL", "60"))
-        sparse_pool = int(os.getenv("RETRIEVAL_SPARSE_POOL", "60"))
-        rerank_pool = int(os.getenv("RETRIEVAL_RERANK_POOL", "50"))
-        rrf_k = int(os.getenv("RETRIEVAL_RRF_K", "60"))
+            dense_pool = int(os.getenv("RETRIEVAL_DENSE_POOL", "60"))
+            sparse_pool = int(os.getenv("RETRIEVAL_SPARSE_POOL", "60"))
+            rerank_pool = int(os.getenv("RETRIEVAL_RERANK_POOL", "50"))
+            rrf_k = int(os.getenv("RETRIEVAL_RRF_K", "60"))
 
-        dense_pool = max(dense_pool, n_results)
-        sparse_pool = max(sparse_pool, n_results)
-        rerank_pool = max(rerank_pool, n_results)
+            dense_pool = max(dense_pool, n_results)
+            sparse_pool = max(sparse_pool, n_results)
+            rerank_pool = max(rerank_pool, n_results)
 
-        dense_results = papers_col.query(
-            query_texts=[query],
-            n_results=dense_pool,
-            include=[],
-        )
-        dense_ids = dense_results.get("ids", [[]])[0] or []
-        sparse_ids = cache["sparse"].search(query, sparse_pool)
-
-        fused_ids = _rrf_fuse([dense_ids[:dense_pool], sparse_ids[:sparse_pool]], rrf_k=rrf_k)
-        rerank_candidates = fused_ids[:rerank_pool]
-        reranked_ids = sorted(
-            rerank_candidates,
-            key=lambda doc_id: _simple_rerank_score(query, cache["doc_by_id"].get(doc_id, "")),
-            reverse=True,
-        )[:n_results]
-
-        docs = [cache["doc_by_id"].get(doc_id, "") for doc_id in reranked_ids]
-        metas = [cache["meta_by_id"].get(doc_id, {}) for doc_id in reranked_ids]
-
-        if any(docs):
-            context_parts.append("## Relevant Published Papers\n")
-            for doc, meta in zip(docs, metas):
-                if not doc:
-                    continue
-                title = (meta or {}).get("title", "")
-                authors = (meta or {}).get("authors", "")
-                context_parts.append(
-                    f"**{title}** "
-                    f"({meta.get('year','')}) — {authors[:160]}\n"
-                    f"{doc[doc.find('Abstract:'):doc.find('Abstract:')+600] if 'Abstract:' in doc else doc[:1800]}\n"
+            query_variants = _retrieval_query_variants(query)[:4]
+            rank_lists: list[list[str]] = []
+            for query_variant in query_variants:
+                dense_results = papers_col.query(
+                    query_texts=[query_variant],
+                    n_results=dense_pool,
+                    include=[],
                 )
-    except Exception as e:
-        context_parts.append(f"[Papers collection unavailable: {e}]\n")
+                dense_ids = dense_results.get("ids", [[]])[0] or []
+                if dense_ids:
+                    rank_lists.append(dense_ids[:dense_pool])
+
+                sparse_ids = cache["sparse"].search(query_variant, sparse_pool)
+                if sparse_ids:
+                    rank_lists.append(sparse_ids[:sparse_pool])
+
+            boosted_ids = _exact_compact_source_boost_ids(query, cache, limit=min(10, rerank_pool))
+            if boosted_ids:
+                rank_lists.insert(0, boosted_ids)
+
+            fused_ids = _rrf_fuse(rank_lists, rrf_k=rrf_k)
+            rerank_candidates = fused_ids[:rerank_pool]
+            reranked_ids = sorted(
+                rerank_candidates,
+                key=lambda doc_id: _simple_rerank_score(query, cache["doc_by_id"].get(doc_id, "")),
+                reverse=True,
+            )[:n_results]
+            reranked_ids = _expand_pdf_sibling_chunks(query, reranked_ids, cache, n_results)
+
+            docs = [cache["doc_by_id"].get(doc_id, "") for doc_id in reranked_ids]
+            metas = [cache["meta_by_id"].get(doc_id, {}) for doc_id in reranked_ids]
+
+            if any(docs):
+                context_parts.append("## Relevant Papers and Documents\n")
+                for doc, meta in zip(docs, metas):
+                    if not doc:
+                        continue
+                    title = (meta or {}).get("title", "")
+                    authors = (meta or {}).get("authors", "")
+                    source_type = _paper_or_document_source_type(meta or {})
+                    pdf_file = (meta or {}).get("pdf_file", "")
+                    file_suffix = f"\nFile: {pdf_file}" if pdf_file else ""
+                    context_parts.append(
+                        f"Source type: {source_type}{file_suffix}\n"
+                        f"**{title}** "
+                        f"({meta.get('year','')}) — {authors[:160]}\n"
+                        f"{_paper_context_excerpt(query, doc, meta)}\n"
+                    )
+        except Exception as e:
+            context_parts.append(f"[Papers collection unavailable: {e}]\n")
 
     # ── Questionnaires ───────────────────────────────────────────────────────
-    try:
+    if source_plan["questionnaires"]:
+      try:
         questionnaires_col = client.get_collection("bib_questionnaires")
         questionnaire_parts: list[str] = []
         targeted_file = _best_questionnaire_file(query, questionnaires_col)
@@ -1182,11 +1891,12 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
         if questionnaire_parts:
             context_parts.append("\n## Relevant Questionnaires\n")
             context_parts.extend(questionnaire_parts)
-    except Exception as e:
+      except Exception as e:
         context_parts.append(f"[Questionnaires collection unavailable: {e}]\n")
 
     # ── Variables ────────────────────────────────────────────────────────────
-    try:
+    if source_plan["variables"]:
+      try:
         vars_col = client.get_collection("bib_variables")
         results = vars_col.query(query_texts=[query], n_results=n_results * 2)
         docs  = results["documents"][0]
@@ -1195,11 +1905,12 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
             context_parts.append("\n## Relevant Variables\n")
             for doc, meta in zip(docs, metas):
                 context_parts.append(f"```\n{doc}\n```\n")
-    except Exception as e:
+      except Exception as e:
         context_parts.append(f"[Variables collection unavailable: {e}]\n")
 
     # ── Tables ───────────────────────────────────────────────────────────────
-    try:
+    if source_plan["tables"]:
+      try:
         tables_col = client.get_collection("bib_tables")
         results = tables_col.query(query_texts=[query], n_results=n_results)
         docs  = results["documents"][0]
@@ -1208,7 +1919,7 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
             context_parts.append("\n## Relevant Tables\n")
             for doc, meta in zip(docs, metas):
                 context_parts.append(f"```\n{doc}\n```\n")
-    except Exception as e:
+      except Exception as e:
         context_parts.append(f"[Tables collection unavailable: {e}]\n")
 
     return "\n".join(context_parts)
@@ -1457,21 +2168,24 @@ def query_stream(
     model: str = DEFAULT_MODEL,
     history: list | None = None,
     system_prompt: str = SYSTEM_PROMPT,
+    retrieval_n_results: int = 5,
+    max_context_chars: int = 0,
 ):
     """
     Streaming version of query(). Yields raw token strings as they are generated
-    by the HuggingFace model, enabling the server to forward them as SSE events
-    so the UI can display the response token-by-token instead of waiting for the
-    full response.
+    by the configured LLM backend, enabling the server to forward them as SSE
+    events so the UI can display the response token-by-token instead of waiting
+    for the full response.
 
     The first batch of output is buffered (~80 chars) so opener filler phrases
     can be stripped before anything reaches the client.
 
     Falls back to a single yield of the full non-streamed answer when the client
-    object doesn't expose the raw HF interface.
+    object doesn't expose a streaming interface.
     """
     hf = getattr(llm_client, "_hf_raw", None)
-    if hf is None:
+    local_stream = getattr(llm_client, "stream_chat_completion", None)
+    if hf is None and local_stream is None:
         # Fallback: yield the complete answer in one chunk.
         yield query(
             question,
@@ -1480,13 +2194,20 @@ def query_stream(
             model=model,
             history=history,
             system_prompt=system_prompt,
+            retrieval_n_results=retrieval_n_results,
+            max_context_chars=max_context_chars,
         )
         return
 
     prior = history or []
     retrieval_query = _retrieval_query_from_history(question, prior)
-    raw_context = retrieve_context(retrieval_query, client)
+    raw_context = retrieve_context(retrieval_query, client, n_results=max(1, retrieval_n_results))
     context = format_context_with_question_anchors(question, raw_context)
+    if max_context_chars and len(context) > max_context_chars:
+        context = (
+            context[:max_context_chars].rstrip()
+            + "\n\n[Context truncated for local inference. Ask a narrower follow-up if more detail is needed.]"
+        )
     messages = [
         {"role": "system", "content": system_prompt},
         *prior,
@@ -1500,22 +2221,32 @@ def query_stream(
     ]
 
     try:
-        stream = hf.chat_completion(
-            model=model,
-            messages=messages,
-            temperature=0.2,
-            max_tokens=900,
-            stream=True,
-        )
+        if local_stream is not None:
+            token_stream = local_stream(messages=messages, temperature=0.2, max_tokens=900)
+        else:
+            hf_stream = hf.chat_completion(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+                max_tokens=900,
+                stream=True,
+            )
+
+            def _hf_token_stream():
+                for chunk in hf_stream:
+                    if not chunk.choices:
+                        continue
+                    token = (chunk.choices[0].delta.content or "")
+                    if token:
+                        yield token
+            token_stream = _hf_token_stream()
+
         # Buffer opening tokens to strip any filler opener before first display
         prefix_buf = ""
         prefix_sent = False
         OPENER_THRESHOLD = 80
 
-        for chunk in stream:
-            if not chunk.choices:
-                continue
-            token = (chunk.choices[0].delta.content or "")
+        for token in token_stream:
             if not token:
                 continue
             if not prefix_sent:
@@ -1541,13 +2272,20 @@ def query_stream(
 def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
           model: str = DEFAULT_MODEL, show_context: bool = False,
           history: list | None = None,
-          system_prompt: str = SYSTEM_PROMPT) -> str:
+          system_prompt: str = SYSTEM_PROMPT,
+          retrieval_n_results: int = 5,
+          max_context_chars: int = 0) -> str:
     """Run a RAG query: retrieve context → call HuggingFace LLM → return answer."""
 
     prior = history or []
     retrieval_query = _retrieval_query_from_history(question, prior)
-    raw_context = retrieve_context(retrieval_query, client)
+    raw_context = retrieve_context(retrieval_query, client, n_results=max(1, retrieval_n_results))
     context = format_context_with_question_anchors(question, raw_context)
+    if max_context_chars and len(context) > max_context_chars:
+        context = (
+            context[:max_context_chars].rstrip()
+            + "\n\n[Context truncated for local inference. Ask a narrower follow-up if more detail is needed.]"
+        )
 
     if show_context:
         print("\n── Retrieved Context ──────────────────────────────────────────")
@@ -1630,14 +2368,290 @@ def _check_index(client: chromadb.ClientAPI) -> bool:
             n_questionnaires = questionnaires_col.count()
         except Exception:
             n_questionnaires = 0
+        try:
+            tool_refs_col = client.get_collection("bib_tool_references")
+            n_tool_refs = tool_refs_col.count()
+        except Exception:
+            n_tool_refs = 0
         n_abstracts = cols['bib_papers'] - n_pdf
         print(f"✅ Index ready — {n_abstracts} abstracts + {n_pdf} PDF chunks | "
               f"{cols['bib_variables']} variables | {cols['bib_tables']} tables | "
-              f"{n_questionnaires} questionnaire chunks")
+              f"{n_questionnaires} questionnaire chunks | {n_tool_refs} tool refs")
         return True
     except Exception as e:
         print(f"❌ Could not read index: {e}")
         return False
+
+
+def _resolve_model_path(path_value: str | Path) -> Path:
+    path = Path(path_value).expanduser()
+    if path.is_absolute():
+        return path
+    cwd_candidate = (Path.cwd() / path).resolve()
+    if cwd_candidate.exists():
+        return cwd_candidate
+    # Docker/server startup is often from the repo root, so use that as the
+    # stable fallback for missing paths and error messages.
+    return (DATADICT_DIR / path).resolve()
+
+
+def _get_llama_cpp_client(
+    gguf_model_path: str | Path = GGUF_MODEL_DEFAULT,
+    llama_n_ctx: int = 4096,
+    llama_n_gpu_layers: int = -1,
+    llama_chat_format: str = "llama-3",
+    llama_n_threads: int = 0,
+    llama_verbose: bool = False,
+) -> Optional[Any]:
+    """Return a llama.cpp GGUF client with the same chat.completions API shape."""
+    from types import SimpleNamespace
+
+    model_path = _resolve_model_path(gguf_model_path or GGUF_MODEL_DEFAULT)
+    if not model_path.exists():
+        print(f"❌ GGUF model not found: {model_path}")
+        print("   Create it with llm_poc/tools/quantize_to_gguf.sh or pass --gguf-model-path.")
+        return None
+
+    try:
+        from llama_cpp import Llama
+    except ImportError:
+        print("❌ llama-cpp-python not installed.")
+        print("   CPU install: pip install llama-cpp-python")
+        print('   Apple Silicon Metal: CMAKE_ARGS="-DGGML_METAL=on" pip install -U llama-cpp-python --no-cache-dir')
+        return None
+
+    kwargs: dict[str, Any] = {
+        "model_path": str(model_path),
+        "n_ctx": int(llama_n_ctx),
+        "n_gpu_layers": int(llama_n_gpu_layers),
+        "chat_format": str(llama_chat_format or "llama-3"),
+        "verbose": bool(llama_verbose),
+    }
+    if int(llama_n_threads or 0) > 0:
+        kwargs["n_threads"] = int(llama_n_threads)
+
+    print(f"🧠 Loading local GGUF model: {model_path}")
+    llm = Llama(**kwargs)
+    default_top_p = float(os.getenv("LLAMA_CPP_TOP_P", "0.9"))
+    default_repeat_penalty = float(os.getenv("LLAMA_CPP_REPEAT_PENALTY", "1.12"))
+
+    class _LlamaCppChatCompletions:
+        def create(self, model, messages, temperature=0.2, max_tokens=1500, **kw):
+            result = llm.create_chat_completion(
+                messages=messages,
+                temperature=float(temperature),
+                max_tokens=int(max_tokens),
+                top_p=float(kw.get("top_p", default_top_p)),
+                repeat_penalty=float(kw.get("repeat_penalty", default_repeat_penalty)),
+            )
+            choices = result.get("choices") or []
+            if not choices:
+                raise RuntimeError(f"No choices in llama.cpp response: {result}")
+            message = choices[0].get("message") or {}
+            content = str(message.get("content") or "")
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(content=content))],
+            )
+
+    class _LlamaCppChat:
+        def __init__(self):
+            self.completions = _LlamaCppChatCompletions()
+
+    class _LlamaCppWrapper:
+        def __init__(self):
+            self.chat = _LlamaCppChat()
+            self._hf_raw = None
+            self.endpoint_mode = "llama_cpp"
+            self.gguf_model_path = str(model_path)
+
+        def stream_chat_completion(self, messages, temperature=0.2, max_tokens=900, **kw):
+            stream = llm.create_chat_completion(
+                messages=messages,
+                temperature=float(temperature),
+                max_tokens=int(max_tokens),
+                top_p=float(kw.get("top_p", default_top_p)),
+                repeat_penalty=float(kw.get("repeat_penalty", default_repeat_penalty)),
+                stream=True,
+            )
+            for chunk in stream:
+                choices = chunk.get("choices") or []
+                if not choices:
+                    continue
+                choice = choices[0] or {}
+                delta = choice.get("delta") or {}
+                token = delta.get("content")
+                if token is None:
+                    token = choice.get("text", "")
+                if token:
+                    yield str(token)
+
+    return _LlamaCppWrapper()
+
+
+def _get_transformers_local_client(
+    model: str,
+    transformers_device: str = "auto",
+    transformers_dtype: str = "auto",
+    transformers_attn_implementation: str = "",
+) -> Optional[Any]:
+    """Return an experimental local Transformers client for small comparison runs."""
+    from types import SimpleNamespace
+
+    token = os.getenv("HF_TOKEN", "") or os.getenv("HUGGINGFACE_TOKEN", "") or None
+    try:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+    except ImportError:
+        print("❌ torch/transformers not installed.")
+        print("   Install: pip install torch transformers accelerate sentencepiece")
+        return None
+
+    model_name = str(model or "").strip()
+    if not model_name:
+        print("❌ --model is required for --llm-backend transformers_local.")
+        return None
+
+    device_pref = (transformers_device or "auto").strip().lower()
+    dtype_pref = (transformers_dtype or "auto").strip().lower()
+
+    dtype: Any = "auto"
+    if dtype_pref in {"float16", "fp16"}:
+        dtype = torch.float16
+    elif dtype_pref in {"bfloat16", "bf16"}:
+        dtype = torch.bfloat16
+    elif dtype_pref in {"float32", "fp32"}:
+        dtype = torch.float32
+
+    load_kwargs: dict[str, Any] = {"torch_dtype": dtype}
+    if token:
+        load_kwargs["token"] = token
+    if transformers_attn_implementation:
+        load_kwargs["attn_implementation"] = transformers_attn_implementation
+
+    use_device_map = False
+    target_device = "cpu"
+    if device_pref == "auto":
+        if torch.cuda.is_available():
+            use_device_map = True
+        elif getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+            target_device = "mps"
+        else:
+            target_device = "cpu"
+    elif device_pref in {"cuda", "gpu"}:
+        if not torch.cuda.is_available():
+            print("❌ Requested CUDA for transformers_local, but CUDA is not available.")
+            return None
+        use_device_map = True
+    elif device_pref == "mps":
+        if not (getattr(torch.backends, "mps", None) and torch.backends.mps.is_available()):
+            print("❌ Requested MPS for transformers_local, but MPS is not available.")
+            return None
+        target_device = "mps"
+    elif device_pref == "cpu":
+        target_device = "cpu"
+    else:
+        print(f"❌ Unknown --transformers-device value: {transformers_device}")
+        return None
+
+    if use_device_map:
+        load_kwargs["device_map"] = "auto"
+
+    print(f"🧪 Loading experimental local Transformers model: {model_name}")
+    print(f"   device={device_pref} dtype={dtype_pref}")
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name, token=token)
+        model_obj = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+        if not use_device_map:
+            model_obj.to(target_device)
+        model_obj.eval()
+    except Exception as exc:
+        print(f"❌ Could not load local Transformers model '{model_name}': {exc}")
+        return None
+
+    def _prompt_from_messages(messages: list[dict[str, str]]) -> str:
+        if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template:
+            return tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+        rendered = []
+        for message in messages:
+            role = message.get("role", "user")
+            content = message.get("content", "")
+            rendered.append(f"{role.upper()}: {content}")
+        rendered.append("ASSISTANT:")
+        return "\n\n".join(rendered)
+
+    def _inputs_for(messages: list[dict[str, str]]):
+        prompt = _prompt_from_messages(messages)
+        inputs = tokenizer(prompt, return_tensors="pt")
+        if not use_device_map:
+            inputs = {key: val.to(target_device) for key, val in inputs.items()}
+        return inputs
+
+    def _generation_kwargs(temperature: float, max_tokens: int, **kw) -> dict[str, Any]:
+        temp = float(temperature)
+        return {
+            "max_new_tokens": int(max_tokens),
+            "do_sample": temp > 0,
+            "temperature": max(temp, 1e-5),
+            "top_p": float(kw.get("top_p", os.getenv("TRANSFORMERS_LOCAL_TOP_P", "0.9"))),
+            "repetition_penalty": float(
+                kw.get("repetition_penalty", os.getenv("TRANSFORMERS_LOCAL_REPETITION_PENALTY", "1.08"))
+            ),
+            "pad_token_id": tokenizer.eos_token_id,
+            "eos_token_id": tokenizer.eos_token_id,
+        }
+
+    class _TransformersLocalChatCompletions:
+        def create(self, model, messages, temperature=0.2, max_tokens=1500, **kw):
+            inputs = _inputs_for(messages)
+            input_len = int(inputs["input_ids"].shape[-1])
+            with torch.inference_mode():
+                output = model_obj.generate(
+                    **inputs,
+                    **_generation_kwargs(temperature, max_tokens, **kw),
+                )
+            generated = output[0][input_len:]
+            content = tokenizer.decode(generated, skip_special_tokens=True).strip()
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(content=content))],
+            )
+
+    class _TransformersLocalChat:
+        def __init__(self):
+            self.completions = _TransformersLocalChatCompletions()
+
+    class _TransformersLocalWrapper:
+        def __init__(self):
+            self.chat = _TransformersLocalChat()
+            self._hf_raw = None
+            self.endpoint_mode = "transformers_local"
+            self.model_name = model_name
+
+        def stream_chat_completion(self, messages, temperature=0.2, max_tokens=900, **kw):
+            import threading
+
+            inputs = _inputs_for(messages)
+            streamer = TextIteratorStreamer(
+                tokenizer,
+                skip_prompt=True,
+                skip_special_tokens=True,
+            )
+            generation_kwargs = {
+                **inputs,
+                **_generation_kwargs(temperature, max_tokens, **kw),
+                "streamer": streamer,
+            }
+            thread = threading.Thread(target=model_obj.generate, kwargs=generation_kwargs)
+            thread.start()
+            for token in streamer:
+                if token:
+                    yield token
+            thread.join()
+
+    return _TransformersLocalWrapper()
 
 
 def _get_hf_client(
@@ -1645,7 +2659,34 @@ def _get_hf_client(
     endpoint_url: str = "",
     endpoint_mode: str = "chat_completions",
     handler_parameters: Optional[dict[str, Any]] = None,
+    backend: str = "hf_api",
+    gguf_model_path: str | Path = GGUF_MODEL_DEFAULT,
+    llama_n_ctx: int = 4096,
+    llama_n_gpu_layers: int = -1,
+    llama_chat_format: str = "llama-3",
+    llama_n_threads: int = 0,
+    llama_verbose: bool = False,
+    transformers_device: str = "auto",
+    transformers_dtype: str = "auto",
+    transformers_attn_implementation: str = "",
 ) -> Optional[Any]:
+    backend = (backend or "hf_api").strip().lower()
+    if backend == "llama_cpp":
+        return _get_llama_cpp_client(
+            gguf_model_path=gguf_model_path,
+            llama_n_ctx=llama_n_ctx,
+            llama_n_gpu_layers=llama_n_gpu_layers,
+            llama_chat_format=llama_chat_format,
+            llama_n_threads=llama_n_threads,
+            llama_verbose=llama_verbose,
+        )
+    if backend == "transformers_local":
+        return _get_transformers_local_client(
+            model=model,
+            transformers_device=transformers_device,
+            transformers_dtype=transformers_dtype,
+            transformers_attn_implementation=transformers_attn_implementation,
+        )
     token = os.getenv("HF_TOKEN", "") or os.getenv("HUGGINGFACE_TOKEN", "")
     if not token:
         print("⚠️  HF_TOKEN not set.")
@@ -1915,7 +2956,74 @@ def main():
         "--model",
         type=str,
         default=DEFAULT_MODEL,
-        help=f"HuggingFace model name (default: {DEFAULT_MODEL})",
+        help=f"Model name for hf_api or transformers_local backend (default: {DEFAULT_MODEL})",
+    )
+    parser.add_argument(
+        "--llm-backend",
+        type=str,
+        choices=["hf_api", "llama_cpp", "transformers_local"],
+        default=os.getenv("LLM_BACKEND", "hf_api"),
+        help=(
+            "LLM backend: hf_api for Hugging Face API/endpoints, "
+            "llama_cpp for local GGUF files, "
+            "transformers_local for experimental non-quantized local HF models"
+        ),
+    )
+    parser.add_argument(
+        "--gguf-model-path",
+        type=str,
+        default=os.getenv("GGUF_MODEL_PATH", str(GGUF_MODEL_DEFAULT)),
+        help=f"Path to a quantized GGUF model for --llm-backend llama_cpp (default: {GGUF_MODEL_DEFAULT})",
+    )
+    parser.add_argument(
+        "--llama-n-ctx",
+        type=int,
+        default=int(os.getenv("LLAMA_CPP_N_CTX", "4096")),
+        help="llama.cpp context window size for GGUF backend (default: 4096)",
+    )
+    parser.add_argument(
+        "--llama-n-gpu-layers",
+        type=int,
+        default=int(os.getenv("LLAMA_CPP_N_GPU_LAYERS", "-1")),
+        help="llama.cpp GPU layers to offload. Use -1 for all supported layers (default: -1)",
+    )
+    parser.add_argument(
+        "--llama-chat-format",
+        type=str,
+        default=os.getenv("LLAMA_CPP_CHAT_FORMAT", "llama-3"),
+        help="llama.cpp chat_format for GGUF backend (default: llama-3)",
+    )
+    parser.add_argument(
+        "--llama-n-threads",
+        type=int,
+        default=int(os.getenv("LLAMA_CPP_N_THREADS", "0")),
+        help="llama.cpp CPU thread count. 0 lets llama.cpp choose (default: 0)",
+    )
+    parser.add_argument(
+        "--llama-verbose",
+        action="store_true",
+        default=os.getenv("LLAMA_CPP_VERBOSE", "").strip().lower() in {"1", "true", "yes", "on"},
+        help="Enable verbose llama.cpp logging",
+    )
+    parser.add_argument(
+        "--transformers-device",
+        type=str,
+        choices=["auto", "cuda", "mps", "cpu"],
+        default=os.getenv("TRANSFORMERS_LOCAL_DEVICE", "auto"),
+        help="Device for --llm-backend transformers_local (default: auto)",
+    )
+    parser.add_argument(
+        "--transformers-dtype",
+        type=str,
+        choices=["auto", "float16", "fp16", "bfloat16", "bf16", "float32", "fp32"],
+        default=os.getenv("TRANSFORMERS_LOCAL_DTYPE", "auto"),
+        help="Torch dtype for --llm-backend transformers_local (default: auto)",
+    )
+    parser.add_argument(
+        "--transformers-attn-implementation",
+        type=str,
+        default=os.getenv("TRANSFORMERS_LOCAL_ATTN_IMPLEMENTATION", ""),
+        help="Optional transformers_local attn_implementation, e.g. sdpa",
     )
     parser.add_argument(
         "--endpoint-url",
@@ -1949,6 +3057,7 @@ def main():
     parser.add_argument("--endpoint-use-system-role", action="store_true")
     parser.add_argument("--endpoint-debug", action="store_true")
     args = parser.parse_args()
+    args.llm_backend = (args.llm_backend or "hf_api").strip().lower()
 
     if args.build:
         build_index()
@@ -1976,6 +3085,16 @@ def main():
             endpoint_url=args.endpoint_url,
             endpoint_mode=args.endpoint_mode,
             handler_parameters=endpoint_handler_parameters,
+            backend=args.llm_backend,
+            gguf_model_path=args.gguf_model_path,
+            llama_n_ctx=args.llama_n_ctx,
+            llama_n_gpu_layers=args.llama_n_gpu_layers,
+            llama_chat_format=args.llama_chat_format,
+            llama_n_threads=args.llama_n_threads,
+            llama_verbose=args.llama_verbose,
+            transformers_device=args.transformers_device,
+            transformers_dtype=args.transformers_dtype,
+            transformers_attn_implementation=args.transformers_attn_implementation,
         )
 
         if not llm_client:
@@ -1986,7 +3105,13 @@ def main():
 
         if args.query:
             print(f"\n🔬 Query: {args.query}")
-            print(f"   Model: {args.model}\n")
+            if args.llm_backend == "llama_cpp":
+                print(f"   GGUF model: {args.gguf_model_path}")
+            elif args.llm_backend == "transformers_local":
+                print(f"   Local Transformers model: {args.model}")
+            else:
+                print(f"   Model: {args.model}")
+            print(f"   Backend: {args.llm_backend}\n")
             print("⏳ Thinking...\n")
             answer = query(
                 args.query, client, llm_client,

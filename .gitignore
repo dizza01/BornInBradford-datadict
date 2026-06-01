@@ -63,4 +63,6 @@ llm_poc/.env
 .env
 /.env
 /papers
+models/
+*.gguf
 llm_poc/.chroma_db/

@@ -87,6 +87,41 @@ bash start.sh --port 8080
 bash start.sh --model "HuggingFaceH4/zephyr-7b-beta"
 ```
 
+#### Optional: run with a local quantized GGUF model
+
+For internal/local use, the recommended offline model path is a quantized GGUF file served with `llama.cpp`, not the full Hugging Face Transformers weights.
+
+Install `llama-cpp-python` for your platform:
+
+```bash
+# CPU
+pip install llama-cpp-python
+
+# Apple Silicon / Metal
+CMAKE_ARGS="-DGGML_METAL=on" pip install -U llama-cpp-python --no-cache-dir
+
+# NVIDIA CUDA
+CMAKE_ARGS="-DGGML_CUDA=on" pip install -U llama-cpp-python --no-cache-dir
+```
+
+Once `models/bib-llama-3.1-8b.Q4_K_M.gguf` exists, start the server with:
+
+```bash
+cd BornInBradford-datadict
+../.venv/bin/python llm_poc/server.py \
+  --llm-backend llama_cpp \
+  --gguf-model-path models/bib-llama-3.1-8b.Q4_K_M.gguf
+```
+
+To create the GGUF locally from the fine-tuned Hugging Face model:
+
+```bash
+cd BornInBradford-datadict
+llm_poc/tools/quantize_to_gguf.sh
+```
+
+The script downloads `dizza01/llama-3.1-8b-bib-grounded-sft-merged`, clones/builds `llama.cpp`, converts to F16 GGUF, then creates a `Q4_K_M` GGUF. This is a large one-time process; keep at least 40-50GB free.
+
 ---
 
 ### Step 5 — (Optional) Command-line interface
@@ -110,6 +145,12 @@ cd BornInBradford-datadict/llm_poc
 # Use a different model
 ../../.venv/bin/python bib_research_assistant.py \
   --model "HuggingFaceH4/zephyr-7b-beta" --chat
+
+# Use a local quantized GGUF model
+../../.venv/bin/python bib_research_assistant.py \
+  --llm-backend llama_cpp \
+  --gguf-model-path ../models/bib-llama-3.1-8b.Q4_K_M.gguf \
+  --chat
 ```
 
 ---
