@@ -185,7 +185,6 @@
   margin-bottom: 7px;
 }
 .bib-add-all-vars,
-.bib-detected-var,
 #bib-export-vars,
 #bib-clear-vars,
 .bib-var-chip button {
@@ -207,12 +206,24 @@
 }
 .bib-detected-var {
   width: 100%;
-  text-align: left;
   background: #fff;
   border: 1px solid #c8d4ef;
   border-radius: 8px;
   padding: 6px 8px;
   color: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.bib-detected-var button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  text-align: left;
+  width: 100%;
 }
 .bib-detected-var:hover { border-color: #1a4e8c; background: #f7faff; }
 .bib-detected-var code {
@@ -224,6 +235,19 @@
   color: #5f6f91;
   font-size: .72rem;
   line-height: 1.25;
+}
+.bib-detected-var a,
+.bib-study-var-row a,
+.bib-variable-result a {
+  color: #1a4e8c;
+  font-size: .7rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.bib-detected-var a:hover,
+.bib-study-var-row a:hover,
+.bib-variable-result a:hover {
+  text-decoration: underline;
 }
 
 .bib-study-summary {
@@ -316,19 +340,29 @@
   padding-right: 3px;
   scrollbar-gutter: stable;
 }
-.bib-study-vars button {
+.bib-study-var-row {
   background: #fbfdff;
   border: 1px solid #d3ddf1;
   border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  justify-content: space-between;
+  padding: 5px 6px;
+}
+.bib-study-var-row:hover {
+  background: #f1f6ff;
+  border-color: #1a4e8c;
+}
+.bib-study-vars button {
+  background: transparent;
+  border: 0;
   color: #1a1a2e;
   cursor: pointer;
   font-family: inherit;
-  padding: 5px 6px;
+  min-width: 0;
+  padding: 0;
   text-align: left;
-}
-.bib-study-vars button:hover {
-  background: #f1f6ff;
-  border-color: #1a4e8c;
 }
 .bib-study-vars code {
   background: #edf3ff !important;
@@ -406,14 +440,24 @@
 }
 .bib-variable-result {
   width: 100%;
-  text-align: left;
   background: #fff;
   border: 1px solid #c8d4ef;
   border-radius: 8px;
   padding: 6px 8px;
   color: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.bib-variable-result button {
+  background: transparent;
+  border: 0;
+  color: inherit;
   cursor: pointer;
   font-family: inherit;
+  padding: 0;
+  text-align: left;
+  width: 100%;
 }
 .bib-variable-result:hover { border-color: #1a4e8c; background: #f7faff; }
 .bib-variable-result code {
@@ -532,6 +576,21 @@
   line-height: 1.5;
 }
 #bib-welcome .bib-w-icon { font-size: 1.6rem; margin-bottom: 6px; }
+.bib-beta-note {
+  background: #fff;
+  border: 1px solid #c8d4ef;
+  border-left: 3px solid #1a4e8c;
+  border-radius: 10px;
+  color: #42506b;
+  font-size: .74rem;
+  line-height: 1.42;
+  margin-top: 12px;
+  padding: 9px 10px;
+  text-align: left;
+}
+.bib-beta-note strong {
+  color: #14397a;
+}
 
 /* Input bar */
 #bib-input-bar {

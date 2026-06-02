@@ -75,6 +75,10 @@ check_deps()
 
 import chromadb
 import pandas as pd
+try:
+    from chromadb.config import Settings as ChromaSettings
+except Exception:
+    ChromaSettings = None
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 SCRIPT_DIR   = Path(__file__).parent
@@ -97,6 +101,14 @@ GGUF_MODEL_DEFAULT = MODELS_DIR / "bib-llama-3.1-8b.Q4_K_M.gguf"
 # ── ChromaDB setup ─────────────────────────────────────────────────────────────
 def get_chroma_client():
     CHROMA_DIR.mkdir(exist_ok=True)
+    if ChromaSettings is not None:
+        try:
+            return chromadb.PersistentClient(
+                path=str(CHROMA_DIR),
+                settings=ChromaSettings(anonymized_telemetry=False),
+            )
+        except TypeError:
+            pass
     return chromadb.PersistentClient(path=str(CHROMA_DIR))
 
 
@@ -2348,33 +2360,33 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
 
 def _check_index(client: chromadb.ClientAPI) -> bool:
     """Return True if all required collections exist and are populated."""
+    def collection_count(name: str) -> int | None:
+        try:
+            return client.get_collection(name).count()
+        except Exception:
+            return None
+
     try:
-        cols = {c.name: c.count() for c in client.list_collections()}
+        cols = {
+            name: count
+            for name in [
+                "bib_papers",
+                "bib_variables",
+                "bib_tables",
+                "bib_questionnaires",
+                "bib_tool_references",
+            ]
+            if (count := collection_count(name)) is not None
+        }
         required = ["bib_papers", "bib_variables", "bib_tables"]
         missing = [c for c in required if c not in cols or cols[c] == 0]
         if missing:
             print(f"⚠️  Missing/empty collections: {missing}")
             print("    Run: python bib_research_assistant.py --build")
             return False
-        # Count how many entries are PDF full-text chunks vs abstract entries
-        try:
-            paper_col = client.get_collection("bib_papers")
-            pdf_chunks = paper_col.get(where={"source": "pdf_fulltext"}, include=[])
-            n_pdf = len(pdf_chunks.get("ids", []))
-        except Exception:
-            n_pdf = 0
-        try:
-            questionnaires_col = client.get_collection("bib_questionnaires")
-            n_questionnaires = questionnaires_col.count()
-        except Exception:
-            n_questionnaires = 0
-        try:
-            tool_refs_col = client.get_collection("bib_tool_references")
-            n_tool_refs = tool_refs_col.count()
-        except Exception:
-            n_tool_refs = 0
-        n_abstracts = cols['bib_papers'] - n_pdf
-        print(f"✅ Index ready — {n_abstracts} abstracts + {n_pdf} PDF chunks | "
+        n_questionnaires = cols.get("bib_questionnaires", 0)
+        n_tool_refs = cols.get("bib_tool_references", 0)
+        print(f"✅ Index ready — {cols['bib_papers']} paper/document chunks | "
               f"{cols['bib_variables']} variables | {cols['bib_tables']} tables | "
               f"{n_questionnaires} questionnaire chunks | {n_tool_refs} tool refs")
         return True

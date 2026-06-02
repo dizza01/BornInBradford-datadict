@@ -29,8 +29,10 @@ import json
 import argparse
 import threading
 import re
+import hmac
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import quote
 
 import pandas as pd
 
@@ -73,6 +75,33 @@ except ImportError:
     sys.exit(1)
 
 app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="/widget-static")
+
+BASIC_AUTH_USER = os.getenv("BIB_BASIC_AUTH_USER", "").strip()
+BASIC_AUTH_PASSWORD = os.getenv("BIB_BASIC_AUTH_PASSWORD", "")
+BASIC_AUTH_ENABLED = bool(BASIC_AUTH_USER and BASIC_AUTH_PASSWORD)
+
+
+def _auth_required_response() -> Response:
+    return Response(
+        "Authentication required\n",
+        status=401,
+        headers={"WWW-Authenticate": 'Basic realm="BiB Assistant"'},
+        mimetype="text/plain",
+    )
+
+
+@app.before_request
+def _require_basic_auth():
+    if not BASIC_AUTH_ENABLED:
+        return None
+    auth = request.authorization
+    if not auth:
+        return _auth_required_response()
+    user_ok = hmac.compare_digest(auth.username or "", BASIC_AUTH_USER)
+    password_ok = hmac.compare_digest(auth.password or "", BASIC_AUTH_PASSWORD)
+    if user_ok and password_ok:
+        return None
+    return _auth_required_response()
 
 # ── Global state (initialised once at startup) ─────────────────────────────────
 chroma_client: Any = None
@@ -353,6 +382,17 @@ def _guess_html_stems(table_id: str, project: str, table_name: str) -> list[str]
   return ordered
 
 
+def _data_dictionary_url(source_html: str, variable: str = "") -> str:
+  source_html = _clean_value(source_html)
+  if not source_html:
+    return ""
+  url = f"/{source_html}"
+  variable = _clean_value(variable)
+  if variable:
+    url += f"?bib_variable={quote(variable)}"
+  return url
+
+
 def _derive_theme(topic: str, section: str, label: str, description: str,
           table_id: str, table_display: str, project: str) -> str:
   for source in (topic, section):
@@ -499,6 +539,7 @@ def _build_variable_registry() -> dict[str, Any]:
       "entities_complete": n_entities_complete,
       "entity_type": table_meta.get("entity_type", ""),
       "source_html": source_html,
+      "data_dictionary_url": _data_dictionary_url(source_html, variable),
     }
     rows.append(entry)
     theme_counts[theme] = theme_counts.get(theme, 0) + 1
@@ -599,6 +640,8 @@ def _variable_export_record(row: dict[str, Any]) -> dict[str, str]:
     "topic": _clean_value(row.get("topic", "")),
     "theme": _clean_value(row.get("theme", "")),
     "study_context": _clean_value(row.get("study_context", "")),
+    "source_html": _clean_value(row.get("source_html", "")),
+    "data_dictionary_url": _clean_value(row.get("data_dictionary_url", "")),
   }
 
 
@@ -1185,10 +1228,10 @@ def _registry_score(row: dict[str, Any], query: str) -> int:
 
 # ── Chat widget snippet injected before </body> ────────────────────────────────
 WIDGET_SNIPPET = """
-<!-- BiB Research Assistant Widget + Nav links -->
+<!-- BiB Research Assistant Widget + Nav link -->
 <link rel="stylesheet" href="/widget-static/chat-widget.css">
 
-<!-- Top-right nav pills -->
+<!-- Top-right nav pill -->
 <style>
   #bib-nav-group {
     position: fixed;
@@ -1200,7 +1243,7 @@ WIDGET_SNIPPET = """
     align-items: center;
   }
   #bib-assistant-nav,
-  #bib-registry-nav {
+  #bib-dictionary-nav {
     display: flex;
     align-items: center;
     gap: 7px;
@@ -1220,7 +1263,7 @@ WIDGET_SNIPPET = """
     background: #1a4e8c;
     box-shadow: 0 3px 14px rgba(26,78,140,.38);
   }
-  #bib-registry-nav {
+  #bib-dictionary-nav {
     background: #375a7f;
     box-shadow: 0 3px 14px rgba(55,90,127,.32);
   }
@@ -1229,37 +1272,128 @@ WIDGET_SNIPPET = """
     box-shadow: 0 5px 20px rgba(26,78,140,.52);
     transform: translateY(-1px);
   }
-  #bib-registry-nav:hover {
+  #bib-dictionary-nav:hover {
     background: #466e98;
     box-shadow: 0 5px 20px rgba(55,90,127,.45);
     transform: translateY(-1px);
   }
   #bib-assistant-nav:active,
-  #bib-registry-nav:active { transform: translateY(0); }
+  #bib-dictionary-nav:active { transform: translateY(0); }
   #bib-assistant-nav .bib-nav-icon,
-  #bib-registry-nav .bib-nav-icon { font-size: .95rem; }
+  #bib-dictionary-nav .bib-nav-icon { font-size: .95rem; }
+  .bib-variable-filter-banner {
+    position: fixed;
+    left: 50%;
+    top: 72px;
+    z-index: 9996;
+    transform: translateX(-50%);
+    max-width: min(720px, calc(100vw - 28px));
+    background: #fff;
+    border: 1px solid #bfd0ef;
+    border-left: 4px solid #1a4e8c;
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(18,43,87,.18);
+    color: #243041;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: .86rem;
+    line-height: 1.45;
+    padding: 10px 14px;
+  }
+  .bib-variable-filter-banner strong { color: #14397a; }
   @media (max-width: 600px) {
     #bib-assistant-nav span.bib-nav-label,
-    #bib-registry-nav span.bib-nav-label { display: none; }
+    #bib-dictionary-nav span.bib-nav-label { display: none; }
     #bib-assistant-nav,
-    #bib-registry-nav { padding: 8px 12px; }
+    #bib-dictionary-nav { padding: 8px 12px; }
     #bib-nav-group { gap: 8px; }
   }
 </style>
 <div id="bib-nav-group">
+<a id="bib-dictionary-nav" href="/" title="Open Data Dictionary home">
+  <span class="bib-nav-icon">⌂</span>
+  <span class="bib-nav-label">Dictionary</span>
+</a>
 <a id="bib-assistant-nav" href="/assistant" title="Open BiB Research Assistant">
   <span class="bib-nav-icon">🔬</span>
   <span class="bib-nav-label">Research Assistant</span>
   <span>↗</span>
 </a>
-<a id="bib-registry-nav" href="/registry" title="Open variable registry">
-  <span class="bib-nav-icon">🗂</span>
-  <span class="bib-nav-label">Variable Registry</span>
-  <span>↗</span>
-</a>
 </div>
 
 <script src="/widget-static/chat-widget.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const variable = (params.get('bib_variable') || '').trim();
+  if (!variable) return;
+
+  function showBanner(message) {
+    const existing = document.querySelector('.bib-variable-filter-banner');
+    if (existing) existing.remove();
+    const banner = document.createElement('div');
+    banner.className = 'bib-variable-filter-banner';
+    banner.innerHTML = message;
+    document.body.appendChild(banner);
+    window.setTimeout(() => banner.remove(), 9000);
+  }
+
+  function escapeHtml(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function setNativeValue(input, value) {
+    const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+    if (descriptor && descriptor.set) {
+      descriptor.set.call(input, value);
+    } else {
+      input.value = value;
+    }
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function findVariableFilterInput(table) {
+    const inputs = Array.from(table.querySelectorAll('input'));
+    return inputs.find(input => /filter\s+variable/i.test(input.getAttribute('aria-label') || ''))
+      || inputs.find(input => /variable/i.test(input.getAttribute('aria-label') || ''))
+      || inputs[0]
+      || null;
+  }
+
+  function applyFilter() {
+    const table = document.querySelector('.reactable[id]');
+    if (!table || !table.id) return false;
+    const filterInput = findVariableFilterInput(table);
+    if (!filterInput) return false;
+
+    try {
+      setNativeValue(filterInput, variable);
+      filterInput.focus({ preventScroll: true });
+      if (window.Reactable && typeof window.Reactable.setFilter === 'function') {
+        window.Reactable.setFilter(table.id, 'variable_display', variable);
+      }
+      showBanner(
+        'Filtered data dictionary table to variable <strong>' +
+        escapeHtml(variable) +
+        '</strong>. Clear the table search/filter to see all variables again.'
+      );
+      const tableTop = table.getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top: Math.max(tableTop, 0), behavior: 'smooth' });
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  let attempts = 0;
+  const timer = window.setInterval(() => {
+    attempts += 1;
+    if (applyFilter() || attempts >= 80) {
+      window.clearInterval(timer);
+    }
+  }, 150);
+})();
+</script>
 """
 
 
@@ -1470,6 +1604,7 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-wrap: wrap;
   }
   header a.back-link {
     color: rgba(255,255,255,.85);
@@ -1481,6 +1616,25 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     transition: background .2s;
   }
   header a.back-link:hover { background: rgba(255,255,255,.15); }
+  header a.back-link.primary {
+    background: rgba(255,255,255,.16);
+    color: #fff;
+    border-color: rgba(255,255,255,.58);
+  }
+  @media (max-width: 720px) {
+    header {
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    header .nav-links {
+      margin-left: 0;
+      width: 100%;
+    }
+    header a.back-link {
+      font-size: .78rem;
+      padding: 5px 10px;
+    }
+  }
 
   #chat-history {
     flex: 1;
@@ -1552,6 +1706,29 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   .welcome .icon { font-size: 3rem; margin-bottom: 12px; }
   .welcome h2 { font-size: 1.2rem; color: var(--bib-blue); margin-bottom: 8px; }
   .welcome p { font-size: .9rem; line-height: 1.6; }
+  .beta-note {
+    background: #fff;
+    border: 1px solid #d0d8e8;
+    border-left: 4px solid var(--bib-blue);
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(18,43,87,.08);
+    color: #42506b;
+    font-size: .86rem;
+    line-height: 1.55;
+    margin: 18px auto 0;
+    max-width: 620px;
+    padding: 14px 16px;
+    text-align: left;
+  }
+  .beta-note strong {
+    color: #14397a;
+  }
+  .beta-note ul {
+    margin: 8px 0 0 18px;
+  }
+  .beta-note li {
+    margin: 5px 0;
+  }
   .suggestions {
     display: flex;
     flex-wrap: wrap;
@@ -1620,7 +1797,9 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   .var-chip code { color: #14397a; font-size: .78rem; }
   .var-chip button,
   .basket-actions button,
-  .detected-vars button {
+  .detected-vars button,
+  .variable-results button,
+  .study-vars button {
     border: 0;
     cursor: pointer;
     font-family: inherit;
@@ -1681,16 +1860,40 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     border: 1px solid #d0d8e8 !important;
     border-radius: 9px;
     padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     text-align: left;
     color: #1a1a2e;
   }
   .detected-var:hover { border-color: var(--bib-blue) !important; background: #fff; }
+  .detected-var button {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    text-align: left;
+  }
   .detected-var code { display: block; margin-bottom: 3px; }
   .detected-var span {
     display: block;
     color: #5f6f91;
     font-size: .76rem;
     line-height: 1.3;
+  }
+  .data-dict-link,
+  .detected-var a,
+  .study-var-row a,
+  .variable-result a {
+    color: var(--bib-blue);
+    font-size: .74rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .data-dict-link:hover,
+  .detected-var a:hover,
+  .study-var-row a:hover,
+  .variable-result a:hover {
+    text-decoration: underline;
   }
   .study-summary {
     background: linear-gradient(145deg, #ffffff 0%, #eef5ff 100%);
@@ -1786,19 +1989,27 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     padding-right: 4px;
     scrollbar-gutter: stable;
   }
-  .study-vars button {
+  .study-var-row {
     background: #fbfdff;
     border: 1px solid #d3ddf1;
     border-radius: 9px;
-    color: #1a1a2e;
-    cursor: pointer;
-    font-family: inherit;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    justify-content: space-between;
     padding: 6px 8px;
-    text-align: left;
   }
-  .study-vars button:hover {
+  .study-var-row:hover {
     background: #f1f6ff;
     border-color: var(--bib-blue);
+  }
+  .study-vars button {
+    background: transparent;
+    border: 0;
+    color: #1a1a2e;
+    min-width: 0;
+    padding: 0;
+    text-align: left;
   }
   .study-vars code {
     background: #edf3ff !important;
@@ -1876,12 +2087,19 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     border: 1px solid #d0d8e8 !important;
     border-radius: 9px;
     padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     text-align: left;
     color: #1a1a2e;
-    cursor: pointer;
-    font-family: inherit;
   }
   .variable-result:hover { border-color: var(--bib-blue) !important; background: #fff; }
+  .variable-result button {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    text-align: left;
+  }
   .variable-result code { display: block; margin-bottom: 3px; }
   .variable-result span {
     display: block;
@@ -1980,11 +2198,11 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   <span class="logo">🔬</span>
   <div>
     <h1>BiB Research Assistant</h1>
-    <div class="sub">Born in Bradford · AI-powered dataset explorer</div>
+    <div class="sub">Born in Bradford · beta prototype dataset explorer</div>
   </div>
   <div class="nav-links">
-    <a class="back-link" href="/registry">🗂 Variable Registry</a>
-    <a class="back-link" href="/">← Data Dictionary</a>
+    <a class="back-link primary" href="/assistant">New chat</a>
+    <a class="back-link" href="/">Data dictionary home</a>
   </div>
 </header>
 
@@ -1993,6 +2211,14 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     <div class="icon">🧬</div>
     <h2>What would you like to explore?</h2>
     <p>Ask about variables, tables, cohort methodology, published papers, or analysis approaches using the Born in Bradford dataset.</p>
+    <div class="beta-note">
+      <strong>Beta first release.</strong> This assistant is an early prototype for exploring the potential of an LLM-based research assistant for Born in Bradford.
+      <ul>
+        <li>It uses a quantised local model to make deployment smaller, faster, and easier to share with pilot users.</li>
+        <li>Quantisation helps performance and packaging, but it can reduce answer quality compared with larger full-precision models.</li>
+        <li>Please treat answers as a research aid rather than a final authority, and use the source and data dictionary links to check important details.</li>
+      </ul>
+    </div>
     <div class="suggestions">
       <button class="suggestion-btn" onclick="sendSuggestion(this.textContent)">What anxiety variables exist in Age of Wonder?</button>
       <button class="suggestion-btn" onclick="sendSuggestion(this.textContent)">How do I link BiB1000 data to school records?</button>
@@ -2057,6 +2283,19 @@ function removeThinking() { if (thinking) { thinking.remove(); thinking = null; 
 
 function escHtml(t) {
   return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(t) {
+  return escHtml(t).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function dataDictionaryUrl(v) {
+  if (!v) return '';
+  if (v.data_dictionary_url) return v.data_dictionary_url;
+  if (v.source_html) {
+    let url = '/' + String(v.source_html).replace(/^\/+/, '');
+    if (v.variable) url += '?bib_variable=' + encodeURIComponent(v.variable);
+    return url;
+  }
+  return '';
 }
 function csvEscape(value) {
   const text = String(value || '');
@@ -2123,7 +2362,7 @@ function exportSelectedVariables() {
   if (!rows.length) return;
   const headers = [
     'variable_id', 'variable', 'table', 'label', 'description',
-    'type', 'non_missing', 'topic', 'theme', 'study_context'
+    'type', 'non_missing', 'topic', 'theme', 'study_context', 'data_dictionary_url'
   ];
   const csv = [
     headers.join(','),
@@ -2161,10 +2400,13 @@ function renderVariablePicker(container, variables) {
     </div>
     <div class="detected-list">
       ${unique.map(v => `
-        <button type="button" class="detected-var" data-var-key="${escHtml(variableKey(v))}">
-          <code>${escHtml(v.variable || v.variable_id)}</code>
-          <span>${escHtml(v.label || v.table || '')}</span>
-        </button>
+        <div class="detected-var">
+          <button type="button" data-var-key="${escAttr(variableKey(v))}">
+            <code>${escHtml(v.variable || v.variable_id)}</code>
+            <span>${escHtml(v.label || v.table || '')}</span>
+          </button>
+          ${dataDictionaryUrl(v) ? `<a href="${escAttr(dataDictionaryUrl(v))}" target="_blank" rel="noopener">Open data dictionary table</a>` : ''}
+        </div>
       `).join('')}
     </div>
   `;
@@ -2173,7 +2415,7 @@ function renderVariablePicker(container, variables) {
   picker.querySelector('.add-all-vars').addEventListener('click', () => {
     unique.forEach(addVariable);
   });
-  picker.querySelectorAll('[data-var-key]').forEach(btn => {
+  picker.querySelectorAll('button[data-var-key]').forEach(btn => {
     btn.addEventListener('click', () => {
       const row = unique.find(v => variableKey(v) === btn.getAttribute('data-var-key'));
       if (row) addVariable(row);
@@ -2225,10 +2467,13 @@ function renderVariableStudySummary(container, result) {
             ${examples.length ? `
               <div class="study-vars" aria-label="Variables in ${escHtml(item.study_context || 'study')}">
                 ${examples.map(row => `
-                  <button type="button" data-study-var-key="${escHtml(variableKey(row))}">
-                    <code>${escHtml(row.variable_id || row.variable || '')}</code>
-                    <span>${escHtml(row.label || row.table || '')}</span>
-                  </button>
+                  <div class="study-var-row">
+                    <button type="button" data-study-var-key="${escAttr(variableKey(row))}">
+                      <code>${escHtml(row.variable_id || row.variable || '')}</code>
+                      <span>${escHtml(row.label || row.table || '')}</span>
+                    </button>
+                    ${dataDictionaryUrl(row) ? `<a href="${escAttr(dataDictionaryUrl(row))}" target="_blank" rel="noopener">Open data dictionary table</a>` : ''}
+                  </div>
                 `).join('')}
               </div>
               ${studyRows.length && studyRows.length < nVars ? `<div class="study-card-note">Showing ${studyRows.length} of ${nVars} variables for this cohort.</div>` : ''}
@@ -2252,7 +2497,7 @@ function renderVariableStudySummary(container, result) {
         .forEach(addVariable);
     });
   });
-  panel.querySelectorAll('[data-study-var-key]').forEach(btn => {
+  panel.querySelectorAll('button[data-study-var-key]').forEach(btn => {
     btn.addEventListener('click', () => {
       const row = rowByKey.get(btn.getAttribute('data-study-var-key'));
       if (row) addVariable(row);
@@ -2281,10 +2526,13 @@ function renderVariableResults(container, result) {
     </div>
     <div class="variable-results-list">
       ${rows.map(v => `
-        <button type="button" class="variable-result" data-var-key="${escHtml(variableKey(v))}">
-          <code>${escHtml(v.variable_id || v.variable)}</code>
-          <span>${escHtml(v.label || v.table || '')}</span>
-        </button>
+        <div class="variable-result">
+          <button type="button" data-var-key="${escAttr(variableKey(v))}">
+            <code>${escHtml(v.variable_id || v.variable)}</code>
+            <span>${escHtml(v.label || v.table || '')}</span>
+          </button>
+          ${dataDictionaryUrl(v) ? `<a href="${escAttr(dataDictionaryUrl(v))}" target="_blank" rel="noopener">Open data dictionary table</a>` : ''}
+        </div>
       `).join('')}
     </div>
   `;
@@ -2293,7 +2541,7 @@ function renderVariableResults(container, result) {
   panel.querySelector('.add-all-results').addEventListener('click', () => {
     rows.forEach(addVariable);
   });
-  panel.querySelectorAll('[data-var-key]').forEach(btn => {
+  panel.querySelectorAll('button[data-var-key]').forEach(btn => {
     btn.addEventListener('click', () => {
       const row = rows.find(v => variableKey(v) === btn.getAttribute('data-var-key'));
       if (row) addVariable(row);
@@ -3181,24 +3429,33 @@ def main():
     global current_transformers_device, current_transformers_dtype, current_transformers_attn_implementation
     global current_rag_n_results, current_rag_context_max_chars
 
+    runtime_locked = _env_flag("BIB_RUNTIME_LOCKED", False)
+    backend_choices = ["llama_cpp"] if runtime_locked else ["hf_api", "llama_cpp", "transformers_local"]
+    default_backend = "llama_cpp" if runtime_locked else current_llm_backend
+
     parser = argparse.ArgumentParser(description="BiB Research Assistant Web Server")
     parser.add_argument("--port",  type=int, default=5050, help="Port to listen on (default: 5050)")
     parser.add_argument("--host",  type=str, default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
-    parser.add_argument(
-        "--model",
-        type=str,
-        default=DEFAULT_MODEL,
-        help=f"Model for hf_api or transformers_local backend (default: {DEFAULT_MODEL})",
-    )
+    if not runtime_locked:
+        parser.add_argument(
+            "--model",
+            type=str,
+            default=DEFAULT_MODEL,
+            help=f"Model for hf_api or transformers_local backend (default: {DEFAULT_MODEL})",
+        )
     parser.add_argument(
         "--llm-backend",
         type=str,
-        choices=["hf_api", "llama_cpp", "transformers_local"],
-        default=current_llm_backend,
+        choices=backend_choices,
+        default=default_backend,
         help=(
-            "LLM backend: hf_api for Hugging Face API/endpoints, "
-            "llama_cpp for local GGUF files, "
-            "transformers_local for experimental non-quantized local HF models"
+            "LLM backend: llama_cpp local GGUF runtime"
+            if runtime_locked
+            else (
+                "LLM backend: hf_api for Hugging Face API/endpoints, "
+                "llama_cpp for local GGUF files, "
+                "transformers_local for experimental non-quantized local HF models"
+            )
         ),
     )
     parser.add_argument(
@@ -3212,26 +3469,27 @@ def main():
     parser.add_argument("--llama-chat-format", type=str, default=current_llama_chat_format, help="llama.cpp chat_format (default: llama-3)")
     parser.add_argument("--llama-n-threads", type=int, default=current_llama_n_threads, help="llama.cpp CPU thread count. 0 lets llama.cpp choose")
     parser.add_argument("--llama-verbose", action="store_true", default=current_llama_verbose, help="Enable verbose llama.cpp logging")
-    parser.add_argument(
-        "--transformers-device",
-        type=str,
-        choices=["auto", "cuda", "mps", "cpu"],
-        default=current_transformers_device,
-        help="Device for --llm-backend transformers_local (default: auto)",
-    )
-    parser.add_argument(
-        "--transformers-dtype",
-        type=str,
-        choices=["auto", "float16", "fp16", "bfloat16", "bf16", "float32", "fp32"],
-        default=current_transformers_dtype,
-        help="Torch dtype for --llm-backend transformers_local (default: auto)",
-    )
-    parser.add_argument(
-        "--transformers-attn-implementation",
-        type=str,
-        default=current_transformers_attn_implementation,
-        help="Optional transformers_local attn_implementation, e.g. sdpa",
-    )
+    if not runtime_locked:
+        parser.add_argument(
+            "--transformers-device",
+            type=str,
+            choices=["auto", "cuda", "mps", "cpu"],
+            default=current_transformers_device,
+            help="Device for --llm-backend transformers_local (default: auto)",
+        )
+        parser.add_argument(
+            "--transformers-dtype",
+            type=str,
+            choices=["auto", "float16", "fp16", "bfloat16", "bf16", "float32", "fp32"],
+            default=current_transformers_dtype,
+            help="Torch dtype for --llm-backend transformers_local (default: auto)",
+        )
+        parser.add_argument(
+            "--transformers-attn-implementation",
+            type=str,
+            default=current_transformers_attn_implementation,
+            help="Optional transformers_local attn_implementation, e.g. sdpa",
+        )
     parser.add_argument(
         "--rag-n-results",
         type=int,
@@ -3247,17 +3505,21 @@ def main():
     parser.add_argument("--debug", action="store_true", help="Enable Flask debug mode")
     args = parser.parse_args()
 
-    current_model = args.model
-    current_llm_backend = (args.llm_backend or "hf_api").strip().lower()
+    current_model = getattr(args, "model", DEFAULT_MODEL)
+    current_llm_backend = "llama_cpp" if runtime_locked else (args.llm_backend or "hf_api").strip().lower()
     current_gguf_model_path = args.gguf_model_path
     current_llama_n_ctx = int(args.llama_n_ctx)
     current_llama_n_gpu_layers = int(args.llama_n_gpu_layers)
     current_llama_chat_format = args.llama_chat_format
     current_llama_n_threads = int(args.llama_n_threads)
     current_llama_verbose = bool(args.llama_verbose)
-    current_transformers_device = args.transformers_device
-    current_transformers_dtype = args.transformers_dtype
-    current_transformers_attn_implementation = args.transformers_attn_implementation
+    current_transformers_device = getattr(args, "transformers_device", current_transformers_device)
+    current_transformers_dtype = getattr(args, "transformers_dtype", current_transformers_dtype)
+    current_transformers_attn_implementation = getattr(
+        args,
+        "transformers_attn_implementation",
+        current_transformers_attn_implementation,
+    )
     current_rag_n_results = int(args.rag_n_results)
     current_rag_context_max_chars = int(args.rag_context_max_chars)
 
@@ -3267,6 +3529,8 @@ def main():
     print(f"  Docs dir  : {DOCS_DIR}")
     print(f"  ChromaDB  : {SCRIPT_DIR / '.chroma_db'}")
     print(f"  LLM backend: {current_llm_backend}")
+    if runtime_locked:
+        print("  Runtime   : locked local GGUF bundle")
     if current_llm_backend == "llama_cpp":
         print(f"  GGUF model : {current_gguf_model_path}")
         print(f"  RAG results: {_effective_rag_n_results()} per collection")
@@ -3299,7 +3563,6 @@ def main():
 
     print(f"\n🌐 Server running at: http://{args.host}:{args.port}")
     print(f"   Data dictionary  : http://{args.host}:{args.port}/")
-    print(f"   Variable registry: http://{args.host}:{args.port}/registry")
     print(f"   Full assistant   : http://{args.host}:{args.port}/assistant")
     print(f"   Chat API         : POST http://{args.host}:{args.port}/api/chat")
     print("\n   Press Ctrl+C to stop\n")

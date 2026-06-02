@@ -18,6 +18,7 @@
     <div id="bib-panel-header">
       <span class="icon">🔬</span>
       <span class="title">BiB Research Assistant</span>
+      <a href="/" title="Open data dictionary home">Dictionary</a>
       <a href="/assistant" title="Open full-screen assistant">Full screen ↗</a>
       <button id="bib-close-btn" title="Close">✕</button>
     </div>
@@ -25,6 +26,9 @@
       <div id="bib-welcome">
         <div class="bib-w-icon">🧬</div>
         <div>Ask about variables, tables, published papers, or analysis approaches using the Born in Bradford dataset.</div>
+        <div class="bib-beta-note">
+          <strong>Beta first release.</strong> This is an early prototype using a quantised local model to make deployment easier. Quantisation helps size and performance, but may reduce answer quality, so please check important details against source links.
+        </div>
       </div>
     </div>
     <div id="bib-variable-basket">
@@ -92,6 +96,20 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
+  }
+  function escAttr(t) {
+    return escHtml(t).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function dataDictionaryUrl(v) {
+    if (!v) return "";
+    if (v.data_dictionary_url) return v.data_dictionary_url;
+    if (v.source_html) {
+      let url = "/" + String(v.source_html).replace(/^\/+/, "");
+      if (v.variable) url += "?bib_variable=" + encodeURIComponent(v.variable);
+      return url;
+    }
+    return "";
   }
 
   function csvEscape(value) {
@@ -166,7 +184,7 @@
 
     const headers = [
       "variable_id", "variable", "table", "label", "description",
-      "type", "non_missing", "topic", "theme", "study_context"
+      "type", "non_missing", "topic", "theme", "study_context", "data_dictionary_url"
     ];
     const csv = [
       headers.join(","),
@@ -206,10 +224,13 @@
       </div>
       <div class="bib-detected-list">
         ${unique.map(v => `
-          <button type="button" class="bib-detected-var" data-var-key="${escHtml(variableKey(v))}">
-            <code>${escHtml(v.variable || v.variable_id)}</code>
-            <span>${escHtml(v.label || v.table || "")}</span>
-          </button>
+          <div class="bib-detected-var">
+            <button type="button" data-var-key="${escAttr(variableKey(v))}">
+              <code>${escHtml(v.variable || v.variable_id)}</code>
+              <span>${escHtml(v.label || v.table || "")}</span>
+            </button>
+            ${dataDictionaryUrl(v) ? `<a href="${escAttr(dataDictionaryUrl(v))}" target="_blank" rel="noopener">Open data dictionary table</a>` : ""}
+          </div>
         `).join("")}
       </div>
     `;
@@ -218,7 +239,7 @@
     picker.querySelector(".bib-add-all-vars").addEventListener("click", () => {
       unique.forEach(addVariable);
     });
-    picker.querySelectorAll("[data-var-key]").forEach(btn => {
+    picker.querySelectorAll("button[data-var-key]").forEach(btn => {
       btn.addEventListener("click", () => {
         const row = unique.find(v => variableKey(v) === btn.getAttribute("data-var-key"));
         if (row) addVariable(row);
@@ -271,10 +292,13 @@
               ${examples.length ? `
                 <div class="bib-study-vars" aria-label="Variables in ${escHtml(item.study_context || "study")}">
                   ${examples.map(row => `
-                    <button type="button" data-study-var-key="${escHtml(variableKey(row))}">
-                      <code>${escHtml(row.variable_id || row.variable || "")}</code>
-                      <span>${escHtml(row.label || row.table || "")}</span>
-                    </button>
+                    <div class="bib-study-var-row">
+                      <button type="button" data-study-var-key="${escAttr(variableKey(row))}">
+                        <code>${escHtml(row.variable_id || row.variable || "")}</code>
+                        <span>${escHtml(row.label || row.table || "")}</span>
+                      </button>
+                      ${dataDictionaryUrl(row) ? `<a href="${escAttr(dataDictionaryUrl(row))}" target="_blank" rel="noopener">Open data dictionary table</a>` : ""}
+                    </div>
                   `).join("")}
                 </div>
                 ${studyRows.length && studyRows.length < nVars ? `<div class="bib-study-card-note">Showing ${studyRows.length} of ${nVars} variables for this cohort.</div>` : ""}
@@ -298,7 +322,7 @@
         .forEach(addVariable);
       });
     });
-    panel.querySelectorAll("[data-study-var-key]").forEach(btn => {
+    panel.querySelectorAll("button[data-study-var-key]").forEach(btn => {
       btn.addEventListener("click", () => {
         const row = rowByKey.get(btn.getAttribute("data-study-var-key"));
         if (row) addVariable(row);
@@ -328,10 +352,13 @@
       </div>
       <div class="bib-variable-results-list">
         ${rows.map(v => `
-          <button type="button" class="bib-variable-result" data-var-key="${escHtml(variableKey(v))}">
-            <code>${escHtml(v.variable_id || v.variable)}</code>
-            <span>${escHtml(v.label || v.table || "")}</span>
-          </button>
+          <div class="bib-variable-result">
+            <button type="button" data-var-key="${escAttr(variableKey(v))}">
+              <code>${escHtml(v.variable_id || v.variable)}</code>
+              <span>${escHtml(v.label || v.table || "")}</span>
+            </button>
+            ${dataDictionaryUrl(v) ? `<a href="${escAttr(dataDictionaryUrl(v))}" target="_blank" rel="noopener">Open data dictionary table</a>` : ""}
+          </div>
         `).join("")}
       </div>
     `;
@@ -340,7 +367,7 @@
     panel.querySelector(".bib-add-all-results").addEventListener("click", () => {
       rows.forEach(addVariable);
     });
-    panel.querySelectorAll("[data-var-key]").forEach(btn => {
+    panel.querySelectorAll("button[data-var-key]").forEach(btn => {
       btn.addEventListener("click", () => {
         const row = rows.find(v => variableKey(v) === btn.getAttribute("data-var-key"));
         if (row) addVariable(row);
