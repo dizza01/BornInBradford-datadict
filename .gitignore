@@ -57,12 +57,15 @@ DATA_DICTIONARY_IMPROVEMENTS.md
 
 #Dcoumentation files
 /Documentation/
-
+# /packaging/
 # Environment variables (contains secrets)
 llm_poc/.env
 .env
 /.env
+.venv
+/.venv
 /papers
 models/
 *.gguf
 llm_poc/.chroma_db/
+dist/

@@ -27,7 +27,7 @@
         <div class="bib-w-icon">🧬</div>
         <div>Ask about variables, tables, published papers, or analysis approaches using the Born in Bradford dataset.</div>
         <div class="bib-beta-note">
-          <strong>Beta first release.</strong> This is an early prototype using a quantised local model to make deployment easier. Quantisation helps size and performance, but may reduce answer quality, so please check important details against source links.
+          <strong>Beta first release.</strong> This is an early prototype using a quantised local model to make deployment easier. Quantisation helps size and performance, but may reduce answer quality, so please check important details against source links. Research paper queries may take longer than variabl typ queries due to the larger number of tokens involved in processing the relevant documents. Clicking on variables of interest in the chat results will add them to the variable basket with the variable id included for easy export as CSV for offline review.
         </div>
       </div>
     </div>

@@ -1,0 +1,12 @@
+chromadb==1.5.2
+posthog==5.4.0
+flask>=3.0.0,<4
+pandas>=2.0.0,<3
+pymupdf>=1.24.0,<2
+python-dotenv>=1.0.0,<2
+
+# Install llama-cpp-python separately because acceleration flags differ by OS:
+#   macOS Apple Silicon:
+#     CMAKE_ARGS="-DGGML_METAL=on" pip install -U llama-cpp-python --no-cache-dir
+#   Windows/macOS CPU fallback:
+#     pip install -U llama-cpp-python --no-cache-dir
