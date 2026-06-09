@@ -801,6 +801,9 @@ def _retrieval_query_variants(query: str) -> list[str]:
     if re.search(r"\brcad\b", q_l):
         variants.append(re.sub(r"\brcad\b", "rcads", q_l))
 
+    if re.search(r"\bcovariates?\b", q_l):
+        variants.append(f"{q} confounders adjusted for controlled for adjustment variables")
+
     return list(dict.fromkeys(v for v in variants if v))
 
 
@@ -904,6 +907,289 @@ def _paper_or_document_source_type(meta: dict[str, Any]) -> str:
     if source == "pdf_fulltext":
         return "Full-text PDF"
     return "Published paper metadata"
+
+
+_PAPER_LISTING_QUERY_RE = re.compile(
+    r"\b(what|which|are|is|list|show|find|published|publication|publications|papers|articles|studies|research)\b",
+    re.I,
+)
+
+_COVARIATE_QUERY_RE = re.compile(
+    r"\b(covariates?|confounders?|adjusted\s+for|controlled\s+for|adjustment\s+variables?)\b",
+    re.I,
+)
+
+_PAPER_LISTING_STOPWORDS = {
+    "about", "already", "and", "any", "are", "been", "born", "bradford",
+    "cohort", "data", "dataset", "find", "has", "have", "in", "is", "list",
+    "of", "on", "paper", "papers", "publication", "publications", "published",
+    "related", "research", "show", "studies", "study", "the", "there", "to",
+    "uk", "what", "which", "with",
+}
+
+
+def _is_paper_listing_query(query: str) -> bool:
+    """Return true for broad questions asking what publications exist."""
+    q = query or ""
+    return bool(_PAPER_QUERY_RE.search(q) and _PAPER_LISTING_QUERY_RE.search(q))
+
+
+def _paper_listing_terms(query: str) -> set[str]:
+    return {
+        token
+        for token in _tokenize_with_variants(query)
+        if len(token) >= 3 and token not in _PAPER_LISTING_STOPWORDS
+    }
+
+
+def _paper_title_key(title: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", (title or "").lower()).strip()
+
+
+def _is_non_research_document(meta: dict[str, Any]) -> bool:
+    source_text = f"{meta.get('title', '')} {meta.get('pdf_file', '')}".lower()
+    return bool(re.search(
+        r"\b(data summary|data dictionary|registry|questionnaire|survey instrument|readme|manual|protocol)\b",
+        source_text,
+    ))
+
+
+def _publication_overview_context(
+    query: str,
+    cache: dict[str, Any],
+    limit: int | None = None,
+) -> str:
+    """Build a de-duplicated publication shortlist for broad paper queries.
+
+    Chroma retrieves chunks, not papers. For broad "what has been published"
+    questions, the top chunks can be several pages from the same PDF. This
+    helper collapses candidates by title and gives the model distinct papers
+    before page-level evidence snippets.
+    """
+    if not _is_paper_listing_query(query):
+        return ""
+
+    limit = limit or int(os.getenv("PAPER_LISTING_LIMIT", "5"))
+    terms = _paper_listing_terms(query)
+    if not terms:
+        return ""
+
+    by_title: dict[str, dict[str, Any]] = {}
+    doc_by_id = cache.get("doc_by_id", {}) or {}
+    meta_by_id = cache.get("meta_by_id", {}) or {}
+    excerpt_chars = int(os.getenv("PAPER_LISTING_EXCERPT_CHARS", "360"))
+    has_metadata_records = any(
+        (meta or {}).get("source") != "pdf_fulltext"
+        for meta in meta_by_id.values()
+    )
+
+    for doc_id, meta in meta_by_id.items():
+        meta = meta or {}
+        if has_metadata_records and meta.get("source") == "pdf_fulltext":
+            continue
+        title = _safe_str(meta.get("title", ""))
+        if not title or _is_non_research_document(meta):
+            continue
+
+        doc = doc_by_id.get(doc_id, "") or ""
+        searchable = f"{title} {meta.get('authors', '')} {meta.get('abstract', '')} {doc[:2500]}"
+        searchable_tokens = set(_tokenize_with_variants(searchable))
+        term_hits = terms & searchable_tokens
+        if not term_hits:
+            continue
+
+        title_tokens = set(_tokenize_with_variants(title))
+        title_hits = terms & title_tokens
+        phrase_bonus = 2.0 if re.search(r"\bchildhood\s+(overweight\s+and\s+)?obesity\b", searchable, re.I) else 0.0
+        score = (
+            (5.0 * len(title_hits))
+            + (1.5 * len(term_hits))
+            + phrase_bonus
+            + _simple_rerank_score(query, searchable)
+        )
+
+        key = _paper_title_key(title)
+        existing = by_title.get(key)
+        # Prefer abstract-level records when scores tie because they are usually
+        # cleaner than arbitrary PDF pages.
+        source_bonus = 0.25 if meta.get("source") != "pdf_fulltext" else 0.0
+        candidate_score = score + source_bonus
+        if existing is None or candidate_score > existing["score"]:
+            by_title[key] = {
+                "score": candidate_score,
+                "title": title,
+                "year": meta.get("year", ""),
+                "authors": meta.get("authors", ""),
+                "source": _paper_or_document_source_type(meta),
+                "pdf_file": meta.get("pdf_file", ""),
+                "excerpt": _paper_context_excerpt(query, doc, meta)[:excerpt_chars],
+            }
+
+    ranked = sorted(by_title.values(), key=lambda item: item["score"], reverse=True)[:limit]
+    if not ranked:
+        return ""
+
+    parts = [
+        "## Distinct Published Papers Matching the Question\n"
+        "This is a de-duplicated shortlist of relevant published paper records. "
+        "For publication-listing questions, list each paper below unless it is clearly unrelated.\n"
+    ]
+    for item in ranked:
+        file_suffix = f"\nFile: {item['pdf_file']}" if item.get("pdf_file") else ""
+        parts.append(
+            f"**{item['title']}** ({item.get('year', '')})\n"
+            f"Source: {item.get('source', '')}{file_suffix}\n"
+            f"Evidence: {item.get('excerpt', '')}\n"
+        )
+    return "\n".join(parts).strip()
+
+
+_COVARIATE_QUERY_STOPWORDS = _PAPER_LISTING_STOPWORDS | {
+    "answer", "covariate", "covariates", "confounder", "confounders", "controlled",
+    "extend", "follow", "followup", "ones", "other", "previous", "question",
+    "refine", "used", "variables",
+}
+
+_COVARIATE_EVIDENCE_RE = re.compile(
+    r"\b("
+    r"covariates?|confound(?:er|ers|ing)?|adjust(?:ed|ing)?\s+for|controlled\s+for|"
+    r"multivariable|multivariate|regression|model(?:s|ling|ed)?\s+included|covaried|"
+    r"socio[- ]economic|deprivation|ethnicity|maternal\s+age|education|smoking|alcohol"
+    r")\b",
+    re.I,
+)
+
+_COVARIATE_ACTION_RE = re.compile(
+    r"\b("
+    r"covariates?|confound(?:er|ers|ing)?|adjust(?:ed|ing)?\s+for|controlled\s+for|"
+    r"multivariable|multivariate|regression|model(?:s|ling|ed)?\s+included|covaried"
+    r")\b",
+    re.I,
+)
+
+_NAMED_COVARIATE_RE = re.compile(
+    r"\b("
+    r"age|sex|gender|ethnicity|ethnic\s+origin|deprivation|socio[- ]economic|"
+    r"education|employment|unemployment|marital\s+status|family\s+size|"
+    r"english\s+as\s+first\s+language|income|cohabitation|bmi|body\s+mass\s+index|"
+    r"social\s+deprivation|smoking|alcohol|parity|birth\s+weight|gestational\s+age"
+    r")\b",
+    re.I,
+)
+
+
+def _covariate_topic_terms(query: str) -> set[str]:
+    return {
+        token
+        for token in _tokenize_with_variants(query)
+        if len(token) >= 4 and token not in _COVARIATE_QUERY_STOPWORDS
+    }
+
+
+def _snippet_around_regex(text: str, pattern: re.Pattern, max_chars: int = 520) -> str:
+    max_chars = int(os.getenv("COVARIATE_EVIDENCE_EXCERPT_CHARS", str(max_chars)))
+    matches = list(pattern.finditer(text or ""))
+    if not matches:
+        return (text or "")[:max_chars]
+
+    fallback = ""
+    for match in matches:
+        start = max(0, match.start() - max_chars // 3)
+        end = min(len(text or ""), start + max_chars)
+        snippet = (text or "")[start:end].strip()
+        if not fallback:
+            fallback = snippet
+        if _NAMED_COVARIATE_RE.search(snippet):
+            return snippet
+    return fallback
+
+
+def _covariate_evidence_context(
+    query: str,
+    cache: dict[str, Any],
+    limit: int | None = None,
+) -> str:
+    """Return high-signal snippets for questions about analysis covariates."""
+    if not _COVARIATE_QUERY_RE.search(query or ""):
+        return ""
+
+    limit = limit or int(os.getenv("COVARIATE_EVIDENCE_LIMIT", "5"))
+    topic_terms = _covariate_topic_terms(query)
+    if not topic_terms:
+        return ""
+
+    by_title: dict[str, dict[str, Any]] = {}
+    doc_by_id = cache.get("doc_by_id", {}) or {}
+    meta_by_id = cache.get("meta_by_id", {}) or {}
+
+    for doc_id, meta in meta_by_id.items():
+        meta = meta or {}
+        title = _safe_str(meta.get("title", ""))
+        if not title or _is_non_research_document(meta):
+            continue
+
+        doc = doc_by_id.get(doc_id, "") or ""
+        searchable = f"{title} {meta.get('abstract', '')} {doc[:3000]}"
+        searchable_tokens = set(_tokenize_with_variants(searchable))
+        topic_hits = topic_terms & searchable_tokens
+        if not topic_hits or not _COVARIATE_EVIDENCE_RE.search(searchable):
+            continue
+        named_covariates = _NAMED_COVARIATE_RE.findall(searchable)
+        if not named_covariates:
+            continue
+
+        snippet_pattern = (
+            _COVARIATE_ACTION_RE
+            if _COVARIATE_ACTION_RE.search(searchable)
+            else _COVARIATE_EVIDENCE_RE
+        )
+        snippet = _snippet_around_regex(searchable, snippet_pattern)
+        if not _NAMED_COVARIATE_RE.search(snippet):
+            continue
+        if "analysis of covariance" in snippet.lower():
+            continue
+
+        title_hits = topic_terms & set(_tokenize_with_variants(title))
+        covariate_hits = len(_COVARIATE_EVIDENCE_RE.findall(searchable[:4000]))
+        named_covariate_hits = min(len(set(c.lower() for c in named_covariates)), 10)
+        score = (
+            (4.0 * len(title_hits))
+            + (1.5 * len(topic_hits))
+            + min(covariate_hits, 8)
+            + named_covariate_hits
+            + _simple_rerank_score(query, searchable)
+        )
+
+        key = _paper_title_key(title)
+        existing = by_title.get(key)
+        source_bonus = 0.25 if meta.get("source") != "pdf_fulltext" else 0.0
+        candidate_score = score + source_bonus
+        if existing is None or candidate_score > existing["score"]:
+            by_title[key] = {
+                "score": candidate_score,
+                "title": title,
+                "year": meta.get("year", ""),
+                "source": _paper_or_document_source_type(meta),
+                "pdf_file": meta.get("pdf_file", ""),
+                "snippet": snippet,
+            }
+
+    ranked = sorted(by_title.values(), key=lambda item: item["score"], reverse=True)[:limit]
+    if not ranked:
+        return ""
+
+    parts = [
+        "## Covariate / Adjustment Evidence\n"
+        "Use this section for questions asking which covariates, confounders, or adjustment variables were used.\n"
+    ]
+    for item in ranked:
+        file_suffix = f"\nFile: {item['pdf_file']}" if item.get("pdf_file") else ""
+        parts.append(
+            f"**{item['title']}** ({item.get('year', '')})\n"
+            f"Source: {item.get('source', '')}{file_suffix}\n"
+            f"Evidence: {item.get('snippet', '')}\n"
+        )
+    return "\n".join(parts).strip()
 
 
 def _expand_pdf_sibling_chunks(
@@ -1073,7 +1359,11 @@ def _context_source_plan(query: str) -> dict[str, bool]:
     wants_methods = bool(_METHOD_OR_SCALE_QUERY_RE.search(q))
     wants_variables = bool(_VARIABLE_OR_TABLE_QUERY_RE.search(q))
     wants_acronym_definition = bool(_ACRONYM_DEFINITION_QUERY_RE.search(q))
+    wants_covariates = bool(_COVARIATE_QUERY_RE.search(q))
     wants_tools = wants_methods
+
+    if wants_covariates and not wants_variables and not wants_questionnaires:
+        return {"tools": False, "papers": True, "questionnaires": False, "variables": False, "tables": False}
 
     if wants_acronym_definition and not wants_variables:
         return {"tools": True, "papers": True, "questionnaires": False, "variables": False, "tables": False}
@@ -1265,9 +1555,9 @@ _QUESTIONNAIRES_CACHE: dict[str, Any] = {
 
 _ACRONYM_QUERY_STOPWORDS = {
     "about", "after", "again", "age", "also", "and", "anxiety", "any", "are", "born",
-    "bradford", "carried", "could", "data", "does", "for", "from",
+    "been", "bradford", "carried", "childhood", "could", "data", "does", "for", "from",
     "have", "how", "in", "into", "is", "it", "its", "me", "mentioned",
-    "of", "on", "out", "paper", "papers", "please", "publication",
+    "has", "obesity", "of", "on", "or", "out", "overweight", "paper", "papers", "please", "publication",
     "publications", "published", "research", "show", "stand", "stands", "study",
     "studies", "survey", "surveys", "table", "tell", "the", "there", "these", "this",
     "time", "to", "use", "used", "variable", "variables", "was", "were",
@@ -1349,7 +1639,26 @@ def _get_questionnaires_cache(collection) -> dict[str, Any]:
     return _QUESTIONNAIRES_CACHE
 
 
-def _query_acronym_candidates(query: str, known_terms: set[str]) -> list[str]:
+def _query_acronym_candidates(
+    query: str,
+    known_terms: set[str],
+    defined_terms: set[str] | None = None,
+) -> list[str]:
+    """Return acronym-like query terms without boosting ordinary topic words.
+
+    Many PDFs contain uppercase headings or sentence fragments, so treating every
+    indexed uppercase token as an acronym causes broad queries such as
+    "childhood obesity" to pull random "ACRONYM MATCH" snippets. Lowercase user
+    input is boosted only when the term appears in a definition pattern
+    (e.g. "Clinical Kinematic Assessment Tool (CKAT)"). Explicit uppercase
+    query terms still get boosted, which keeps user-entered acronyms working.
+    """
+    defined_terms = defined_terms or set()
+    explicit_uppercase_terms = {
+        match.lower()
+        for match in _UPPERCASE_TERM_RE.findall(query or "")
+        if match.lower() not in _ACRONYM_QUERY_STOPWORDS
+    }
     candidates = []
     for token in _tokenize(query):
         if not (2 <= len(token) <= 12):
@@ -1357,7 +1666,8 @@ def _query_acronym_candidates(query: str, known_terms: set[str]) -> list[str]:
         if token in _ACRONYM_QUERY_STOPWORDS:
             continue
         if token in known_terms:
-            candidates.append(token)
+            if token in defined_terms or token in explicit_uppercase_terms:
+                candidates.append(token)
     return list(dict.fromkeys(candidates))
 
 
@@ -1407,7 +1717,10 @@ def _exact_acronym_context(query: str, client: chromadb.ClientAPI) -> str:
     known_terms |= set(questionnaires_cache.get("uppercase_terms", set()))
     known_terms |= set(questionnaires_cache.get("defined_acronyms", set()))
 
-    terms = _query_acronym_candidates(query, known_terms)
+    defined_terms = set(papers_cache.get("defined_acronyms", set()))
+    defined_terms |= set(questionnaires_cache.get("defined_acronyms", set()))
+
+    terms = _query_acronym_candidates(query, known_terms, defined_terms)
     if not terms:
         return ""
 
@@ -1819,34 +2132,46 @@ def retrieve_context(query: str, client: chromadb.ClientAPI, n_results: int = 5)
             if boosted_ids:
                 rank_lists.insert(0, boosted_ids)
 
-            fused_ids = _rrf_fuse(rank_lists, rrf_k=rrf_k)
-            rerank_candidates = fused_ids[:rerank_pool]
-            reranked_ids = sorted(
-                rerank_candidates,
-                key=lambda doc_id: _simple_rerank_score(query, cache["doc_by_id"].get(doc_id, "")),
-                reverse=True,
-            )[:n_results]
-            reranked_ids = _expand_pdf_sibling_chunks(query, reranked_ids, cache, n_results)
+            overview_ctx = _publication_overview_context(query, cache)
+            if overview_ctx:
+                context_parts.append(overview_ctx + "\n")
 
-            docs = [cache["doc_by_id"].get(doc_id, "") for doc_id in reranked_ids]
-            metas = [cache["meta_by_id"].get(doc_id, {}) for doc_id in reranked_ids]
+            covariate_ctx = _covariate_evidence_context(query, cache)
+            if covariate_ctx:
+                context_parts.append(covariate_ctx + "\n")
 
-            if any(docs):
-                context_parts.append("## Relevant Papers and Documents\n")
-                for doc, meta in zip(docs, metas):
-                    if not doc:
-                        continue
-                    title = (meta or {}).get("title", "")
-                    authors = (meta or {}).get("authors", "")
-                    source_type = _paper_or_document_source_type(meta or {})
-                    pdf_file = (meta or {}).get("pdf_file", "")
-                    file_suffix = f"\nFile: {pdf_file}" if pdf_file else ""
-                    context_parts.append(
-                        f"Source type: {source_type}{file_suffix}\n"
-                        f"**{title}** "
-                        f"({meta.get('year','')}) — {authors[:160]}\n"
-                        f"{_paper_context_excerpt(query, doc, meta)}\n"
-                    )
+            include_listing_chunks = os.getenv("PAPER_LISTING_INCLUDE_CHUNKS", "").strip().lower() in {
+                "1", "true", "yes", "on",
+            }
+            if (not overview_ctx and not covariate_ctx) or include_listing_chunks:
+                fused_ids = _rrf_fuse(rank_lists, rrf_k=rrf_k)
+                rerank_candidates = fused_ids[:rerank_pool]
+                reranked_ids = sorted(
+                    rerank_candidates,
+                    key=lambda doc_id: _simple_rerank_score(query, cache["doc_by_id"].get(doc_id, "")),
+                    reverse=True,
+                )[:n_results]
+                reranked_ids = _expand_pdf_sibling_chunks(query, reranked_ids, cache, n_results)
+
+                docs = [cache["doc_by_id"].get(doc_id, "") for doc_id in reranked_ids]
+                metas = [cache["meta_by_id"].get(doc_id, {}) for doc_id in reranked_ids]
+
+                if any(docs):
+                    context_parts.append("## Relevant Papers and Documents\n")
+                    for doc, meta in zip(docs, metas):
+                        if not doc:
+                            continue
+                        title = (meta or {}).get("title", "")
+                        authors = (meta or {}).get("authors", "")
+                        source_type = _paper_or_document_source_type(meta or {})
+                        pdf_file = (meta or {}).get("pdf_file", "")
+                        file_suffix = f"\nFile: {pdf_file}" if pdf_file else ""
+                        context_parts.append(
+                            f"Source type: {source_type}{file_suffix}\n"
+                            f"**{title}** "
+                            f"({meta.get('year','')}) — {authors[:160]}\n"
+                            f"{_paper_context_excerpt(query, doc, meta)}\n"
+                        )
         except Exception as e:
             context_parts.append(f"[Papers collection unavailable: {e}]\n")
 
@@ -1950,9 +2275,12 @@ _ANCHOR_STOPWORDS = {
     "does",
     "from",
     "have",
+    "follow",
     "into",
     "more",
     "most",
+    "ones",
+    "other",
     "that",
     "their",
     "there",
@@ -1973,6 +2301,10 @@ _ANCHOR_STOPWORDS = {
     "would",
     "study",
     "cohort",
+    "prior",
+    "answer",
+    "extend",
+    "refine",
     "questionnaire",
     "questionnaires",
 }
@@ -2060,6 +2392,13 @@ def format_context_with_question_anchors(
     max_nearby_lines: int = 6,
 ) -> str:
     """Prepend a question-anchor guide while preserving the original context."""
+    high_signal_prefixes = (
+        "## Covariate / Adjustment Evidence",
+        "## Distinct Published Papers Matching the Question",
+    )
+    if context.lstrip().startswith(high_signal_prefixes):
+        return context
+
     anchors = _extract_question_anchors(question)
     if not anchors:
         return context
@@ -2138,7 +2477,8 @@ _FOOTER_RE = re.compile(
 
 _FOLLOWUP_RE = re.compile(
     r"\b("
-    r"this|that|the|it|above|previous|paper|study|article|summari[sz]e|explain|tell me more"
+    r"this|that|these|those|them|they|it|above|previous|other|others|ones?|else|"
+    r"paper|study|article|summari[sz]e|explain|tell me more"
     r")\b",
     re.IGNORECASE,
 )
@@ -2146,18 +2486,38 @@ _FOLLOWUP_RE = re.compile(
 
 def _retrieval_query_from_history(question: str, history: list | None) -> str:
     """Add recent turns to short follow-up queries so retrieval keeps the subject."""
-    if not history or len(question.split()) > 8 or not _FOLLOWUP_RE.search(question):
+    if not history or len(question.split()) > 10 or not _FOLLOWUP_RE.search(question):
         return question
 
+    recent_user = ""
+    recent_assistant = ""
     recent = []
-    for turn in reversed(history[-4:]):
+    for turn in reversed(history[-6:]):
+        role = str((turn or {}).get("role", "")).strip().lower()
         content = str((turn or {}).get("content", "")).strip()
+        if not content:
+            continue
+        if role == "user" and not recent_user:
+            recent_user = content[:700]
+        elif role == "assistant" and not recent_assistant:
+            recent_assistant = content[:500]
         if content:
             recent.append(content[:700])
         if len(recent) >= 3:
             break
+
     if not recent:
         return question
+
+    if recent_user:
+        parts = [
+            recent_user,
+            f"Follow-up: {question}",
+        ]
+        if recent_assistant:
+            parts.append(f"Prior answer to extend or refine: {recent_assistant}")
+        return "\n".join(parts)
+
     return f"{question}\n\nRecent conversation context:\n" + "\n".join(reversed(recent))
 
 
@@ -2195,15 +2555,20 @@ def query_stream(
     Falls back to a single yield of the full non-streamed answer when the client
     object doesn't expose a streaming interface.
     """
-    hf = getattr(llm_client, "_hf_raw", None)
-    local_stream = getattr(llm_client, "stream_chat_completion", None)
+    active_llm_client = getattr(llm_client, "_primary_client", llm_client)
+    active_model = getattr(llm_client, "_primary_model", model)
+    fallback_llm_client = getattr(llm_client, "_fallback_client", None)
+    fallback_model = getattr(llm_client, "_fallback_model", model)
+
+    hf = getattr(active_llm_client, "_hf_raw", None)
+    local_stream = getattr(active_llm_client, "stream_chat_completion", None)
     if hf is None and local_stream is None:
         # Fallback: yield the complete answer in one chunk.
         yield query(
             question,
             client,
-            llm_client,
-            model=model,
+            llm_client if fallback_llm_client is not None else active_llm_client,
+            model=model if fallback_llm_client is not None else active_model,
             history=history,
             system_prompt=system_prompt,
             retrieval_n_results=retrieval_n_results,
@@ -2214,7 +2579,7 @@ def query_stream(
     prior = history or []
     retrieval_query = _retrieval_query_from_history(question, prior)
     raw_context = retrieve_context(retrieval_query, client, n_results=max(1, retrieval_n_results))
-    context = format_context_with_question_anchors(question, raw_context)
+    context = format_context_with_question_anchors(retrieval_query, raw_context)
     if max_context_chars and len(context) > max_context_chars:
         context = (
             context[:max_context_chars].rstrip()
@@ -2237,7 +2602,7 @@ def query_stream(
             token_stream = local_stream(messages=messages, temperature=0.2, max_tokens=900)
         else:
             hf_stream = hf.chat_completion(
-                model=model,
+                model=active_model,
                 messages=messages,
                 temperature=0.2,
                 max_tokens=900,
@@ -2256,6 +2621,7 @@ def query_stream(
         # Buffer opening tokens to strip any filler opener before first display
         prefix_buf = ""
         prefix_sent = False
+        emitted_any = False
         OPENER_THRESHOLD = 80
 
         for token in token_stream:
@@ -2267,17 +2633,33 @@ def query_stream(
                     cleaned = _strip_opener(prefix_buf)
                     prefix_sent = True
                     if cleaned:
+                        emitted_any = True
                         yield cleaned
             else:
+                emitted_any = True
                 yield token
 
         # Flush buffer if stream ended before the threshold was reached
         if not prefix_sent and prefix_buf:
             cleaned = _strip_opener(prefix_buf)
             if cleaned:
+                emitted_any = True
                 yield cleaned
 
     except Exception as e:
+        if fallback_llm_client is not None and not locals().get("emitted_any", False):
+            print(f"⚠️  Primary LLM generation failed; retrying with local GGUF fallback: {e}")
+            yield from query_stream(
+                question,
+                client,
+                fallback_llm_client,
+                model=fallback_model,
+                history=history,
+                system_prompt=system_prompt,
+                retrieval_n_results=retrieval_n_results,
+                max_context_chars=max_context_chars,
+            )
+            return
         yield f"\n[Stream error: {e}]"
 
 
@@ -2289,10 +2671,15 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
           max_context_chars: int = 0) -> str:
     """Run a RAG query: retrieve context → call HuggingFace LLM → return answer."""
 
+    active_llm_client = getattr(llm_client, "_primary_client", llm_client)
+    active_model = getattr(llm_client, "_primary_model", model)
+    fallback_llm_client = getattr(llm_client, "_fallback_client", None)
+    fallback_model = getattr(llm_client, "_fallback_model", model)
+
     prior = history or []
     retrieval_query = _retrieval_query_from_history(question, prior)
     raw_context = retrieve_context(retrieval_query, client, n_results=max(1, retrieval_n_results))
-    context = format_context_with_question_anchors(question, raw_context)
+    context = format_context_with_question_anchors(retrieval_query, raw_context)
     if max_context_chars and len(context) > max_context_chars:
         context = (
             context[:max_context_chars].rstrip()
@@ -2335,10 +2722,10 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
     #   -> expects JSON with `generated_text`.
     #
     # Note: history is not included in this structured payload.
-    if getattr(llm_client, "endpoint_mode", "") == "handler_structured" and hasattr(
-        llm_client, "handler_structured_generate"
+    if getattr(active_llm_client, "endpoint_mode", "") == "handler_structured" and hasattr(
+        active_llm_client, "handler_structured_generate"
     ):
-        answer = llm_client.handler_structured_generate(
+        answer = active_llm_client.handler_structured_generate(
             system=system_prompt,
             context=context,
             question=question,
@@ -2346,12 +2733,28 @@ def query(question: str, client: chromadb.ClientAPI, llm_client: Any,
         answer = _strip_filler(str(answer or ""))
         return answer
 
-    response = llm_client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.2,
-        max_tokens=900,
-    )
+    try:
+        response = active_llm_client.chat.completions.create(
+            model=active_model,
+            messages=messages,
+            temperature=0.2,
+            max_tokens=900,
+        )
+    except Exception as exc:
+        if fallback_llm_client is not None:
+            print(f"⚠️  Primary LLM generation failed; retrying with local GGUF fallback: {exc}")
+            return query(
+                question,
+                client,
+                fallback_llm_client,
+                model=fallback_model,
+                show_context=show_context,
+                history=history,
+                system_prompt=system_prompt,
+                retrieval_n_results=retrieval_n_results,
+                max_context_chars=max_context_chars,
+            )
+        raise
     answer = response.choices[0].message.content
     # Strip common filler openers that some models insist on producing
     answer = _strip_filler(answer)

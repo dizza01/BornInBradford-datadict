@@ -5,12 +5,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 PROJECT="${PROJECT:-bib-assistant}"
-ZONE="${ZONE:-europe-west2-a}"
-VM_NAME="${VM_NAME:-bib-assistant-vm}"
+ZONE="${ZONE:-us-central1-a}"
+VM_NAME="${VM_NAME:-bib-assistant-gpu-primary}"
 REMOTE_DIR="${REMOTE_DIR:-/home/dawud_izza_york_ac_uk/bib-assistant-runtime}"
-REMOTE_ARCHIVE="${REMOTE_ARCHIVE:-/home/dawud_izza_york_ac_uk/bib-assistant-code-update.tar.gz}"
+REMOTE_ARCHIVE="${REMOTE_ARCHIVE:-/tmp/bib-assistant-code-update.tar.gz}"
 INSTALL_REQUIREMENTS="${INSTALL_REQUIREMENTS:-0}"
 INCLUDE_DOCS="${INCLUDE_DOCS:-0}"
+USE_SUDO="${USE_SUDO:-1}"
+REMOTE_OWNER="${REMOTE_OWNER:-dawud_izza_york_ac_uk:dawud_izza_york_ac_uk}"
+REMOTE_RUN_USER="${REMOTE_OWNER%%:*}"
 
 require_path() {
   if [[ ! -e "$1" ]]; then
@@ -65,10 +68,27 @@ gcloud compute scp "${ARCHIVE}" "${VM_NAME}:${REMOTE_ARCHIVE}" \
   --project="${PROJECT}"
 
 echo "Applying update and restarting service..."
-gcloud compute ssh "${VM_NAME}" \
-  --zone="${ZONE}" \
-  --project="${PROJECT}" \
-  --command="set -euo pipefail
+if [[ "${USE_SUDO}" == "1" ]]; then
+  gcloud compute ssh "${VM_NAME}" \
+    --zone="${ZONE}" \
+    --project="${PROJECT}" \
+    --command="set -euo pipefail
+sudo mkdir -p '${REMOTE_DIR}'
+sudo tar -xzf '${REMOTE_ARCHIVE}' -C '${REMOTE_DIR}'
+if [[ '${REMOTE_OWNER}' != '' ]]; then
+  sudo chown -R '${REMOTE_OWNER}' '${REMOTE_DIR}'
+fi
+if [[ '${INSTALL_REQUIREMENTS}' == '1' ]]; then
+  sudo -u '${REMOTE_RUN_USER}' bash -lc \"cd '${REMOTE_DIR}' && . .venv/bin/activate && python -m pip install -r llm_poc/requirements_runtime.txt\"
+fi
+sudo systemctl restart bib-assistant
+sleep 5
+sudo systemctl status bib-assistant --no-pager --lines=30"
+else
+  gcloud compute ssh "${VM_NAME}" \
+    --zone="${ZONE}" \
+    --project="${PROJECT}" \
+    --command="set -euo pipefail
 mkdir -p '${REMOTE_DIR}'
 tar -xzf '${REMOTE_ARCHIVE}' -C '${REMOTE_DIR}'
 cd '${REMOTE_DIR}'
@@ -79,6 +99,7 @@ fi
 sudo systemctl restart bib-assistant
 sleep 5
 sudo systemctl status bib-assistant --no-pager --lines=30"
+fi
 
 cat <<EOF
 
@@ -87,6 +108,6 @@ Code update deployed.
 Project: ${PROJECT}
 VM:      ${VM_NAME}
 Zone:    ${ZONE}
-URL:     https://35-242-187-34.sslip.io/assistant
+URL:     https://34-134-9-82.sslip.io/assistant
 
 EOF

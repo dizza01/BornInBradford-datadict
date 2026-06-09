@@ -37,7 +37,7 @@ The data dictionary covers the following major research areas and sub-studies:
 - **BiB 1000** - Longitudinal questionnaires at 6m, 12m, 18m, 24m, 36m
 - **Child Growth** - Anthropometry, bioimpedance, NCMP data, primary care records
 - **Maternal Measurements** - Research measurement data
-- **Starting School** - BPVS, letter identification, CKAT assessments
+- **Starting School** - BPVS, letter identification, Cognitive Kit Assessment Tool  assessments
 - **Primary School Years** - SDQ data, child quizzes, executive function tasks
 - **Growing Up** - Adult and child surveys, DXA scans, blood pressure, renal studies
 - **Age of Wonder** - Recent school visits, surveys, anthropometry (2023-2024 releases)

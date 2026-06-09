@@ -475,6 +475,203 @@
   margin-top: 6px;
 }
 
+.bib-table-results {
+  background: linear-gradient(145deg, #ffffff 0%, #f2f7ff 100%);
+  border: 1px solid #c8d4ef;
+  border-radius: 12px;
+  padding: 10px;
+  white-space: normal;
+}
+.bib-table-results-head {
+  color: #42506b;
+  font-size: .76rem;
+  margin-bottom: 8px;
+}
+.bib-table-results-head strong {
+  color: #14397a;
+  display: block;
+  font-size: .86rem;
+}
+.bib-table-results-meta {
+  color: #687895;
+  font-size: .71rem;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+.bib-table-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 3px;
+  scrollbar-gutter: stable;
+}
+.bib-table-card {
+  background: rgba(255,255,255,.94);
+  border: 1px solid #d3ddf1;
+  border-radius: 10px;
+  padding: 9px;
+}
+.bib-table-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.bib-table-card-top strong {
+  color: #122b57;
+  display: block;
+  font-size: .8rem;
+  line-height: 1.25;
+}
+.bib-table-card-top code {
+  background: #edf3ff !important;
+  color: #14397a;
+  display: block;
+  font-size: .68rem;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.bib-table-card-top a {
+  color: #1a4e8c;
+  flex-shrink: 0;
+  font-size: .68rem;
+  font-weight: 700;
+  text-align: right;
+  text-decoration: none;
+}
+.bib-table-card-top a:hover {
+  text-decoration: underline;
+}
+.bib-table-meta,
+.bib-table-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.bib-table-meta span {
+  background: #eef4ff;
+  border: 1px solid #d3ddf1;
+  border-radius: 999px;
+  color: #52647f;
+  font-size: .66rem;
+  padding: 2px 7px;
+}
+.bib-table-summary {
+  color: #42506b;
+  font-size: .72rem;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+.bib-table-examples span {
+  background: #f7faff;
+  border: 1px solid #d3ddf1;
+  border-radius: 7px;
+  color: #14397a;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: .64rem;
+  padding: 2px 5px;
+}
+
+.bib-project-results {
+  background: linear-gradient(145deg, #ffffff 0%, #f6fbf7 100%);
+  border: 1px solid #cbdccf;
+  border-radius: 12px;
+  padding: 10px;
+  white-space: normal;
+}
+.bib-project-results-head {
+  color: #42506b;
+  font-size: .76rem;
+  margin-bottom: 8px;
+}
+.bib-project-results-head strong {
+  color: #174f38;
+  display: block;
+  font-size: .86rem;
+}
+.bib-project-results-meta {
+  color: #687895;
+  font-size: .71rem;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+.bib-project-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 3px;
+  scrollbar-gutter: stable;
+}
+.bib-project-card {
+  background: rgba(255,255,255,.94);
+  border: 1px solid #d3e3d7;
+  border-radius: 10px;
+  padding: 9px;
+}
+.bib-project-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.bib-project-card-top strong {
+  color: #173d2c;
+  display: block;
+  font-size: .8rem;
+  line-height: 1.25;
+}
+.bib-project-card-top code {
+  background: #eef8f1 !important;
+  color: #174f38;
+  display: block;
+  font-size: .68rem;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.bib-project-card-top a,
+.bib-project-tables a {
+  color: #1b6a49;
+  font-size: .68rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.bib-project-card-top a:hover,
+.bib-project-tables a:hover {
+  text-decoration: underline;
+}
+.bib-project-meta,
+.bib-project-tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.bib-project-meta span {
+  background: #eef8f1;
+  border: 1px solid #d3e3d7;
+  border-radius: 999px;
+  color: #526b5e;
+  font-size: .66rem;
+  padding: 2px 7px;
+}
+.bib-project-summary {
+  color: #42506b;
+  font-size: .72rem;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+.bib-project-tables a {
+  background: #f7fcf8;
+  border: 1px solid #d3e3d7;
+  border-radius: 7px;
+  padding: 2px 5px;
+}
+
 #bib-variable-basket {
   border-top: 1px solid #e5eaf5;
   background: #fbfcff;

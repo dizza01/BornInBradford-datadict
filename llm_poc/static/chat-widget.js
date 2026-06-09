@@ -27,7 +27,7 @@
         <div class="bib-w-icon">🧬</div>
         <div>Ask about variables, tables, published papers, or analysis approaches using the Born in Bradford dataset.</div>
         <div class="bib-beta-note">
-          <strong>Beta first release.</strong> This is an early prototype using a quantised local model to make deployment easier. Quantisation helps size and performance, but may reduce answer quality, so please check important details against source links. Research paper queries may take longer than variabl typ queries due to the larger number of tokens involved in processing the relevant documents. Clicking on variables of interest in the chat results will add them to the variable basket with the variable id included for easy export as CSV for offline review.
+          <strong>Beta first release.</strong> This is an early prototype exploring the potential of an LLM-based research assistant for Born in Bradford. The hosted pilot uses a local quantised Llama 3.1 8B model to avoid external API costs and rate limits. Quantisation helps deployment but can reduce answer quality, so please check important details against source links. Clicking variables in chat results adds them to the export basket with their full variable IDs.
         </div>
       </div>
     </div>
@@ -375,6 +375,122 @@
     });
   }
 
+  function renderTableResults(container, result) {
+    if (!container || !result || !result.rows || !result.rows.length) return;
+    const rows = result.rows;
+    const terms = (result.terms || []).slice(0, 10).join(", ");
+    const filters = (result.study_filters || []).join(", ");
+
+    const panel = document.createElement("div");
+    panel.className = "bib-table-results";
+    panel.innerHTML = `
+      <div class="bib-table-results-head">
+        <div>
+          <strong>${result.total} data dictionary table${result.total === 1 ? "" : "s"} found</strong>
+          <div class="bib-table-results-meta">
+            ${terms ? `Matched terms: ${escHtml(terms)}` : "Matched by registry filters"}
+            ${filters ? ` · Study: ${escHtml(filters)}` : ""}
+            ${result.truncated ? ` · Showing ${result.returned}` : ""}
+          </div>
+        </div>
+      </div>
+      <div class="bib-table-results-list">
+        ${rows.map(row => {
+          const url = row.data_dictionary_url || "";
+          const examples = (row.example_variables || [])
+            .map(ex => ex.variable || ex.variable_id || "")
+            .filter(Boolean)
+            .slice(0, 6);
+          const summary = row.table_summary || "";
+          return `
+            <div class="bib-table-card">
+              <div class="bib-table-card-top">
+                <div>
+                  <strong>${escHtml(row.table_display || row.table || "Untitled table")}</strong>
+                  <code>${escHtml(row.table || "")}</code>
+                </div>
+                ${url ? `<a href="${escAttr(url)}" target="_blank" rel="noopener">Open data dictionary table</a>` : ""}
+              </div>
+              <div class="bib-table-meta">
+                ${row.project ? `<span>${escHtml(row.project)}</span>` : ""}
+                ${row.study_context ? `<span>${escHtml(row.study_context)}</span>` : ""}
+                ${row.n_variables ? `<span>${escHtml(row.n_variables)} variables</span>` : ""}
+                ${row.n_rows ? `<span>${escHtml(row.n_rows)} rows</span>` : ""}
+                ${row.n_entities ? `<span>${escHtml(row.n_entities)} entities</span>` : ""}
+                ${row.matching_variables ? `<span>${escHtml(row.matching_variables)} matching variables</span>` : ""}
+              </div>
+              ${summary ? `<div class="bib-table-summary">${escHtml(summary)}</div>` : ""}
+              ${examples.length ? `
+                <div class="bib-table-examples" aria-label="Example matching variables">
+                  ${examples.map(example => `<span>${escHtml(example)}</span>`).join("")}
+                </div>
+              ` : ""}
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+    container.appendChild(panel);
+  }
+
+  function renderProjectResults(container, result) {
+    if (!container || !result || !result.rows || !result.rows.length) return;
+    const rows = result.rows;
+    const terms = (result.terms || []).slice(0, 10).join(", ");
+    const groupLabel = result.group_mode === "project" ? "project" : "project/study context";
+
+    const panel = document.createElement("div");
+    panel.className = "bib-project-results";
+    panel.innerHTML = `
+      <div class="bib-project-results-head">
+        <div>
+          <strong>${result.total} matching ${groupLabel}${result.total === 1 ? "" : "s"}</strong>
+          <div class="bib-project-results-meta">
+            ${terms ? `Matched terms: ${escHtml(terms)}` : "Matched by registry filters"}
+            ${result.truncated ? ` · Showing ${result.returned}` : ""}
+          </div>
+        </div>
+      </div>
+      <div class="bib-project-results-list">
+        ${rows.map(row => {
+          const url = row.project_url || "";
+          const name = row.project_display || row.project || row.study_context || "Project not inferred";
+          const studyContexts = (row.study_contexts || []).filter(Boolean);
+          const projects = (row.projects || []).filter(Boolean);
+          const examples = (row.examples || []).slice(0, 5);
+          return `
+            <div class="bib-project-card">
+              <div class="bib-project-card-top">
+                <div>
+                  <strong>${escHtml(name)}</strong>
+                  ${row.project ? `<code>${escHtml(row.project)}</code>` : ""}
+                </div>
+                ${url ? `<a href="${escAttr(url)}" target="_blank" rel="noopener">Open project</a>` : ""}
+              </div>
+              <div class="bib-project-meta">
+                ${projects.length && !row.project ? `<span>${escHtml(projects.join(", "))}</span>` : ""}
+                ${studyContexts.length ? `<span>${escHtml(studyContexts.join(", "))}</span>` : ""}
+                <span>${escHtml(row.n_tables || 0)} table${Number(row.n_tables || 0) === 1 ? "" : "s"}</span>
+                <span>${escHtml(row.n_matching_variables || 0)} matching variables</span>
+              </div>
+              ${row.project_summary ? `<div class="bib-project-summary">${escHtml(row.project_summary)}</div>` : ""}
+              ${examples.length ? `
+                <div class="bib-project-tables" aria-label="Example matching tables">
+                  ${examples.map(example => `
+                    <a href="${escAttr(example.data_dictionary_url || "#")}" target="_blank" rel="noopener">
+                      ${escHtml(example.table_display || example.table || "Table")}
+                    </a>
+                  `).join("")}
+                </div>
+              ` : ""}
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+    container.appendChild(panel);
+  }
+
   function renderMdTable(lines) {
     const rows = lines.filter(l => !l.trim().match(/^\|[-: |]+\|$/));
     if (!rows.length) return '';
@@ -466,6 +582,8 @@
     let fullText = "";
     let detectedVariables = [];
     let variableResults = null;
+    let tableResults = null;
+    let projectResults = null;
 
     try {
       const res = await fetch("/api/chat/stream", {
@@ -520,9 +638,21 @@
           if (evt.variable_results) {
             variableResults = evt.variable_results;
           }
+          if (evt.table_results) {
+            tableResults = evt.table_results;
+          }
+          if (evt.project_results) {
+            projectResults = evt.project_results;
+          }
           if (evt.done) {
             if (!msgEl) { removeThinking(); msgEl = appendMsg("bib-bot", ""); }
-            if (variableResults && variableResults.rows && variableResults.rows.length) {
+            if (projectResults && projectResults.rows && projectResults.rows.length) {
+              msgEl.innerHTML = "";
+              renderProjectResults(msgEl, projectResults);
+            } else if (tableResults && tableResults.rows && tableResults.rows.length) {
+              msgEl.innerHTML = "";
+              renderTableResults(msgEl, tableResults);
+            } else if (variableResults && variableResults.rows && variableResults.rows.length) {
               if (variableResults.summary_mode === "study_context" && variableResults.study_summary) {
                 msgEl.innerHTML = "";
                 renderVariableStudySummary(msgEl, variableResults);

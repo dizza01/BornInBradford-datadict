@@ -32,6 +32,7 @@ import re
 import hmac
 from pathlib import Path
 from typing import Any, Optional
+from types import SimpleNamespace
 from urllib.parse import quote
 
 import pandas as pd
@@ -108,6 +109,11 @@ chroma_client: Any = None
 llm_client:    Any = None
 current_model: str = DEFAULT_MODEL
 current_llm_backend: str = os.getenv("LLM_BACKEND", "hf_api")
+current_hf_primary_with_gguf_fallback: bool = os.getenv(
+    "BIB_HF_PRIMARY_WITH_GGUF_FALLBACK",
+    os.getenv("HF_PRIMARY_WITH_GGUF_FALLBACK", ""),
+).strip().lower() in {"1", "true", "yes", "on"}
+current_hf_primary_model: str = os.getenv("HF_PRIMARY_MODEL", DEFAULT_MODEL)
 current_gguf_model_path: str = os.getenv("GGUF_MODEL_PATH", str(GGUF_MODEL_DEFAULT))
 current_llama_n_ctx: int = int(os.getenv("LLAMA_CPP_N_CTX", "4096"))
 current_llama_n_gpu_layers: int = int(os.getenv("LLAMA_CPP_N_GPU_LAYERS", "-1"))
@@ -179,6 +185,44 @@ def _ensure_clients():
         if chroma_client is None:
             chroma_client = get_chroma_client()
         if llm_client is None:
+            if current_hf_primary_with_gguf_fallback and current_llm_backend == "hf_api":
+                print(f"🧠 Loading primary Hugging Face model: {current_hf_primary_model}")
+                primary_client = _get_hf_client(
+                    current_hf_primary_model,
+                    backend="hf_api",
+                )
+                if primary_client:
+                    print("🧠 Preparing local GGUF fallback model")
+                fallback_client = _get_hf_client(
+                    current_model,
+                    backend="llama_cpp",
+                    gguf_model_path=current_gguf_model_path,
+                    llama_n_ctx=current_llama_n_ctx,
+                    llama_n_gpu_layers=current_llama_n_gpu_layers,
+                    llama_chat_format=current_llama_chat_format,
+                    llama_n_threads=current_llama_n_threads,
+                    llama_verbose=current_llama_verbose,
+                )
+                if primary_client and fallback_client:
+                    llm_client = SimpleNamespace(
+                        _primary_client=primary_client,
+                        _fallback_client=fallback_client,
+                        _primary_model=current_hf_primary_model,
+                        _fallback_model=current_model,
+                        _backend_label="hf_api_with_llama_cpp_fallback",
+                    )
+                    return
+                if primary_client:
+                    print("⚠️  Local GGUF fallback unavailable; running with Hugging Face only")
+                    llm_client = primary_client
+                    return
+                if fallback_client:
+                    print("⚠️  Hugging Face primary unavailable; running with local GGUF fallback only")
+                    llm_client = fallback_client
+                    return
+                llm_client = None
+                return
+
             llm_client = _get_hf_client(
                 current_model,
                 backend=current_llm_backend,
@@ -232,7 +276,7 @@ _THEME_PATTERNS = [
   ("Lifestyle", re.compile(r"\b(smok|alcohol|drink|diet|nutrition|food|sleep|exercise|physical activity|activity level|breastfeed)\b", re.I)),
   ("Geography & Environment", re.compile(r"\b(postcode|lsoa|imd|geograph|neighbourhood|pollution|green space|environment|address|ward)\b", re.I)),
   ("Education & Development", re.compile(r"\b(school|educat|eyfs|ks1|ks2|ks4|gcse|language|speech|learning|cognitive|development)\b", re.I)),
-  ("Biosamples & Omics", re.compile(r"\b(genet|genomic|dna|rna|methyl|metabol|proteom|omics|biosample|serum|plasma|sample)\b", re.I)),
+  ("Biosamples & Omics", re.compile(r"\b(genet|genomic|dna|rna|methyl|metabol|proteom|omics|biosamples?|serum|plasma)\b", re.I)),
   ("Health Records & Services", re.compile(r"\b(gp|hospital|admission|prescription|diagnos|clinic|record linkage|episode|nhs)\b", re.I)),
   ("Demographics & Family", re.compile(r"\b(ethnic|demograph|family|partner|mother|father|parent|child|household|country of birth|participant type)\b", re.I)),
   ("Administration & Identifiers", re.compile(r"\b(identifier|consent|admin|administration|participant id|personid|bibpersonid|legacy id|audit)\b", re.I)),
@@ -264,6 +308,26 @@ _VARIABLE_DISCOVERY_RE = re.compile(
   re.I,
 )
 
+_TABLE_DISCOVERY_RE = re.compile(
+  r"\b(tables?|datasets?)\b.*\b("
+  r"exist|exists|available|contain|contains|include|includes|related|about|around|for|with|use|uses|using"
+  r")\b"
+  r"|\b("
+  r"what|which|find|show|list|search|give|return|identify"
+  r")\b.*\b(tables?|datasets?)\b",
+  re.I,
+)
+
+_PROJECT_DISCOVERY_RE = re.compile(
+  r"\b(projects?|studies|study|cohorts?|study contexts?)\b.*\b("
+  r"exist|exists|available|contain|contains|include|includes|related|about|around|for|with|use|uses|using"
+  r")\b"
+  r"|\b("
+  r"what|which|find|show|list|search|give|return|identify"
+  r")\b.*\b(projects?|studies|study|cohorts?|study contexts?)\b",
+  re.I,
+)
+
 _VARIABLE_DETAIL_RE = re.compile(
   r"\b("
   r"what does|what is|explain|define|meaning of|mean|means|"
@@ -286,10 +350,11 @@ _VARIABLE_SEARCH_STOPWORDS = {
   "does", "during", "exist", "exists", "field", "fields", "find", "for",
   "from", "give", "has", "have", "how", "in", "include", "includes",
   "including", "into", "is", "item", "items", "list", "measure", "measures",
-  "near", "of", "on", "or", "occur", "occurs", "over", "please", "quality",
+  "near", "of", "on", "or", "occur", "occurs", "over", "please", "project",
+  "projects", "quality",
   "related", "return", "search", "show", "study", "studies", "table",
   "tables", "that", "the", "their", "theme", "themes", "there", "these",
-  "this", "through", "to", "used", "using", "variable", "variables", "was",
+  "this", "through", "to", "use", "uses", "used", "using", "variable", "variables", "was",
   "were", "what", "when", "where", "which", "who", "with", "within",
   "wonder",
 }
@@ -344,6 +409,7 @@ _STUDY_FILTER_ALIASES: dict[str, list[str]] = {
 }
 
 _BROAD_SYNONYM_KEYS = {
+  "biosample",
   "bmi",
   "development",
   "education",
@@ -353,6 +419,22 @@ _BROAD_SYNONYM_KEYS = {
   "omics",
   "pregnancy",
   "school",
+}
+
+_STRICT_VARIABLE_CONTENT_TERMS = {
+  "genetic",
+  "genetics",
+  "genotype",
+  "genotyping",
+  "dna",
+  "snp",
+  "polygenic",
+  "omics",
+  "genomics",
+  "metabolomics",
+  "proteomics",
+  "glycomics",
+  "methylation",
 }
 
 
@@ -391,6 +473,130 @@ def _data_dictionary_url(source_html: str, variable: str = "") -> str:
   if variable:
     url += f"?bib_variable={quote(variable)}"
   return url
+
+
+def _project_source_html(project: str) -> str:
+  project = _clean_value(project)
+  if not project:
+    return ""
+  stem = project.lower()
+  if stem.startswith("bib_"):
+    stem = "bib_" + stem[4:]
+  html = f"{stem}.html"
+  return html if (DOCS_DIR / html).exists() else ""
+
+
+def _strip_html_text(text: str) -> str:
+  text = re.sub(r"<script\b[^>]*>.*?</script>", " ", text, flags=re.I | re.S)
+  text = re.sub(r"<style\b[^>]*>.*?</style>", " ", text, flags=re.I | re.S)
+  text = re.sub(r"<[^>]+>", " ", text)
+  text = (
+    text.replace("&nbsp;", " ")
+    .replace("&amp;", "&")
+    .replace("&lt;", "<")
+    .replace("&gt;", ">")
+    .replace("&quot;", '"')
+    .replace("&#39;", "'")
+  )
+  return re.sub(r"\s+", " ", text).strip()
+
+
+def parse_html_project_summaries() -> dict[str, dict[str, str]]:
+  """Extract project-page titles and summaries from the generated docs."""
+  summaries: dict[str, dict[str, str]] = {}
+  if not DOCS_DIR.exists():
+    return summaries
+
+  for html_file in DOCS_DIR.glob("*.html"):
+    try:
+      html = html_file.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+      continue
+    if not re.search(r"<h2[^>]*class=[\"'][^\"']*details-title[^\"']*[\"'][^>]*>\s*Project tables", html, flags=re.I):
+      continue
+
+    title = ""
+    title_matches = list(re.finditer(r"<h1[^>]*>(.*?)</h1>", html, flags=re.I | re.S))
+    title_match = title_matches[-1] if title_matches else None
+    if title_match:
+      title = _strip_html_text(title_match.group(1))
+      title = re.sub(r"\s*Anchor link to header\s*$", "", title, flags=re.I).strip()
+    if not title:
+      meta_match = re.search(r"<title[^>]*>(.*?)\s*\|\s*BiB Data Dictionary", html, flags=re.I | re.S)
+      if meta_match:
+        title = _strip_html_text(meta_match.group(1))
+
+    summary = ""
+    project_tables_match = re.search(r"<h2[^>]*class=[\"'][^\"']*details-title[^\"']*[\"'][^>]*>\s*Project tables", html, flags=re.I)
+    search_region = html
+    if title_match:
+      search_region = html[title_match.end(): project_tables_match.start() if project_tables_match else len(html)]
+    elif project_tables_match:
+      search_region = html[:project_tables_match.start()]
+
+    for paragraph in re.findall(r"<p\b[^>]*>(.*?)</p>", search_region, flags=re.I | re.S):
+      text = _strip_html_text(paragraph)
+      if len(text) >= 20:
+        summary = text
+        break
+
+    summaries[html_file.stem] = {
+      "title": title,
+      "summary": summary,
+      "source_html": html_file.name,
+    }
+  return summaries
+
+
+def parse_html_table_summaries() -> dict[str, dict[str, str]]:
+  """Extract table-level narrative summaries from data dictionary HTML pages.
+
+  In the generated docs, many table pages include a prose paragraph immediately
+  after the table heading/download panel and before "Table details". That text is
+  richer table context than the CSV registry contains, so we attach it to table
+  records and table/project search results.
+  """
+  summaries: dict[str, dict[str, str]] = {}
+  if not DOCS_DIR.exists():
+    return summaries
+
+  for html_file in DOCS_DIR.glob("*.html"):
+    stem = html_file.stem
+    try:
+      html = html_file.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+      continue
+
+    title = ""
+    title_match = re.search(r"<h2[^>]*>(.*?)</h2>", html, flags=re.I | re.S)
+    if title_match:
+      title = _strip_html_text(title_match.group(1))
+    if not title:
+      meta_match = re.search(r"<title[^>]*>(.*?)\s*\|\s*BiB Data Dictionary", html, flags=re.I | re.S)
+      if meta_match:
+        title = _strip_html_text(meta_match.group(1))
+
+    summary = ""
+    table_details_match = re.search(r"<h2[^>]*class=[\"'][^\"']*details-title[^\"']*[\"'][^>]*>\s*Table details", html, flags=re.I)
+    search_region = html
+    if title_match:
+      search_region = html[title_match.end(): table_details_match.start() if table_details_match else len(html)]
+    elif table_details_match:
+      search_region = html[:table_details_match.start()]
+
+    for paragraph in re.findall(r"<p\b[^>]*>(.*?)</p>", search_region, flags=re.I | re.S):
+      text = _strip_html_text(paragraph)
+      if len(text) >= 40:
+        summary = text
+        break
+
+    if title or summary:
+      summaries[stem] = {
+        "title": title,
+        "summary": summary,
+        "source_html": f"{stem}.html",
+      }
+  return summaries
 
 
 def _derive_theme(topic: str, section: str, label: str, description: str,
@@ -474,17 +680,70 @@ def _derive_study_context(project: str, table_id: str, table_name: str,
 
 def _build_variable_registry() -> dict[str, Any]:
   html_sections = parse_html_sections()
+  html_project_summaries = parse_html_project_summaries()
+  html_table_summaries = parse_html_table_summaries()
   vars_df = pd.read_csv(DOCS_DIR / "csv" / "all_variables_meta.csv")
   tables_df = pd.read_csv(DOCS_DIR / "csv" / "all_tables.csv")
-  table_lookup = {
-    _clean_value(row.get("table_id", "")): {
-      "display_name": _clean_value(row.get("display_name", "")),
-      "project_name": _clean_value(row.get("project_name", "")),
+  table_lookup: dict[str, dict[str, str]] = {}
+  table_rows: list[dict[str, str]] = []
+  for _, row in tables_df.iterrows():
+    table_id = _clean_value(row.get("table_id", ""))
+    project_name = _clean_value(row.get("project_name", ""))
+    table_name = _clean_value(row.get("table_name", ""))
+    display_name = _clean_value(row.get("display_name", ""))
+    project_source_html = _project_source_html(project_name)
+    project_html_info = html_project_summaries.get(Path(project_source_html).stem, {}) if project_source_html else {}
+    source_html = ""
+    table_html_info: dict[str, str] = {}
+    for stem in _guess_html_stems(table_id, project_name, table_name):
+      if stem in html_table_summaries:
+        source_html = f"{stem}.html"
+        table_html_info = html_table_summaries.get(stem, {}) or {}
+        break
+    study_context = _derive_study_context(
+      project_name, table_id, table_name, display_name, source_html,
+    )
+    table_entry = {
+      "table": table_id,
+      "table_id": table_id,
+      "table_name": table_name,
+      "table_display": display_name,
+      "project": project_name,
+      "project_name": project_name,
+      "project_display": _clean_value(project_html_info.get("title", "")) or _titleise(project_name),
+      "project_summary": _clean_value(project_html_info.get("summary", "")),
+      "project_source_html": project_source_html,
+      "project_url": _data_dictionary_url(project_source_html),
+      "study_context": study_context,
       "entity_type": _clean_value(row.get("entity_type", "")),
+      "data_subjects": _clean_value(row.get("data_subjects", "")),
+      "data_respondents": _clean_value(row.get("data_respondents", "")),
+      "cohort_membership": _clean_value(row.get("cohort_membership", "")),
+      "n_variables": _clean_value(row.get("n_variables", "")),
       "n_rows": _clean_value(row.get("n_rows", "")),
+      "n_entities": _clean_value(row.get("n_entities", "")),
+      "last_updated": _clean_value(row.get("last_updated", "")),
+      "table_summary": _clean_value(table_html_info.get("summary", "")),
+      "source_html": source_html,
+      "data_dictionary_url": _data_dictionary_url(source_html),
     }
-    for _, row in tables_df.iterrows()
-  }
+    table_lookup[table_id] = {
+      "display_name": display_name,
+      "project_name": project_name,
+      "entity_type": table_entry["entity_type"],
+      "n_rows": table_entry["n_rows"],
+      "n_entities": table_entry["n_entities"],
+      "n_variables": table_entry["n_variables"],
+      "study_context": study_context,
+      "table_summary": table_entry["table_summary"],
+      "project_display": table_entry["project_display"],
+      "project_summary": table_entry["project_summary"],
+      "project_source_html": table_entry["project_source_html"],
+      "project_url": table_entry["project_url"],
+      "source_html": source_html,
+      "data_dictionary_url": table_entry["data_dictionary_url"],
+    }
+    table_rows.append(table_entry)
 
   rows: list[dict[str, Any]] = []
   theme_counts: dict[str, int] = {}
@@ -538,6 +797,7 @@ def _build_variable_registry() -> dict[str, Any]:
       "non_missing": n_complete,
       "entities_complete": n_entities_complete,
       "entity_type": table_meta.get("entity_type", ""),
+      "table_summary": table_meta.get("table_summary", ""),
       "source_html": source_html,
       "data_dictionary_url": _data_dictionary_url(source_html, variable),
     }
@@ -555,6 +815,19 @@ def _build_variable_registry() -> dict[str, Any]:
     variable = _clean_value(row.get("variable", ""))
     if variable:
       by_variable.setdefault(variable.lower(), []).append(row)
+  by_table = {
+    row["table"].lower(): row
+    for row in table_rows
+    if row.get("table")
+  }
+  by_project: dict[str, list[dict[str, str]]] = {}
+  for row in table_rows:
+    project = _clean_value(row.get("project", ""))
+    study = _clean_value(row.get("study_context", ""))
+    if project:
+      by_project.setdefault(project.lower(), []).append(row)
+    if study:
+      by_project.setdefault(study.lower(), []).append(row)
   themes = [{"name": name, "count": count} for name, count in sorted(
     theme_counts.items(), key=lambda item: (-item[1], item[0])
   )]
@@ -568,8 +841,11 @@ def _build_variable_registry() -> dict[str, Any]:
     },
     "themes": themes,
     "rows": rows,
+    "tables": table_rows,
     "by_variable_id": by_variable_id,
     "by_variable": by_variable,
+    "by_table": by_table,
+    "by_project": by_project,
   }
 
 
@@ -668,7 +944,7 @@ def _row_search_text(row: dict[str, Any]) -> str:
     for field in [
       "variable_id", "variable", "label", "description", "topic", "theme",
       "section", "table", "table_name", "table_display", "project",
-      "study_context", "entity_type",
+      "study_context", "entity_type", "table_summary",
     ]
   )
 
@@ -677,6 +953,21 @@ def _looks_like_variable_discovery(question: str) -> bool:
   if _looks_like_variable_detail_question(question):
     return False
   return bool(_VARIABLE_DISCOVERY_RE.search(question or ""))
+
+
+def _looks_like_table_discovery(question: str) -> bool:
+  if _looks_like_variable_detail_question(question):
+    return False
+  return bool(_TABLE_DISCOVERY_RE.search(question or ""))
+
+
+def _looks_like_project_discovery(question: str) -> bool:
+  if _looks_like_variable_detail_question(question):
+    return False
+  q = _normalise_search_text(question)
+  if re.search(r"\bstudy context/cohort labels?\b", q):
+    return True
+  return bool(_PROJECT_DISCOVERY_RE.search(question or ""))
 
 
 def _looks_like_variable_detail_question(question: str) -> bool:
@@ -830,6 +1121,51 @@ def _infer_study_filters(question: str) -> list[str]:
   return filters
 
 
+def _meaningful_table_tokens(text: str) -> list[str]:
+  tokens: list[str] = []
+  for token in re.findall(r"\b[a-z][a-z0-9]{2,}\b", _normalise_search_text(text)):
+    if token in _VARIABLE_SEARCH_STOPWORDS:
+      continue
+    if token in {"bib", "data", "table", "variables"}:
+      continue
+    if token not in tokens:
+      tokens.append(token)
+  return tokens
+
+
+def _infer_table_filters(question: str, registry: dict[str, Any]) -> list[str]:
+  """Infer explicit table scopes from user wording such as "adult survey MeDALL sample"."""
+  q = _normalise_search_text(question)
+  if not q:
+    return []
+
+  candidates: list[tuple[int, str]] = []
+  for table in registry.get("tables", []):
+    table_id = _clean_value(table.get("table") or table.get("table_id"))
+    if not table_id:
+      continue
+    names = [
+      table_id,
+      table_id.split(".")[-1],
+      table.get("table_name", ""),
+      table.get("table_display", ""),
+    ]
+    best = 0
+    for name in names:
+      tokens = _meaningful_table_tokens(name)
+      if len(tokens) < 2:
+        continue
+      if all(_term_in_text(token, q) for token in tokens):
+        best = max(best, len(tokens))
+    if best:
+      candidates.append((best, table_id))
+
+  if not candidates:
+    return []
+  max_score = max(score for score, _ in candidates)
+  return sorted({table_id for score, table_id in candidates if score == max_score})
+
+
 def _expand_variable_search_terms(question: str) -> list[str]:
   q = _normalise_search_text(question)
   terms: list[str] = []
@@ -873,7 +1209,10 @@ def _expand_variable_search_terms(question: str) -> list[str]:
   }
   filtered_terms = [
     term for term in terms
-    if term not in study_aliases and term not in study_alias_tokens
+    if (
+      term in _STRICT_VARIABLE_CONTENT_TERMS
+      or (term not in study_aliases and term not in study_alias_tokens)
+    )
   ]
 
   # For physical activity, standalone "activity" and "physical" are too broad:
@@ -917,6 +1256,17 @@ def _variable_search_score(row: dict[str, Any], terms: list[str]) -> tuple[int, 
   return score, matched
 
 
+def _variable_content_matched_terms(row: dict[str, Any], terms: list[str]) -> list[str]:
+  """Return terms matched by variable-level fields, excluding table/project scope."""
+  matched: list[str] = []
+  for term in terms:
+    for field in ["variable_id", "variable", "label", "description", "topic", "section"]:
+      if _term_in_text(term, _clean_value(row.get(field, ""))):
+        matched.append(term)
+        break
+  return matched
+
+
 def _row_matches_study_filters(row: dict[str, Any], study_filters: list[str]) -> bool:
   if not study_filters:
     return True
@@ -932,6 +1282,319 @@ def _row_matches_study_filters(row: dict[str, Any], study_filters: list[str]) ->
     if study_context.startswith(f"{study_norm} ("):
       return True
   return False
+
+
+def _table_search_score(row: dict[str, Any], terms: list[str]) -> tuple[int, list[str]]:
+  if not terms:
+    return 1, []
+
+  weighted_fields = {
+    "table": 6,
+    "table_id": 6,
+    "table_name": 6,
+    "table_display": 5,
+    "table_summary": 5,
+    "project": 3,
+    "project_name": 3,
+    "study_context": 3,
+    "entity_type": 1,
+  }
+  score = 0
+  matched: list[str] = []
+  for term in terms:
+    term_score = 0
+    for field, weight in weighted_fields.items():
+      if _term_in_text(term, _clean_value(row.get(field, ""))):
+        term_score = max(term_score, weight)
+    if term_score:
+      score += term_score
+      matched.append(term)
+  return score, matched
+
+
+def _table_result_record(
+  table: dict[str, Any],
+  score: int,
+  matched_terms: list[str],
+  matched_variables: list[dict[str, Any]],
+) -> dict[str, Any]:
+  examples = []
+  for row in matched_variables[:5]:
+    examples.append({
+      "variable_id": _clean_value(row.get("variable_id", "")),
+      "variable": _clean_value(row.get("variable", "")),
+      "label": _clean_value(row.get("label", "")),
+    })
+  return {
+    "table": _clean_value(table.get("table", "") or table.get("table_id", "")),
+    "table_id": _clean_value(table.get("table_id", "") or table.get("table", "")),
+    "table_name": _clean_value(table.get("table_name", "")),
+    "table_display": _clean_value(table.get("table_display", "")),
+    "project": _clean_value(table.get("project", "") or table.get("project_name", "")),
+    "project_display": _clean_value(table.get("project_display", "")),
+    "project_summary": _clean_value(table.get("project_summary", "")),
+    "project_source_html": _clean_value(table.get("project_source_html", "")),
+    "project_url": _clean_value(table.get("project_url", "")),
+    "study_context": _clean_value(table.get("study_context", "")),
+    "entity_type": _clean_value(table.get("entity_type", "")),
+    "n_variables": _clean_value(table.get("n_variables", "")),
+    "n_rows": _clean_value(table.get("n_rows", "")),
+    "n_entities": _clean_value(table.get("n_entities", "")),
+    "last_updated": _clean_value(table.get("last_updated", "")),
+    "table_summary": _clean_value(table.get("table_summary", "")),
+    "source_html": _clean_value(table.get("source_html", "")),
+    "data_dictionary_url": _clean_value(table.get("data_dictionary_url", "")),
+    "matched_terms": ", ".join(matched_terms),
+    "matching_variables": len(matched_variables),
+    "example_variables": examples,
+    "_score": score,
+  }
+
+
+def _search_table_registry(
+  question: str,
+  limit: int = 80,
+  require_table_intent: bool = True,
+) -> Optional[dict[str, Any]]:
+  if require_table_intent and not _looks_like_table_discovery(question):
+    return None
+
+  terms = _expand_variable_search_terms(question)
+  study_filters = _infer_study_filters(question)
+  if not terms and not study_filters:
+    return None
+  strict_content_terms = [
+    term for term in terms
+    if _normalise_search_text(term) in _STRICT_VARIABLE_CONTENT_TERMS
+  ]
+
+  registry = _get_variable_registry()
+  tables = registry.get("tables", [])
+  variable_rows = registry.get("rows", [])
+
+  matched_vars_by_table: dict[str, list[dict[str, Any]]] = {}
+  if terms:
+    for row in variable_rows:
+      if not _row_matches_study_filters(row, study_filters):
+        continue
+      score, _ = _variable_search_score(row, terms)
+      if score > 0:
+        if strict_content_terms and not _variable_content_matched_terms(row, strict_content_terms):
+          continue
+        table_key = _clean_value(row.get("table", "")).lower()
+        if table_key:
+          matched_vars_by_table.setdefault(table_key, []).append(row)
+
+  results: list[dict[str, Any]] = []
+  for table in tables:
+    if not _row_matches_study_filters(table, study_filters):
+      continue
+    table_key = _clean_value(table.get("table", "") or table.get("table_id", "")).lower()
+    matched_variables = matched_vars_by_table.get(table_key, [])
+    direct_score, direct_terms = _table_search_score(table, terms)
+    if terms and direct_score <= 0 and not matched_variables:
+      continue
+
+    matched_terms = list(direct_terms)
+    for row in matched_variables[:20]:
+      _, row_terms = _variable_search_score(row, terms)
+      for term in row_terms:
+        if term not in matched_terms:
+          matched_terms.append(term)
+
+    score = direct_score + min(len(matched_variables), 50) * 3
+    results.append(_table_result_record(table, score, matched_terms, matched_variables))
+
+  results.sort(
+    key=lambda r: (
+      -int(r.get("_score", 0) or 0),
+      -int(r.get("matching_variables", 0) or 0),
+      r.get("study_context", ""),
+      r.get("table", ""),
+    )
+  )
+  total = len(results)
+  limited = results[: max(1, int(limit))]
+  for row in limited:
+    row.pop("_score", None)
+
+  return {
+    "query": question,
+    "terms": terms,
+    "study_filters": study_filters,
+    "total": total,
+    "returned": len(limited),
+    "truncated": total > len(limited),
+    "rows": limited,
+  }
+
+
+def _format_table_discovery_answer(table_results: dict[str, Any]) -> str:
+  total = int(table_results.get("total", 0) or 0)
+  returned = int(table_results.get("returned", 0) or 0)
+  terms = table_results.get("terms") or []
+  study_filters = table_results.get("study_filters") or []
+  rows = table_results.get("rows") or []
+
+  if total == 0:
+    return (
+      "I could not find matching tables in the data dictionary registry for that request. "
+      "Try a broader term or remove study/wave filters."
+    )
+
+  scope = f" in {', '.join(study_filters)}" if study_filters else ""
+  term_text = f" Matched terms: {', '.join(terms[:8])}." if terms else ""
+  lines = [
+    (
+      f"I found {total} matching data dictionary table{'s' if total != 1 else ''}{scope}."
+      f"{term_text} The table cards below include summaries, matching-variable examples, "
+      "and links back to the data dictionary."
+    ).strip(),
+  ]
+  if table_results.get("truncated"):
+    lines.append(f"Showing the first {returned} tables.")
+
+  for row in rows[:6]:
+    table_id = row.get("table") or row.get("table_id") or "Unknown table"
+    display = row.get("table_display") or row.get("table_name") or ""
+    matching_variables = int(row.get("matching_variables", 0) or 0)
+    examples = [
+      ex.get("variable") or ex.get("variable_id", "")
+      for ex in row.get("example_variables", [])
+      if ex.get("variable") or ex.get("variable_id")
+    ][:4]
+    url = row.get("data_dictionary_url") or ""
+    lines.append(f"- {display or table_id} ({table_id})")
+    if matching_variables:
+      example_text = f" Examples: {', '.join(examples)}." if examples else ""
+      lines.append(f"  {matching_variables} matching variable{'s' if matching_variables != 1 else ''}.{example_text}")
+    if url:
+      lines.append(f"  Link: {url}")
+  if len(rows) > 6:
+    lines.append(f"- {len(rows) - 6} more table{'s' if len(rows) - 6 != 1 else ''} are included in the structured results.")
+  return "\n".join(lines)
+
+
+def _search_project_registry(
+  question: str,
+  limit: int = 60,
+  require_project_intent: bool = True,
+) -> Optional[dict[str, Any]]:
+  if require_project_intent and not _looks_like_project_discovery(question):
+    return None
+
+  table_results = _search_table_registry(
+    question,
+    limit=10000,
+    require_table_intent=False,
+  )
+  if not table_results:
+    return None
+
+  q_norm = _normalise_search_text(question)
+  group_by_project = bool(re.search(r"\bprojects?\b", q_norm)) and not bool(
+    re.search(r"\b(study contexts?|cohorts?)\b", q_norm)
+  )
+  group_mode = "project" if group_by_project else "study_context"
+  grouped: dict[str, dict[str, Any]] = {}
+  for row in table_results.get("rows", []):
+    project = row.get("project") or "Project not inferred"
+    study = row.get("study_context") or "Study not inferred"
+    key = project if group_by_project else study
+    item = grouped.setdefault(
+      key,
+      {
+        "group_mode": group_mode,
+        "project": project if group_by_project else "",
+        "project_display": row.get("project_display") or _titleise(project),
+        "project_summary": row.get("project_summary") or "",
+        "project_url": row.get("project_url") or "",
+        "study_context": study if not group_by_project else "",
+        "projects": set(),
+        "study_contexts": set(),
+        "n_tables": 0,
+        "n_matching_variables": 0,
+        "examples": [],
+      },
+    )
+    if project:
+      item["projects"].add(project)
+    if study:
+      item["study_contexts"].add(study)
+    if not item.get("project_summary") and row.get("project_summary"):
+      item["project_summary"] = row.get("project_summary")
+    if not item.get("project_url") and row.get("project_url"):
+      item["project_url"] = row.get("project_url")
+    item["n_tables"] += 1
+    item["n_matching_variables"] += int(row.get("matching_variables", 0) or 0)
+    if len(item["examples"]) < 4:
+      item["examples"].append({
+        "table": row.get("table", ""),
+        "table_display": row.get("table_display", ""),
+        "data_dictionary_url": row.get("data_dictionary_url", ""),
+      })
+
+  rows: list[dict[str, Any]] = []
+  for item in grouped.values():
+    item["projects"] = sorted(item["projects"])
+    item["study_contexts"] = sorted(item["study_contexts"])
+    rows.append(item)
+  rows.sort(key=lambda item: (
+    -int(item.get("n_matching_variables", 0) or 0),
+    -int(item.get("n_tables", 0) or 0),
+    item.get("project") or item.get("study_context", ""),
+  ))
+
+  total = len(rows)
+  limited = rows[: max(1, int(limit))]
+  return {
+    "query": question,
+    "group_mode": group_mode,
+    "terms": table_results.get("terms", []),
+    "study_filters": table_results.get("study_filters", []),
+    "total": total,
+    "returned": len(limited),
+    "truncated": total > len(limited),
+    "rows": limited,
+  }
+
+
+def _format_project_discovery_answer(project_results: dict[str, Any]) -> str:
+  total = int(project_results.get("total", 0) or 0)
+  group_mode = project_results.get("group_mode") or "study_context"
+  terms = project_results.get("terms") or []
+  rows = project_results.get("rows") or []
+  if total == 0:
+    return "I could not find matching projects/study contexts in the data dictionary registry for that request."
+
+  term_text = f" Matched terms: {', '.join(terms[:8])}." if terms else ""
+  label = "project" if group_mode == "project" else "project/study context"
+  lines = [
+    (
+      f"I found {total} matching {label}{'s' if total != 1 else ''} in the data dictionary registry."
+      f"{term_text} The project cards below include matching tables and links back to the data dictionary."
+    ).strip()
+  ]
+  for row in rows[:6]:
+    name = row.get("project_display") or row.get("project") or row.get("study_context") or "Study not inferred"
+    projects = ", ".join(row.get("projects") or [])
+    n_tables = int(row.get("n_tables", 0) or 0)
+    n_vars = int(row.get("n_matching_variables", 0) or 0)
+    lines.append(
+      f"- {name}: {n_tables} table{'s' if n_tables != 1 else ''}, "
+      f"{n_vars} matching variable{'s' if n_vars != 1 else ''}."
+      + (f" Project(s): {projects}." if projects else "")
+    )
+    examples = [
+      ex.get("table", "")
+      for ex in row.get("examples", [])
+      if ex.get("table")
+    ][:3]
+    if examples:
+      lines.append(f"  Example tables: {', '.join(examples)}.")
+  if len(rows) > 6:
+    lines.append(f"- {len(rows) - 6} more {label}{'s' if len(rows) - 6 != 1 else ''} are included in the structured results.")
+  return "\n".join(lines)
 
 
 def _wants_variable_study_summary(question: str) -> bool:
@@ -992,14 +1655,24 @@ def _search_variable_registry(
   study_filters = _infer_study_filters(question)
   if not terms and not study_filters:
     return None
+  registry = _get_variable_registry()
+  table_filters = _infer_table_filters(question, registry)
+  strict_content_terms = [
+    term for term in terms
+    if _normalise_search_text(term) in _STRICT_VARIABLE_CONTENT_TERMS
+  ]
 
   matches: list[dict[str, Any]] = []
-  for row in _get_variable_registry()["rows"]:
+  for row in registry["rows"]:
     if not _row_matches_study_filters(row, study_filters):
+      continue
+    if table_filters and _clean_value(row.get("table", "")) not in table_filters:
       continue
 
     score, matched_terms = _variable_search_score(row, terms)
     if terms and score <= 0:
+      continue
+    if strict_content_terms and not _variable_content_matched_terms(row, strict_content_terms):
       continue
 
     record = _variable_export_record(row)
@@ -1022,11 +1695,56 @@ def _search_variable_registry(
     row.pop("_score", None)
 
   study_summary = _summarise_variable_matches_by_study(matches) if _wants_variable_study_summary(question) else []
+  scoped_tables: list[dict[str, Any]] = []
+  if table_filters:
+    rows_by_table: dict[str, list[dict[str, Any]]] = {}
+    for row in registry["rows"]:
+      table_id = _clean_value(row.get("table", ""))
+      if table_id in table_filters:
+        rows_by_table.setdefault(table_id, []).append(row)
+    for table_id in table_filters:
+      table = registry.get("by_table", {}).get(table_id.lower(), {})
+      table_rows = rows_by_table.get(table_id, [])
+      topic_counts: dict[str, int] = {}
+      examples: list[dict[str, str]] = []
+      for row in table_rows:
+        topic = _clean_value(row.get("topic", "")) or "Unlabelled"
+        topic_counts[topic] = topic_counts.get(topic, 0) + 1
+        variable = _clean_value(row.get("variable", ""))
+        if (
+          variable
+          and variable.lower() not in {"bibpersonid", "id", "date", "agemonths", "ageyears"}
+          and _normalise_search_text(topic) not in {"administration", "age", "unlabelled"}
+          and len(examples) < 6
+        ):
+          examples.append({
+            "variable": variable,
+            "label": _clean_value(row.get("label", "")),
+            "topic": topic,
+          })
+      top_topics = [
+        {"topic": topic, "count": count}
+        for topic, count in sorted(topic_counts.items(), key=lambda item: (-item[1], item[0]))[:6]
+      ]
+      scoped_tables.append({
+        "table": table_id,
+        "table_display": _clean_value(table.get("table_display", "")) or _clean_value(table.get("display_name", "")),
+        "project": _clean_value(table.get("project", "")) or _clean_value(table.get("project_name", "")),
+        "study_context": _clean_value(table.get("study_context", "")),
+        "n_variables": _clean_value(table.get("n_variables", "")) or str(len(table_rows)),
+        "n_rows": _clean_value(table.get("n_rows", "")),
+        "n_entities": _clean_value(table.get("n_entities", "")),
+        "data_dictionary_url": _clean_value(table.get("data_dictionary_url", "")),
+        "top_topics": top_topics,
+        "example_variables": examples,
+      })
 
   result = {
     "query": question,
     "terms": terms,
     "study_filters": study_filters,
+    "table_filters": table_filters,
+    "scoped_tables": scoped_tables,
     "total": total,
     "returned": len(limited),
     "truncated": total > len(limited),
@@ -1058,9 +1776,48 @@ def _format_variable_discovery_answer(variable_results: dict[str, Any]) -> str:
   terms = variable_results.get("terms") or []
 
   if total == 0:
+    table_filters = variable_results.get("table_filters") or []
+    scoped_tables = variable_results.get("scoped_tables") or []
+    if scoped_tables:
+      lines = [
+        (
+          "I found the scoped table, but I could not find direct variable-level "
+          "genetic/omics matches in it."
+        )
+      ]
+      for table in scoped_tables[:3]:
+        display = table.get("table_display") or table.get("table") or "Scoped table"
+        table_id = table.get("table") or ""
+        n_variables = table.get("n_variables") or "?"
+        n_rows = table.get("n_rows") or "?"
+        url = table.get("data_dictionary_url") or ""
+        topics = [
+          f"{item.get('topic')} ({item.get('count')})"
+          for item in table.get("top_topics", [])
+          if item.get("topic")
+        ][:5]
+        examples = [
+          example.get("variable", "")
+          for example in table.get("example_variables", [])
+          if example.get("variable")
+        ][:5]
+        lines.append(f"- {display} (`{table_id}`): {n_variables} variables, {n_rows} rows.")
+        if topics:
+          lines.append(f"  Main variable topics: {', '.join(topics)}.")
+        if examples:
+          lines.append(f"  Example fields: {', '.join(examples)}.")
+        if url:
+          lines.append(f"  Data dictionary table: {url}")
+      lines.append(
+        "This means the MeDALL sample adult-survey table appears to contain survey/allergy/respiratory fields for that sample, "
+        "not the underlying genetic/omics assay variables. Ask for matching genetic/omics tables or projects if you want dataset-level omics resources."
+      )
+      return "\n".join(lines)
+
+    table_text = f" within {', '.join(table_filters)}" if table_filters else ""
     return (
-      "I could not find matching variables in the registry for that request. "
-      "Try a broader term or remove study/wave filters."
+      f"I could not find direct variable-level matches{table_text} in the registry for that request. "
+      "Try a broader term, remove table/study filters, or ask for matching tables/projects if you want dataset-level context."
     )
 
   if variable_results.get("summary_mode") == "study_context":
@@ -1441,6 +2198,30 @@ def chat_endpoint():
                 result["context"] = f"Source: {RCADS25_PDF.name}"
             return jsonify(result)
 
+        project_results = _search_project_registry(question)
+        if project_results:
+            answer = _format_project_discovery_answer(project_results)
+            result: dict = {
+                "answer": answer,
+                "variables": [],
+                "project_results": project_results,
+            }
+            if show_ctx:
+                result["context"] = ""
+            return jsonify(result)
+
+        table_results = _search_table_registry(question)
+        if table_results:
+            answer = _format_table_discovery_answer(table_results)
+            result: dict = {
+                "answer": answer,
+                "variables": [],
+                "table_results": table_results,
+            }
+            if show_ctx:
+                result["context"] = ""
+            return jsonify(result)
+
         variable_results = (
             _search_variable_registry(question)
             or _search_available_item_registry(question)
@@ -1514,6 +2295,24 @@ def chat_stream_endpoint():
                 full_text = direct_answer["answer"]
                 yield f"data: {json.dumps({'token': full_text})}\n\n"
                 yield f"data: {json.dumps({'variables': []})}\n\n"
+                yield 'data: {"done": true}\n\n'
+                return
+
+            project_results = _search_project_registry(question)
+            if project_results:
+                full_text = _format_project_discovery_answer(project_results)
+                yield f"data: {json.dumps({'token': full_text})}\n\n"
+                yield f"data: {json.dumps({'variables': []})}\n\n"
+                yield f"data: {json.dumps({'project_results': project_results})}\n\n"
+                yield 'data: {"done": true}\n\n'
+                return
+
+            table_results = _search_table_registry(question)
+            if table_results:
+                full_text = _format_table_discovery_answer(table_results)
+                yield f"data: {json.dumps({'token': full_text})}\n\n"
+                yield f"data: {json.dumps({'variables': []})}\n\n"
+                yield f"data: {json.dumps({'table_results': table_results})}\n\n"
                 yield 'data: {"done": true}\n\n'
                 return
 
@@ -1883,7 +2682,10 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   .data-dict-link,
   .detected-var a,
   .study-var-row a,
-  .variable-result a {
+  .variable-result a,
+  .table-card-top a,
+  .project-card-top a,
+  .project-tables a {
     color: var(--bib-blue);
     font-size: .74rem;
     font-weight: 700;
@@ -1892,7 +2694,10 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   .data-dict-link:hover,
   .detected-var a:hover,
   .study-var-row a:hover,
-  .variable-result a:hover {
+  .variable-result a:hover,
+  .table-card-top a:hover,
+  .project-card-top a:hover,
+  .project-tables a:hover {
     text-decoration: underline;
   }
   .study-summary {
@@ -2110,6 +2915,189 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
   .variable-results-more {
     margin-top: 8px;
   }
+  .table-results {
+    background: linear-gradient(145deg, #ffffff 0%, #f2f7ff 100%);
+    border: 1px solid #d0d8e8;
+    border-radius: 14px;
+    padding: 14px;
+    white-space: normal;
+  }
+  .table-results-head {
+    color: #42506b;
+    font-size: .8rem;
+    margin-bottom: 10px;
+  }
+  .table-results-head strong {
+    color: #14397a;
+    display: block;
+    font-size: .98rem;
+  }
+  .table-results-meta {
+    color: #687895;
+    font-size: .76rem;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+  .table-results-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 10px;
+    max-height: 560px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
+  .table-card {
+    background: rgba(255,255,255,.94);
+    border: 1px solid #d3ddf1;
+    border-radius: 11px;
+    padding: 11px;
+  }
+  .table-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .table-card-top strong {
+    color: #122b57;
+    display: block;
+    font-size: .86rem;
+    line-height: 1.3;
+  }
+  .table-card-top code {
+    background: #edf3ff !important;
+    color: #14397a;
+    display: block;
+    font-size: .72rem;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+  }
+  .table-card-top a {
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .table-meta,
+  .table-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .table-meta span {
+    background: #eef4ff;
+    border: 1px solid #d3ddf1;
+    border-radius: 999px;
+    color: #52647f;
+    font-size: .72rem;
+    padding: 3px 8px;
+  }
+  .table-summary {
+    color: #42506b;
+    font-size: .78rem;
+    line-height: 1.4;
+    margin-top: 9px;
+  }
+  .table-examples span {
+    background: #f7faff;
+    border: 1px solid #d3ddf1;
+    border-radius: 7px;
+    color: #14397a;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: .7rem;
+    padding: 3px 6px;
+  }
+  .project-results {
+    background: linear-gradient(145deg, #ffffff 0%, #f6fbf7 100%);
+    border: 1px solid #cbdccf;
+    border-radius: 14px;
+    padding: 14px;
+    white-space: normal;
+  }
+  .project-results-head {
+    color: #42506b;
+    font-size: .8rem;
+    margin-bottom: 10px;
+  }
+  .project-results-head strong {
+    color: #174f38;
+    display: block;
+    font-size: .98rem;
+  }
+  .project-results-meta {
+    color: #687895;
+    font-size: .76rem;
+    line-height: 1.3;
+    margin-top: 2px;
+  }
+  .project-results-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 10px;
+    max-height: 560px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-gutter: stable;
+  }
+  .project-card {
+    background: rgba(255,255,255,.94);
+    border: 1px solid #d3e3d7;
+    border-radius: 11px;
+    padding: 11px;
+  }
+  .project-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .project-card-top strong {
+    color: #173d2c;
+    display: block;
+    font-size: .86rem;
+    line-height: 1.3;
+  }
+  .project-card-top code {
+    background: #eef8f1 !important;
+    color: #174f38;
+    display: block;
+    font-size: .72rem;
+    margin-top: 4px;
+    overflow-wrap: anywhere;
+  }
+  .project-card-top a {
+    color: #1b6a49;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .project-meta,
+  .project-tables {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .project-meta span {
+    background: #eef8f1;
+    border: 1px solid #d3e3d7;
+    border-radius: 999px;
+    color: #526b5e;
+    font-size: .72rem;
+    padding: 3px 8px;
+  }
+  .project-summary {
+    color: #42506b;
+    font-size: .78rem;
+    line-height: 1.4;
+    margin-top: 9px;
+  }
+  .project-tables a {
+    background: #f7fcf8;
+    border: 1px solid #d3e3d7;
+    border-radius: 7px;
+    color: #1b6a49;
+    padding: 3px 6px;
+  }
 
   #input-bar {
     background: #fff;
@@ -2214,8 +3202,8 @@ ASSISTANT_HTML = r"""<!DOCTYPE html>
     <div class="beta-note">
       <strong>Beta first release.</strong> This assistant is an early prototype for exploring the potential of an LLM-based research assistant for Born in Bradford.
       <ul>
-        <li>It uses a quantised local model to make deployment smaller, faster, and easier to share with pilot users.</li>
-        <li>Quantisation helps performance and packaging, but it can reduce answer quality compared with larger full-precision models.</li>
+        <li>The hosted pilot uses a local quantised Llama 3.1 8B model to avoid external API costs and rate limits.</li>
+        <li>Quantisation makes deployment practical and keeps responses local, but it can reduce answer quality compared with a larger hosted model.</li>
         <li>Please treat answers as a research aid rather than a final authority, and use the source and data dictionary links to check important details.</li>
       </ul>
     </div>
@@ -2548,6 +3536,116 @@ function renderVariableResults(container, result) {
     });
   });
 }
+function renderTableResults(container, result) {
+  if (!container || !result || !result.rows || !result.rows.length) return;
+  const rows = result.rows;
+  const terms = (result.terms || []).slice(0, 10).join(', ');
+  const filters = (result.study_filters || []).join(', ');
+
+  const panel = document.createElement('div');
+  panel.className = 'table-results';
+  panel.innerHTML = `
+    <div class="table-results-head">
+      <strong>${result.total} data dictionary table${result.total === 1 ? '' : 's'} found</strong>
+      <div class="table-results-meta">
+        ${terms ? `Matched terms: ${escHtml(terms)}` : 'Matched by registry filters'}
+        ${filters ? ` · Study: ${escHtml(filters)}` : ''}
+        ${result.truncated ? ` · Showing ${result.returned}` : ''}
+      </div>
+    </div>
+    <div class="table-results-list">
+      ${rows.map(row => {
+        const url = row.data_dictionary_url || '';
+        const examples = (row.example_variables || [])
+          .map(ex => ex.variable || ex.variable_id || '')
+          .filter(Boolean)
+          .slice(0, 6);
+        const summary = row.table_summary || '';
+        return `
+          <div class="table-card">
+            <div class="table-card-top">
+              <div>
+                <strong>${escHtml(row.table_display || row.table || 'Untitled table')}</strong>
+                <code>${escHtml(row.table || '')}</code>
+              </div>
+              ${url ? `<a href="${escAttr(url)}" target="_blank" rel="noopener">Open data dictionary table</a>` : ''}
+            </div>
+            <div class="table-meta">
+              ${row.project ? `<span>${escHtml(row.project)}</span>` : ''}
+              ${row.study_context ? `<span>${escHtml(row.study_context)}</span>` : ''}
+              ${row.n_variables ? `<span>${escHtml(row.n_variables)} variables</span>` : ''}
+              ${row.n_rows ? `<span>${escHtml(row.n_rows)} rows</span>` : ''}
+              ${row.n_entities ? `<span>${escHtml(row.n_entities)} entities</span>` : ''}
+              ${row.matching_variables ? `<span>${escHtml(row.matching_variables)} matching variables</span>` : ''}
+            </div>
+            ${summary ? `<div class="table-summary">${escHtml(summary)}</div>` : ''}
+            ${examples.length ? `
+              <div class="table-examples" aria-label="Example matching variables">
+                ${examples.map(example => `<span>${escHtml(example)}</span>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  container.appendChild(panel);
+}
+function renderProjectResults(container, result) {
+  if (!container || !result || !result.rows || !result.rows.length) return;
+  const rows = result.rows;
+  const terms = (result.terms || []).slice(0, 10).join(', ');
+  const groupLabel = result.group_mode === 'project' ? 'project' : 'project/study context';
+
+  const panel = document.createElement('div');
+  panel.className = 'project-results';
+  panel.innerHTML = `
+    <div class="project-results-head">
+      <strong>${result.total} matching ${groupLabel}${result.total === 1 ? '' : 's'}</strong>
+      <div class="project-results-meta">
+        ${terms ? `Matched terms: ${escHtml(terms)}` : 'Matched by registry filters'}
+        ${result.truncated ? ` · Showing ${result.returned}` : ''}
+      </div>
+    </div>
+    <div class="project-results-list">
+      ${rows.map(row => {
+        const url = row.project_url || '';
+        const name = row.project_display || row.project || row.study_context || 'Project not inferred';
+        const studyContexts = (row.study_contexts || []).filter(Boolean);
+        const projects = (row.projects || []).filter(Boolean);
+        const examples = (row.examples || []).slice(0, 5);
+        return `
+          <div class="project-card">
+            <div class="project-card-top">
+              <div>
+                <strong>${escHtml(name)}</strong>
+                ${row.project ? `<code>${escHtml(row.project)}</code>` : ''}
+              </div>
+              ${url ? `<a href="${escAttr(url)}" target="_blank" rel="noopener">Open project</a>` : ''}
+            </div>
+            <div class="project-meta">
+              ${projects.length && !row.project ? `<span>${escHtml(projects.join(', '))}</span>` : ''}
+              ${studyContexts.length ? `<span>${escHtml(studyContexts.join(', '))}</span>` : ''}
+              <span>${escHtml(row.n_tables || 0)} table${Number(row.n_tables || 0) === 1 ? '' : 's'}</span>
+              <span>${escHtml(row.n_matching_variables || 0)} matching variables</span>
+            </div>
+            ${row.project_summary ? `<div class="project-summary">${escHtml(row.project_summary)}</div>` : ''}
+            ${examples.length ? `
+              <div class="project-tables" aria-label="Example matching tables">
+                ${examples.map(example => `
+                  <a href="${escAttr(example.data_dictionary_url || '#')}" target="_blank" rel="noopener">
+                    ${escHtml(example.table_display || example.table || 'Table')}
+                  </a>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  container.appendChild(panel);
+}
 function renderMdTable(lines) {
   const rows = lines.filter(l => !l.trim().match(/^\|[-: |]+\|$/));
   if (!rows.length) return '';
@@ -2614,6 +3712,8 @@ async function sendMessage() {
   let fullText = '';
   let detectedVariables = [];
   let variableResults = null;
+  let tableResults = null;
+  let projectResults = null;
 
   try {
     const res = await fetch('/api/chat/stream', {
@@ -2664,9 +3764,21 @@ async function sendMessage() {
         if (evt.variable_results) {
           variableResults = evt.variable_results;
         }
+        if (evt.table_results) {
+          tableResults = evt.table_results;
+        }
+        if (evt.project_results) {
+          projectResults = evt.project_results;
+        }
         if (evt.done) {
           if (!msgEl) { removeThinking(); msgEl = appendMsg('assistant', ''); }
-          if (variableResults && variableResults.rows && variableResults.rows.length) {
+          if (projectResults && projectResults.rows && projectResults.rows.length) {
+            msgEl.innerHTML = '';
+            renderProjectResults(msgEl, projectResults);
+          } else if (tableResults && tableResults.rows && tableResults.rows.length) {
+            msgEl.innerHTML = '';
+            renderTableResults(msgEl, tableResults);
+          } else if (variableResults && variableResults.rows && variableResults.rows.length) {
             if (variableResults.summary_mode === 'study_context' && variableResults.study_summary) {
               msgEl.innerHTML = '';
               renderVariableStudySummary(msgEl, variableResults);
@@ -3424,6 +4536,7 @@ def serve_docs(path):
 
 def main():
     global current_model, current_llm_backend, current_gguf_model_path
+    global current_hf_primary_with_gguf_fallback, current_hf_primary_model
     global current_llama_n_ctx, current_llama_n_gpu_layers
     global current_llama_chat_format, current_llama_n_threads, current_llama_verbose
     global current_transformers_device, current_transformers_dtype, current_transformers_attn_implementation
@@ -3458,6 +4571,19 @@ def main():
             )
         ),
     )
+    if not runtime_locked:
+        parser.add_argument(
+            "--hf-primary-with-gguf-fallback",
+            action="store_true",
+            default=current_hf_primary_with_gguf_fallback,
+            help="Use Hugging Face as the primary LLM and retry failed generations with the local GGUF model",
+        )
+        parser.add_argument(
+            "--hf-primary-model",
+            type=str,
+            default=current_hf_primary_model,
+            help=f"Primary Hugging Face model when fallback mode is enabled (default: {DEFAULT_MODEL})",
+        )
     parser.add_argument(
         "--gguf-model-path",
         type=str,
@@ -3507,6 +4633,12 @@ def main():
 
     current_model = getattr(args, "model", DEFAULT_MODEL)
     current_llm_backend = "llama_cpp" if runtime_locked else (args.llm_backend or "hf_api").strip().lower()
+    current_hf_primary_with_gguf_fallback = bool(
+        getattr(args, "hf_primary_with_gguf_fallback", current_hf_primary_with_gguf_fallback)
+    )
+    current_hf_primary_model = getattr(args, "hf_primary_model", current_hf_primary_model)
+    if current_hf_primary_with_gguf_fallback and current_llm_backend == "hf_api":
+        current_model = current_hf_primary_model
     current_gguf_model_path = args.gguf_model_path
     current_llama_n_ctx = int(args.llama_n_ctx)
     current_llama_n_gpu_layers = int(args.llama_n_gpu_layers)
@@ -3543,6 +4675,9 @@ def main():
         print(f"  RAG context: {_effective_rag_context_max_chars()} chars max")
     else:
         print(f"  LLM model  : {current_model}")
+        if current_hf_primary_with_gguf_fallback:
+            print("  Fallback   : local GGUF model if Hugging Face is unavailable")
+            print(f"  GGUF model : {current_gguf_model_path}")
     print()
 
     # Pre-initialise clients
@@ -3558,6 +4693,8 @@ def main():
             print("   Install llama-cpp-python and confirm --gguf-model-path exists")
         elif current_llm_backend == "transformers_local":
             print("   Install torch/transformers/accelerate/sentencepiece and confirm the model fits in memory")
+        elif current_hf_primary_with_gguf_fallback:
+            print("   Set HF_TOKEN for Hugging Face or install llama-cpp-python and confirm --gguf-model-path exists")
         else:
             print("   Set HF_TOKEN in llm_poc/.env to enable chat")
 

@@ -4,6 +4,7 @@ flask>=3.0.0,<4
 pandas>=2.0.0,<3
 pymupdf>=1.24.0,<2
 python-dotenv>=1.0.0,<2
+huggingface_hub>=0.24.0,<1
 
 # Install llama-cpp-python separately because acceleration flags differ by OS:
 #   macOS Apple Silicon:
